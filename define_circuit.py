@@ -12,17 +12,22 @@ with open("Ref.pkl", "rb") as fid:
     Ref = pickle.load(fid)
 
 class Topo():
-    def __init__(self, edge_list):
+    def __init__(self, edge_list, dose_list, promo_node):
+        self.edge_list = edge_list
         self.graph = nx.DiGraph()
-        self.graph.add_edges_from(edge_list) # Create graph object from edge_list
-        self.node_list = [n for n in self.graph.nodes if n[0] != 'P'] # Get nodes that are not promoters
-        self.promo = set(self.graph.nodes).difference(set(self.node_list))  # Get promoter nodes
+        self.graph.add_edges_from(self.edge_list) # Create graph object from edge_list
+        # self.node_list = [n for n in self.graph.nodes if n[0] != 'P'] # Get nodes that are not promoters
 
-        self.dose = {'Z': 200, 'I': 200, 'R': 9}
+        self.promo = promo_node  # Get promoter nodes
+
+        self.dose = dose_list
+        self.dose.update({'Rep': 9})
+        self.node_list = [n for n in self.dose.keys() if n != 'Rep']
+
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
         self.in_dict = dict() # Classify nodes
         self.out_dict = dict()
-        for n in self.node_list:
+        for n in (self.node_list + ['Rep']):
             in_edge = self.graph.in_edges(n)
             self.in_dict.update({n:
                                         {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
@@ -31,23 +36,23 @@ class Topo():
 
             out_edge = self.graph.out_edges(n)
             self.out_dict.update({n:
-                                     {'P': [i[0] for i in out_edge if i[0][0] == 'P'],
-                                      'Z': [i[0] for i in out_edge if i[0][0] == 'Z'],
-                                      'I': [i[0] for i in out_edge if i[0][0] == 'I']}})
+                                     {'R': [i[1] for i in out_edge if i[1][0] == 'R'],
+                                      'Z': [i[1] for i in out_edge if i[1][0] == 'Z'],
+                                      'I': [i[1] for i in out_edge if i[1][0] == 'I']}})
 
-        self.num_states = len(self.node_list)
+        self.num_states = len(self.dose.keys())
         self.var_dict = dict(zip(self.in_dict.keys(), np.arange(self.num_states)))
         self.valid = None
 
     def check_valid(self):
         self.valid = 1
-        for n in self.node_list:
+        for n in self.dose.keys():
             if (len(self.in_dict[n]['I']) > 0) & (len(self.in_dict[n]['P']) > 0) & (len(self.in_dict[n]['Z']) == 0):
                 self.valid = 0
             elif (n != 'Rep') & ((len(self.graph.in_edges(n)) == 0) | (len(self.graph.out_edges(n)) == 0)):
                 self.valid = 0
-        if len(self.promo) != 1:
-            self.valid = 0
+        # if len(self.promo) != 1:
+        #     self.valid = 0
 
     def system_equations(self, x, t, state):
         system = []
@@ -57,7 +62,7 @@ class Topo():
             num = 0
             denom = 1
             for k in self.in_dict[n]['P']:
-                eq += self.dose[n[0]] * promo[k][state]
+                eq += self.dose[n] * promo[k][state]
             for k in self.in_dict[n]['Z']:
                 b += parts[k][0]
                 num += parts[k][1] * parts[k][2] * x[2 * self.var_dict[k] + 1]
@@ -66,7 +71,7 @@ class Topo():
                 denom += parts[k][0] * x[2 * self.var_dict[k] + 1]
             if len(self.in_dict[n]['Z']) > 0:
                 b /= len(self.in_dict[n]['Z'])
-            eq += self.dose[n[0]] * (b + num) / denom
+            eq += self.dose[n] * (b + num) / denom
             system.extend([eq, -self.protein_deg[n[0]] * x[2 * self.var_dict[n] + 1] + x[2 * self.var_dict[n]]])
         return system
 
@@ -78,7 +83,7 @@ class Topo():
 
     def get_fitness(self):
         rep_off, rep_on = self.simulate()
-        ON_ratio = rep_on/Ref[next(iter(self.promo))]['on']
+        ON_ratio = rep_on/Ref[self.promo]['on']
         return ON_ratio
 
     def plot_graph(self):
@@ -86,11 +91,40 @@ class Topo():
         nx.draw_networkx(self.graph, arrows=True)
         plt.show()
 
+def get_circuit(promo_node, part_list):
+    tf_list = [k for k in part_list if k[0] == 'Z']
+    edge_list = set([(promo_node, np.random.choice(tf_list)), (np.random.choice(tf_list), 'Rep')])
+    for n in part_list:
+        edge_list.update([(np.random.choice(tf_list + [promo_node]), n)])
+        out_list = [k for k in part_list if k != n]
+        edge_list.update([(n, np.random.choice(out_list + ['Rep']))])
+
+    return list(edge_list)
 
 
-edge_list = [("P1", "Z1"), ("Z1", "Rep")]
-g1 = Topo(edge_list)
-g1.get_fitness()
-# g1.simulate()
+def sample_circuit(promo_node, tf_list, num_circuit, max_part=2, max_dose=200, min_dose=20, inhibitor=False, in_list=None):
+    circuits = []
+
+    if not inhibitor:
+        for i in range(num_circuit):
+            num_part = np.random.randint(1, max_part+1)
+            part_list = np.random.choice(tf_list, num_part)
+            dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=num_part)))
+            edge_list = get_circuit(promo_node, part_list)
+            circuits.append(Topo(edge_list, dose_list, promo_node))
+
+    elif in_list != None:
+        for i in range(num_circuit):
+            num_tf = np.random.randint(1, max_part)
+            num_in = np.random.randint(1, max_part-num_tf+1)
+            part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(in_list, num_in))
+            dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=(num_tf+num_in))))
+            edge_list = get_circuit(promo_node, part_list)
+            circuits.append(Topo(edge_list, dose_list, promo_node))
+    else:
+        raise Exception("Need a list of inihibitors")
+
+    return circuits
+
 
 a = 1
