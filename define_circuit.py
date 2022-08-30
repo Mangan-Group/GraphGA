@@ -12,22 +12,21 @@ with open("Ref.pkl", "rb") as fid:
     Ref = pickle.load(fid)
 
 class Topo():
-    def __init__(self, edge_list, dose_list, promo_node):
+    def __init__(self, edge_list, part_list, dose_list, promo_node):
         self.edge_list = edge_list
         self.graph = nx.DiGraph()
         self.graph.add_edges_from(self.edge_list) # Create graph object from edge_list
-        # self.node_list = [n for n in self.graph.nodes if n[0] != 'P'] # Get nodes that are not promoters
 
+        self.part_list = part_list
         self.promo = promo_node  # Get promoter nodes
 
-        self.dose = dose_list
+        self.dose = dict(zip(self.part_list, dose_list))
         self.dose.update({'Rep': 9})
-        self.node_list = [n for n in self.dose.keys() if n != 'Rep']
 
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
         self.in_dict = dict() # Classify nodes
         self.out_dict = dict()
-        for n in (self.node_list + ['Rep']):
+        for n in (self.dose.keys()):
             in_edge = self.graph.in_edges(n)
             self.in_dict.update({n:
                                         {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
@@ -91,40 +90,7 @@ class Topo():
         nx.draw_networkx(self.graph, arrows=True)
         plt.show()
 
-def get_circuit(promo_node, part_list):
-    tf_list = [k for k in part_list if k[0] == 'Z']
-    edge_list = set([(promo_node, np.random.choice(tf_list)), (np.random.choice(tf_list), 'Rep')])
-    for n in part_list:
-        edge_list.update([(np.random.choice(tf_list + [promo_node]), n)])
-        out_list = [k for k in part_list if k != n]
-        edge_list.update([(n, np.random.choice(out_list + ['Rep']))])
 
-    return list(edge_list)
-
-
-def sample_circuit(promo_node, tf_list, num_circuit, max_part=2, max_dose=200, min_dose=20, inhibitor=False, in_list=None):
-    circuits = []
-
-    if not inhibitor:
-        for i in range(num_circuit):
-            num_part = np.random.randint(1, max_part+1)
-            part_list = np.random.choice(tf_list, num_part)
-            dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=num_part)))
-            edge_list = get_circuit(promo_node, part_list)
-            circuits.append(Topo(edge_list, dose_list, promo_node))
-
-    elif in_list != None:
-        for i in range(num_circuit):
-            num_tf = np.random.randint(1, max_part)
-            num_in = np.random.randint(1, max_part-num_tf+1)
-            part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(in_list, num_in))
-            dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=(num_tf+num_in))))
-            edge_list = get_circuit(promo_node, part_list)
-            circuits.append(Topo(edge_list, dose_list, promo_node))
-    else:
-        raise Exception("Need a list of inihibitors")
-
-    return circuits
 
 
 a = 1

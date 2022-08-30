@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="502d82f3-dbc7-4e73-a542-9414e4b2e9d0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cross_over.py" beforeDir="false" afterPath="$PROJECT_DIR$/cross_over.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scratch.py" beforeDir="false" afterPath="$PROJECT_DIR$/define_circuit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cross_over.py" beforeDir="false" afterPath="$PROJECT_DIR$/GA.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/define_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/define_circuit.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,8 +36,8 @@
     &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python.define_circuit">
-    <configuration name="cross_over" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.GA">
+    <configuration name="GA" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="GraphGA" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -50,7 +49,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/cross_over.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GA.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -82,8 +81,8 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.GA" />
         <item itemvalue="Python.define_circuit" />
-        <item itemvalue="Python.cross_over" />
       </list>
     </recent_temporary>
   </component>
@@ -113,14 +112,9 @@
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/cross_over.py</url>
-          <line>40</line>
+          <url>file://$PROJECT_DIR$/GA.py</url>
+          <line>76</line>
           <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/define_circuit.py</url>
-          <line>129</line>
-          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
