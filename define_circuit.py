@@ -12,16 +12,16 @@ with open("Ref.pkl", "rb") as fid:
     Ref = pickle.load(fid)
 
 class Topo():
-    def __init__(self, edge_list, part_list, dose_list, promo_node):
+    def __init__(self, edge_list, dose_list, promo_node):
         self.edge_list = edge_list
         self.graph = nx.DiGraph()
         self.graph.add_edges_from(self.edge_list) # Create graph object from edge_list
 
-        self.part_list = part_list
         self.promo = promo_node  # Get promoter nodes
 
-        self.dose = dict(zip(self.part_list, dose_list))
+        self.dose = dose_list
         self.dose.update({'Rep': 9})
+        self.part_list = [k for k in self.dose.keys() if k != 'Rep']
 
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
         self.in_dict = dict() # Classify nodes
@@ -74,8 +74,8 @@ class Topo():
             system.extend([eq, -self.protein_deg[n[0]] * x[2 * self.var_dict[n] + 1] + x[2 * self.var_dict[n]]])
         return system
 
-    def simulate(self):
-        t = np.arange(0, 48+1, 1)
+    def simulate(self, max_time=48):
+        t = np.arange(0, max_time+1, 1)
         rep_off = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('off',))[-1,-1]
         rep_on = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('on',))[-1,-1]
         return rep_off, rep_on
@@ -86,6 +86,7 @@ class Topo():
         return ON_ratio
 
     def plot_graph(self):
+        plt.figure()
         plt.tight_layout()
         nx.draw_networkx(self.graph, arrows=True)
         plt.show()

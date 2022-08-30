@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="502d82f3-dbc7-4e73-a542-9414e4b2e9d0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/cross_over.py" beforeDir="false" afterPath="$PROJECT_DIR$/GA.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GA.py" beforeDir="false" afterPath="$PROJECT_DIR$/GA.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/define_circuit.py" beforeDir="false" afterPath="$PROJECT_DIR$/define_circuit.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -113,8 +114,8 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/GA.py</url>
-          <line>76</line>
-          <option name="timeStamp" value="3" />
+          <line>98</line>
+          <option name="timeStamp" value="7" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
