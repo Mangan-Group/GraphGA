@@ -25,7 +25,7 @@ class Topo():
 
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
         self.in_dict = dict() # Classify nodes
-        self.out_dict = dict()
+        # self.out_dict = dict()
         for n in (self.dose.keys()):
             in_edge = self.graph.in_edges(n)
             self.in_dict.update({n:
@@ -33,11 +33,11 @@ class Topo():
                                         'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
                                         'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
 
-            out_edge = self.graph.out_edges(n)
-            self.out_dict.update({n:
-                                     {'R': [i[1] for i in out_edge if i[1][0] == 'R'],
-                                      'Z': [i[1] for i in out_edge if i[1][0] == 'Z'],
-                                      'I': [i[1] for i in out_edge if i[1][0] == 'I']}})
+            # out_edge = self.graph.out_edges(n)
+            # self.out_dict.update({n:
+            #                          {'R': [i[1] for i in out_edge if i[1][0] == 'R'],
+            #                           'Z': [i[1] for i in out_edge if i[1][0] == 'Z'],
+            #                           'I': [i[1] for i in out_edge if i[1][0] == 'I']}})
 
         self.num_states = len(self.dose.keys())
         self.var_dict = dict(zip(self.in_dict.keys(), np.arange(self.num_states)))
@@ -88,10 +88,9 @@ class Topo():
     def plot_graph(self):
         plt.figure()
         plt.tight_layout()
-        nx.draw_networkx(self.graph, arrows=True)
+        nx.draw_networkx(self.graph, arrows=True, arrowsize=15, node_size=600, node_shape='s')
         plt.show()
 
 
 
 
-a = 1
