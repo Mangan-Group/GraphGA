@@ -1,10 +1,11 @@
 from define_circuit import *
 import copy
+# def edge_constraint():
 
 def get_edges(promo_node, part_list):
     tf_list = [k for k in part_list if k[0] == 'Z']
     # edge_list = set([(promo_node, np.random.choice(tf_list)), (np.random.choice(tf_list), 'Rep')])
-    edge_list = set([(promo_node, np.random.choice(tf_list))])
+    edge_list = set([(promo_node, np.random.choice(tf_list)), (np.random.choice(tf_list), 'Rep')])
     for n in part_list:
         edge_list.update([(np.random.choice(tf_list + [promo_node]), n)])
         out_list = [k for k in part_list if k != n]
@@ -18,7 +19,8 @@ def get_edges(promo_node, part_list):
 
     return list(edge_list)
 
-def sample_circuit(promo_node, tf_list, num_circuit, max_part=2, max_dose=200, min_dose=20, inhibitor=False, in_list=None):
+# def sample_circuit(promo_node, tf_list, num_circuit, max_part=2, max_dose=200, min_dose=20, inhibitor=False, in_list=None):
+def sample_circuit(promo_node, num_circuit, max_part=2, max_dose=200, min_dose=20, inhibitor=False):
     circuits = []
     if not inhibitor:
         for i in range(num_circuit):
@@ -28,8 +30,8 @@ def sample_circuit(promo_node, tf_list, num_circuit, max_part=2, max_dose=200, m
             edge_list = get_edges(promo_node, part_list)
             circuits.append(Topo(edge_list, dose_list, promo_node))
 
-    elif in_list == None:
-        raise Exception("Need a list of inihibitors")
+    # elif in_list == None:
+    #     raise Exception("Need a list of inihibitors")
 
     else:
         for i in range(num_circuit):
@@ -39,7 +41,7 @@ def sample_circuit(promo_node, tf_list, num_circuit, max_part=2, max_dose=200, m
             dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=(num_tf+num_in))))
             edge_list = get_edges(promo_node, part_list)
             circuits.append(Topo(edge_list, dose_list, promo_node))
-
+    # circuits = np.array([circuits])
     return circuits
 
 def get_crosspt(list1, list2):
@@ -82,8 +84,8 @@ def crossover(g1, g2, naive=False):
     child2_dose = {k: g2.dose[k] for k in g2.part_list if k != pt2}
     child2_dose.update({pt1: g1.dose[pt1]})
 
-    child1 = Topo(child1_edge, child1_dose, g1.promo)
-    child2 = Topo(child2_edge, child2_dose, g2.promo)
+    child1 = Topo(child1_edge, child1_dose, g1.promo_node)
+    child2 = Topo(child2_edge, child2_dose, g2.promo_node)
     return child1, child2
 
 
@@ -93,12 +95,5 @@ def crossover(g1, g2, naive=False):
 
 
 
+# circuits = sample_circuit('P1', num_circuit=20, max_part=3, inhibitor=True)
 
-tf_list = [k for k in parts.keys() if k[0]=='Z']
-in_list = [k for k in parts.keys() if k[0]=='I']
-
-circuits = sample_circuit('P1', tf_list, num_circuit=20, max_part=2)
-# circuits = sample_circuit('P1', tf_list, num_circuit=20, max_part=3, inhibitor=True, in_list=in_list)
-
-
-a = 2

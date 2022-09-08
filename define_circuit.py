@@ -10,6 +10,8 @@ with open("parts.pkl", "rb") as fid:
     parts = pickle.load(fid)
 with open("Ref.pkl", "rb") as fid:
     Ref = pickle.load(fid)
+tf_list = [k for k in parts.keys() if k[0]=='Z']
+in_list = [k for k in parts.keys() if k[0]=='I']
 
 class Topo():
     def __init__(self, edge_list, dose_list, promo_node):
@@ -17,7 +19,7 @@ class Topo():
         self.graph = nx.DiGraph()
         self.graph.add_edges_from(self.edge_list) # Create graph object from edge_list
 
-        self.promo = promo_node  # Get promoter nodes
+        self.promo_node = promo_node  # Get promoter nodes
 
         self.dose = dose_list
         self.dose.update({'Rep': 9})
@@ -46,7 +48,7 @@ class Topo():
     def check_valid(self):
         self.valid = 1
         for n in self.dose.keys():
-            if (len(self.in_dict[n]['I']) > 0) & (len(self.in_dict[n]['P']) > 0) & (len(self.in_dict[n]['Z']) == 0):
+            if (len(self.in_dict[n]['I']) > 0) & (len(self.in_dict[n]['Z']) == 0):
                 self.valid = 0
             elif (n != 'Rep') & ((len(self.graph.in_edges(n)) == 0) | (len(self.graph.out_edges(n)) == 0)):
                 self.valid = 0
@@ -82,7 +84,7 @@ class Topo():
 
     def get_fitness(self):
         rep_off, rep_on = self.simulate()
-        ON_ratio = rep_on/Ref[self.promo]['on']
+        ON_ratio = rep_on/Ref[self.promo_node]['on']
         return ON_ratio
 
     def plot_graph(self):
@@ -91,6 +93,8 @@ class Topo():
         nx.draw_networkx(self.graph, arrows=True, arrowsize=15, node_size=600, node_shape='s')
         plt.show()
 
-
-
-
+def amplifier_obj(g):
+    rep_off, rep_on = g.simulate()
+    ON_ratio = rep_on / Ref[g.promo_node]['on']
+    FIn = rep_on / rep_off
+    return np.array([ON_ratio, FIn])
