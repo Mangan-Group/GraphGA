@@ -1,17 +1,9 @@
 import numpy as np
-import pickle
 import networkx as nx
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
+from load_files import *
 
-with open("promo.pkl", "rb") as fid:
-    promo = pickle.load(fid)
-with open("parts.pkl", "rb") as fid:
-    parts = pickle.load(fid)
-with open("Ref.pkl", "rb") as fid:
-    Ref = pickle.load(fid)
-tf_list = [k for k in parts.keys() if k[0]=='Z']
-in_list = [k for k in parts.keys() if k[0]=='I']
 
 class Topo():
     def __init__(self, edge_list, dose_list, promo_node):
@@ -26,8 +18,8 @@ class Topo():
         self.part_list = [k for k in self.dose.keys() if k != 'Rep']
 
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
+
         self.in_dict = dict() # Classify nodes
-        # self.out_dict = dict()
         for n in (self.dose.keys()):
             in_edge = self.graph.in_edges(n)
             self.in_dict.update({n:
@@ -35,25 +27,34 @@ class Topo():
                                         'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
                                         'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
 
-            # out_edge = self.graph.out_edges(n)
-            # self.out_dict.update({n:
-            #                          {'R': [i[1] for i in out_edge if i[1][0] == 'R'],
-            #                           'Z': [i[1] for i in out_edge if i[1][0] == 'Z'],
-            #                           'I': [i[1] for i in out_edge if i[1][0] == 'I']}})
-
         self.num_states = len(self.dose.keys())
-        self.var_dict = dict(zip(self.in_dict.keys(), np.arange(self.num_states)))
+        self.var_dict = dict(zip(self.dose.keys(), np.arange(self.num_states)))
         self.valid = None
 
     def check_valid(self):
         self.valid = 1
-        for n in self.dose.keys():
-            if (len(self.in_dict[n]['I']) > 0) & (len(self.in_dict[n]['Z']) == 0):
+        for n in self.part_list:
+            # if (len(self.in_dict[n]['I']) > 0) & (len(self.in_dict[n]['Z']) == 0):
+            #     self.valid = 0
+            # elif (n != 'Rep') & ((len(self.graph.in_edges(n)) == 0) | (len(self.graph.out_edges(n)) == 0)):
+            #     self.valid = 0
+            if self.graph.in_degree(n) <= len(self.in_dict[n]['I']):
                 self.valid = 0
-            elif (n != 'Rep') & ((len(self.graph.in_edges(n)) == 0) | (len(self.graph.out_edges(n)) == 0)):
+            if len(list(nx.all_simple_paths(self.graph, n, 'Rep'))) == 0:
                 self.valid = 0
-        # if len(self.promo) != 1:
-        #     self.valid = 0
+
+    def update(self, edge_list):
+        self.edge_list = edge_list
+        self.graph = nx.DiGraph()
+        self.graph.add_edges_from(self.edge_list)
+
+        self.in_dict = dict()  # Classify nodes
+        for n in (self.dose.keys()):
+            in_edge = self.graph.in_edges(n)
+            self.in_dict.update({n:
+                                     {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
+                                      'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
+                                      'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
 
     def system_equations(self, x, t, state):
         system = []
@@ -82,19 +83,10 @@ class Topo():
         rep_on = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('on',))[-1,-1]
         return rep_off, rep_on
 
-    def get_fitness(self):
-        rep_off, rep_on = self.simulate()
-        ON_ratio = rep_on/Ref[self.promo_node]['on']
-        return ON_ratio
-
     def plot_graph(self):
         plt.figure()
         plt.tight_layout()
         nx.draw_networkx(self.graph, arrows=True, arrowsize=15, node_size=600, node_shape='s')
         plt.show()
 
-def amplifier_obj(g):
-    rep_off, rep_on = g.simulate()
-    ON_ratio = rep_on / Ref[g.promo_node]['on']
-    FIn = rep_on / rep_off
-    return np.array([ON_ratio, FIn])
+
