@@ -51,36 +51,33 @@ class MyMutation(Mutation):
         super().__init__()
 
     def _do(self, problem, X, **kwargs):
-        return X
-        # # for each individual
+        # for each individual
         # for i in range(len(X)):
-        #
         #     r = np.random.uniform(0, 1)
-        #
         #     # with a probabilty - change the node
         #     if r < 0.4:
-        #         old_node = np.random.choice(X[i].part_list)
-        #         if old_node[0] == 'Z':
-        #             node_avail = list(set(tf_list).difference(set(X[i].part_list)))
-        #         else:
-        #             node_avail = list(set(in_list).difference(set(X[i].part_list)))
-        #         new_node = np.random.choice(node_avail)
-        #
-        #         X[i] = Topo(switch_naive(X[i], old_node, new_node), X[i].dose, X[i].promo_node)
-        #
-        #     # also with a probabilty - remove (or add) a node
-        #     elif r < 0.8:
-        #         if len(X[i].part_list) > 1:
-        #             old_node = np.random.choice(X[i].part_list)
-        #             X[i].graph.remove_node(old_node)
-        #             X[i].dose.pop(old_node)
-        #             X[i] = Topo(list(X[i].graph.edges), X[i].dose, X[i].promo_node)
-        #         else:
-        #             pass
-        #
-        # return X
+            #     old_node = np.random.choice(X[i].part_list)
+            #     if old_node[0] == 'Z':
+            #         node_avail = list(set(tf_list).difference(set(X[i].part_list)))
+            #     else:
+            #         node_avail = list(set(in_list).difference(set(X[i].part_list)))
+            #     new_node = np.random.choice(node_avail)
+            #
+            #     X[i] = Topo(switch_naive(X[i], old_node, new_node), X[i].dose, X[i].promo_node)
+            #
+            # # also with a probabilty - remove (or add) a node
+            # elif r < 0.8:
+            #     if len(X[i].part_list) > 1:
+            #         old_node = np.random.choice(X[i].part_list)
+            #         X[i].graph.remove_node(old_node)
+            #         X[i].dose.pop(old_node)
+            #         X[i] = Topo(list(X[i].graph.edges), X[i].dose, X[i].promo_node)
+            #     else:
+            #         pass
 
-algorithm = NSGA2(pop_size=20,
+        return X
+
+algorithm = NSGA2(pop_size=50,
                   sampling=MySampling(),
                   crossover=MyCrossover(),
                   mutation=MyMutation(),
@@ -88,7 +85,7 @@ algorithm = NSGA2(pop_size=20,
 
 res = minimize(MyProblem(),
                algorithm,
-               ('n_gen', 30),
+               ('n_gen', 10),
                seed=1,
                save_history=True)
 
@@ -109,25 +106,30 @@ for algo in hist:
     opt = algo.opt
     hist_F.append(opt.get("F"))
 
-from pymoo.indicators.hv import Hypervolume
-approx_ideal = F.min(axis=0)
-approx_nadir = F.max(axis=0)
-metric = Hypervolume(ref_point= np.array([1.1, 1.1]),
-                     norm_ref_point=False,
-                     zero_to_one=True,
-                     ideal=approx_ideal,
-                     nadir=approx_nadir)
-hv = [metric.do(_F) for _F in hist_F]
-plt.figure(figsize=(7, 5))
-plt.plot(n_evals, hv,  color='black', lw=0.7, label="Avg. CV of Pop")
-plt.scatter(n_evals, hv,  facecolor="none", edgecolor='black', marker="p")
-plt.title("Convergence")
-plt.xlabel("Function Evaluations")
-plt.ylabel("Hypervolume")
-#
-from pymoo.util.running_metric import RunningMetricAnimation
-running = RunningMetricAnimation(delta_gen=5, key_press=False,)
-for algorithm in res.history:
-    running.do(0, algorithm)
+plt.figure()
+for i in range(len(hist_F)):
+    plt.scatter(hist_F[i][:, 0], hist_F[i][:, 1])
+plt.scatter(F[:, 0], F[:, 1], c='r')
+
+# from pymoo.indicators.hv import Hypervolume
+# approx_ideal = F.min(axis=0)
+# approx_nadir = F.max(axis=0)
+# metric = Hypervolume(ref_point= np.array([1.1, 1.1]),
+#                      norm_ref_point=False,
+#                      zero_to_one=True,
+#                      ideal=approx_ideal,
+#                      nadir=approx_nadir)
+# hv = [metric.do(_F) for _F in hist_F]
+# plt.figure(figsize=(7, 5))
+# plt.plot(n_evals, hv,  color='black', lw=0.7, label="Avg. CV of Pop")
+# plt.scatter(n_evals, hv,  facecolor="none", edgecolor='black', marker="p")
+# plt.title("Convergence")
+# plt.xlabel("Function Evaluations")
+# plt.ylabel("Hypervolume")
+# #
+# from pymoo.util.running_metric import RunningMetricAnimation
+# running = RunningMetricAnimation(delta_gen=5, key_press=False,)
+# for algorithm in res.history:
+#     running.do(0, algorithm)
 
 a = 1
