@@ -28,7 +28,7 @@ class Topo():
                                         'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
 
         self.num_states = len(self.dose.keys())
-        self.var_dict = dict(zip(self.dose.keys(), np.arange(self.num_states)))
+        self.var_dict = dict(zip((self.part_list + ['Rep']), np.arange(self.num_states)))
         self.valid = None
 
     def check_valid(self):
@@ -47,6 +47,9 @@ class Topo():
         self.edge_list = edge_list
         self.graph = nx.DiGraph()
         self.graph.add_edges_from(self.edge_list)
+        self.part_list = [k for k in self.dose.keys() if k != 'Rep']
+        self.num_states = len(self.dose.keys())
+        self.var_dict = dict(zip((self.part_list + ['Rep']), np.arange(self.num_states)))
 
         self.in_dict = dict()  # Classify nodes
         for n in (self.dose.keys()):

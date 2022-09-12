@@ -4,25 +4,44 @@ from pymoo.core.sampling import Sampling
 from pymoo.core.crossover import Crossover
 from pymoo.core.mutation import Mutation
 from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 
-def amplifier_obj(g):
+def amplifier(g):
     rep_off, rep_on = g.simulate()
     ON_ratio = rep_on / Ref[g.promo_node]['on']
     FIn = rep_on / rep_off
-    return np.array([ON_ratio, FIn])
+    return -np.array([ON_ratio, FIn])
 
 class MyProblem(ElementwiseProblem):
-    def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False):
+    def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False,func=amplifier):
         super().__init__(n_var=1, n_obj=2, n_ieq_constr=0)
         self.promo_node = promo_node
         self.max_part = max_part
         self.max_dose = max_dose
         self.min_dose = min_dose
         self.inhibitor = inhibitor
+        self.func = func
 
     def _evaluate(self, x, out, *args, **kwargs):
-        out["F"] = -amplifier_obj(x[0])
+        out["F"] = self.func(x[0])
+
+# def amplifier(g):
+#     rep_off, rep_on = g.simulate()
+#     ON_ratio = rep_on/ Ref[g.promo_node]['on']
+#     return -ON_ratio
+#
+# class MyProblem(ElementwiseProblem):
+#     def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False, func=amplifier):
+#         super().__init__(n_var=1, n_obj=1, n_ieq_constr=0)
+#         self.promo_node = promo_node
+#         self.max_part = max_part
+#         self.max_dose = max_dose
+#         self.min_dose = min_dose
+#         self.inhibitor = inhibitor
+#         self.func = func
+#     def _evaluate(self, x, out, *args, **kwargs):
+#         out["F"] = self.func(x[0])
 
 class MySampling(Sampling):
     def _do(self, problem, num_circuit, **kwargs):
@@ -51,30 +70,6 @@ class MyMutation(Mutation):
         super().__init__()
 
     def _do(self, problem, X, **kwargs):
-        # for each individual
-        # for i in range(len(X)):
-        #     r = np.random.uniform(0, 1)
-        #     # with a probabilty - change the node
-        #     if r < 0.4:
-            #     old_node = np.random.choice(X[i].part_list)
-            #     if old_node[0] == 'Z':
-            #         node_avail = list(set(tf_list).difference(set(X[i].part_list)))
-            #     else:
-            #         node_avail = list(set(in_list).difference(set(X[i].part_list)))
-            #     new_node = np.random.choice(node_avail)
-            #
-            #     X[i] = Topo(switch_naive(X[i], old_node, new_node), X[i].dose, X[i].promo_node)
-            #
-            # # also with a probabilty - remove (or add) a node
-            # elif r < 0.8:
-            #     if len(X[i].part_list) > 1:
-            #         old_node = np.random.choice(X[i].part_list)
-            #         X[i].graph.remove_node(old_node)
-            #         X[i].dose.pop(old_node)
-            #         X[i] = Topo(list(X[i].graph.edges), X[i].dose, X[i].promo_node)
-            #     else:
-            #         pass
-
         return X
 
 algorithm = NSGA2(pop_size=50,
@@ -83,9 +78,10 @@ algorithm = NSGA2(pop_size=50,
                   mutation=MyMutation(),
                   eliminate_duplicates=False)
 
+
 res = minimize(MyProblem(),
                algorithm,
-               ('n_gen', 10),
+               ('n_gen', 5),
                seed=1,
                save_history=True)
 

@@ -1,4 +1,5 @@
 from define_circuit import *
+from itertools import combinations_with_replacement
 
 def get_out_path(n, part_list):
     out_list = [k for k in part_list if k != n]
@@ -53,7 +54,7 @@ def sample_circuit(promo_node, num_circuit, max_part=2, max_dose=200, min_dose=2
 
     return circuits
 
-def get_crosspt(list1, list2,):
+def get_crosspt(list1, list2):
     same = set(list1).intersection(set(list2))
     same = list(same)
     if len(same) > 0:
@@ -86,11 +87,9 @@ def validate(g):
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
     for n in g.part_list:
         if g.graph.in_degree(n) <= len(g.in_dict[n]['I']):
-            # new_edges.update([(g.promo_node, n)])
             new_edges.update(get_in_path(n, g.promo_node, circuit_tf_list))
 
         if len(list(nx.all_simple_paths(g.graph, n, 'Rep'))) == 0:
-            # edges = get_out_path(n, g.part_list)
             new_edges.update(get_out_path(n, g.part_list))
 
     return list(new_edges)
@@ -100,24 +99,78 @@ def crossover_naive(g1, g2):
 
     child1_edge = switch_node(g1, pt1, pt2)
     child2_edge = switch_node(g2, pt2, pt1)
-
     child1_dose = {k: g1.dose[k] for k in g1.part_list if k != pt1}
     child1_dose.update({pt2: g2.dose[pt2]})
-
     child2_dose = {k: g2.dose[k] for k in g2.part_list if k != pt2}
     child2_dose.update({pt1: g1.dose[pt1]})
 
     child1 = Topo(child1_edge, child1_dose, g1.promo_node)
     child2 = Topo(child2_edge, child2_dose, g2.promo_node)
-
-    validate(child1)
-    child1.update(child1.edge_list)
-    validate(child2)
-    child2.update(child2.edge_list)
-
+    # validate(child1)
+    # child1.update(child1.edge_list)
+    # validate(child2)
+    # child2.update(child2.edge_list)
+    # child1.check_valid()
+    # child2.check_valid()
+    # if child1.valid == 0 | child2.valid == 0:
+    #     print("error")
     return child1, child2
 
+def mutate_dose(g, min_dose=10, max_dose=75):
+    n = np.random.choice(g.part_list)
+    g.dose.update({n: np.random.randint(min_dose, max_dose)})
 
+def mutate_node_type(g, min_dose=10, max_dose=75):
+    old_node = np.random.choice(g.part_list)
+    if old_node[0] == 'Z':
+        node_avail = list(set(tf_list).difference(set(g.part_list)))
+    else:
+        node_avail = list(set(in_list).difference(set(g.part_list)))
+    new_node = np.random.choice(node_avail)
+    g.dose.pop(old_node)
+    g.dose.update({new_node: np.random.randint(min_dose, max_dose)})
+    new_edges = switch_node(g, old_node, new_node)
+    g.graph.remove_node(old_node)
+    g.update(new_edges)
 
+def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
+    circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
+    if len(g.part_list) < max_part:
+        print(0)
+        if not inhibitor:
+            node_avail = [k for k in tf_list if k not in g.part_list]
+        else:
+            node_avail = [k for k in parts.keys() if k not in g.part_list]
+        new_node = np.random.choice(node_avail)
+        print(new_node)
+        g.dose.update({new_node: np.random.randint(min_dose, max_dose)})
+        new_edges = set([k for k in g.edge_list])
+        new_edges.update(get_in_path(new_node, g.promo_node, circuit_tf_list))
+        new_edges.update(get_out_path(new_node, g.part_list))
+        g.update(list(new_edges))
+        print(g.dose)
+        print(g.edge_list)
+    # else:
+    #     print(1)
+    #     circuit_in_list = [k for k in g.part_list if k[0] == 'I']
+    #     if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
+    #         old_node = np.random.choice(circuit_tf_list)
+    #     elif len(circuit_tf_list) == 1 & len(circuit_in_list) > 1:
+    #         old_node = np.random.choice(circuit_in_list)
+    #     elif len(circuit_tf_list) > 1 & len(circuit_in_list) > 1:
+    #         old_node = np.random.choice(g.part_list)
+    #
+    #     g.part_list.remove(old_node)
+    #     g.dose.pop(old_node)
+    #     g.graph.remove_node(old_node)
+    #     new_edges = validate(g)
+    #     g.update(new_edges)
 
+def get_full_connected(part_list, promo_node):
+    edge_list = [(promo_node, k) for k in part_list]
+    edge_list.extend([(k, 'Rep') for k in part_list])
+    edge_list.extend(list(combinations_with_replacement(X[0].part_list, 2)))
+    return edge_list
 
+def mutate_edge(g):
+    pass
