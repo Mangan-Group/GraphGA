@@ -83,7 +83,7 @@ def switch_node(g, old_node, new_node):
     return child_edge
 
 def validate(g):
-    new_edges = set([k for k in g.edge_list])
+    new_edges = set([k for k in g.graph.edges])
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
     for n in g.part_list:
         if g.graph.in_degree(n) <= len(g.in_dict[n]['I']):
@@ -136,9 +136,9 @@ def mutate_node_type(g, min_dose=10, max_dose=75):
 def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
     if len(g.part_list) < max_part:
-        print(0)
+        # print(0)
         if not inhibitor:
-            node_avail = [k for k in tf_list if k not in g.part_list]
+            node_avail = [k for k in tf_list if k not in circuit_tf_list]
         else:
             node_avail = [k for k in parts.keys() if k not in g.part_list]
         new_node = np.random.choice(node_avail)
@@ -150,21 +150,21 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
         g.update(list(new_edges))
         print(g.dose)
         print(g.edge_list)
-    # else:
-    #     print(1)
-    #     circuit_in_list = [k for k in g.part_list if k[0] == 'I']
-    #     if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
-    #         old_node = np.random.choice(circuit_tf_list)
-    #     elif len(circuit_tf_list) == 1 & len(circuit_in_list) > 1:
-    #         old_node = np.random.choice(circuit_in_list)
-    #     elif len(circuit_tf_list) > 1 & len(circuit_in_list) > 1:
-    #         old_node = np.random.choice(g.part_list)
-    #
-    #     g.part_list.remove(old_node)
-    #     g.dose.pop(old_node)
-    #     g.graph.remove_node(old_node)
-    #     new_edges = validate(g)
-    #     g.update(new_edges)
+    else:
+        circuit_in_list = [k for k in g.part_list if k[0] == 'I']
+        if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
+            old_node = np.random.choice(circuit_tf_list)
+        elif len(circuit_tf_list) == 1 & len(circuit_in_list) > 1:
+            old_node = np.random.choice(circuit_in_list)
+        elif len(circuit_tf_list) > 1 & len(circuit_in_list) > 1:
+            old_node = np.random.choice(g.part_list)
+
+        g.part_list.remove(old_node)
+        g.dose.pop(old_node)
+        g.graph.remove_node(old_node)
+        new_edges = validate(g)
+        g.update(new_edges)
+
 
 def get_full_connected(part_list, promo_node):
     edge_list = [(promo_node, k) for k in part_list]

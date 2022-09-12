@@ -20,15 +20,15 @@ class Topo():
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
 
         self.in_dict = dict() # Classify nodes
-        for n in (self.dose.keys()):
+        for n in (self.part_list + ['Rep']):
             in_edge = self.graph.in_edges(n)
             self.in_dict.update({n:
                                         {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
                                         'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
                                         'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
 
-        self.num_states = len(self.dose.keys())
-        self.var_dict = dict(zip((self.part_list + ['Rep']), np.arange(self.num_states)))
+        self.num_states = len(self.in_dict.keys())
+        self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
         self.valid = None
 
     def check_valid(self):
@@ -48,16 +48,17 @@ class Topo():
         self.graph = nx.DiGraph()
         self.graph.add_edges_from(self.edge_list)
         self.part_list = [k for k in self.dose.keys() if k != 'Rep']
-        self.num_states = len(self.dose.keys())
-        self.var_dict = dict(zip((self.part_list + ['Rep']), np.arange(self.num_states)))
 
         self.in_dict = dict()  # Classify nodes
-        for n in (self.dose.keys()):
+        for n in (self.part_list + ['Rep']):
             in_edge = self.graph.in_edges(n)
             self.in_dict.update({n:
                                      {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
                                       'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
                                       'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
+
+        self.num_states = len(self.in_dict.keys())
+        self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
 
     def system_equations(self, x, t, state):
         system = []
@@ -69,6 +70,7 @@ class Topo():
             for k in self.in_dict[n]['P']:
                 eq += self.dose[n] * promo[k][state]
             for k in self.in_dict[n]['Z']:
+                # print(k)
                 b += parts[k][0]
                 num += parts[k][1] * parts[k][2] * x[2 * self.var_dict[k] + 1]
                 denom += parts[k][2] * x[2 * self.var_dict[k] + 1]
