@@ -94,6 +94,10 @@ def validate(g):
 
     return list(new_edges)
 
+def compare_circuit(g1, g2):
+        ind = (g1.dose == g2.dose) & (set(g1.edge_list) == set(g2.edge_list))
+        return ind
+
 def crossover_naive(g1, g2):
     pt1, pt2 = get_crosspt(g1.part_list, g2.part_list,)
 
@@ -142,14 +146,12 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
         else:
             node_avail = [k for k in parts.keys() if k not in g.part_list]
         new_node = np.random.choice(node_avail)
-        print(new_node)
         g.dose.update({new_node: np.random.randint(min_dose, max_dose)})
         new_edges = set([k for k in g.edge_list])
         new_edges.update(get_in_path(new_node, g.promo_node, circuit_tf_list))
         new_edges.update(get_out_path(new_node, g.part_list))
         g.update(list(new_edges))
-        print(g.dose)
-        print(g.edge_list)
+
     else:
         circuit_in_list = [k for k in g.part_list if k[0] == 'I']
         if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
@@ -164,7 +166,6 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
         g.graph.remove_node(old_node)
         new_edges = validate(g)
         g.update(new_edges)
-
 
 def get_full_connected(part_list, promo_node):
     edge_list = [(promo_node, k) for k in part_list]

@@ -3,45 +3,51 @@ from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.sampling import Sampling
 from pymoo.core.crossover import Crossover
 from pymoo.core.mutation import Mutation
+from pymoo.core.duplicate import ElementwiseDuplicateElimination
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 
-def amplifier(g):
-    rep_off, rep_on = g.simulate()
-    ON_ratio = rep_on / Ref[g.promo_node]['on']
-    FIn = rep_on / rep_off
-    return -np.array([ON_ratio, FIn])
-
-class MyProblem(ElementwiseProblem):
-    def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False,func=amplifier):
-        super().__init__(n_var=1, n_obj=2, n_ieq_constr=0)
-        self.promo_node = promo_node
-        self.max_part = max_part
-        self.max_dose = max_dose
-        self.min_dose = min_dose
-        self.inhibitor = inhibitor
-        self.func = func
-
-    def _evaluate(self, x, out, *args, **kwargs):
-        out["F"] = self.func(x[0])
-
 # def amplifier(g):
 #     rep_off, rep_on = g.simulate()
-#     ON_ratio = rep_on/ Ref[g.promo_node]['on']
-#     return -ON_ratio
+#     ON_ratio = rep_on / Ref[g.promo_node]['on']
+#     FIn = rep_on / rep_off
+#     return -np.array([ON_ratio, FIn])
 #
 # class MyProblem(ElementwiseProblem):
-#     def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False, func=amplifier):
-#         super().__init__(n_var=1, n_obj=1, n_ieq_constr=0)
+#     def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False,func=amplifier):
+#         super().__init__(n_var=1, n_obj=2, n_ieq_constr=0)
 #         self.promo_node = promo_node
 #         self.max_part = max_part
 #         self.max_dose = max_dose
 #         self.min_dose = min_dose
 #         self.inhibitor = inhibitor
 #         self.func = func
+#
 #     def _evaluate(self, x, out, *args, **kwargs):
 #         out["F"] = self.func(x[0])
+
+def amplifier(g):
+    rep_off, rep_on = g.simulate()
+    ON_ratio = rep_on/ Ref[g.promo_node]['on']
+    return -ON_ratio
+
+class MyProblem(ElementwiseProblem):
+    def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False, func=amplifier):
+        super().__init__(n_var=1, n_obj=1, n_ieq_constr=0)
+        self.promo_node = promo_node
+        self.max_part = max_part
+        self.max_dose = max_dose
+        self.min_dose = min_dose
+        self.inhibitor = inhibitor
+        self.func = func
+        self.X = []
+        self.F = []
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        out["F"] = self.func(x[0])
+        self.X.append(x)
+        self.F.append(out["F"])
 
 class MySampling(Sampling):
     def _do(self, problem, num_circuit, **kwargs):
@@ -70,18 +76,30 @@ class MyMutation(Mutation):
         super().__init__()
 
     def _do(self, problem, X, **kwargs):
+        for i in range(len(X)):
+            r = np.random.uniform(0, 1)
+            if r < 0.3:
+                mutate_node_num(X[i, 0], problem.max_part)
+            elif r < 0.6:
+                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose)
+            elif r < 0.9:
+                mutate_dose(X[i, 0], problem.min_dose, problem.max_dose)
         return X
 
-algorithm = NSGA2(pop_size=50,
+class MyDuplicateElimination(ElementwiseDuplicateElimination):
+    def is_equal(self, x1, x2):
+        return compare_circuit(x1.X[0], x2.X[0])
+
+algorithm = GA(pop_size=50,
                   sampling=MySampling(),
                   crossover=MyCrossover(),
                   mutation=MyMutation(),
-                  eliminate_duplicates=False)
+                  eliminate_duplicates=MyDuplicateElimination())
 
-
-res = minimize(MyProblem(),
+problem = MyProblem()
+res = minimize(problem,
                algorithm,
-               ('n_gen', 5),
+               ('n_gen', 20),
                seed=1,
                save_history=True)
 
@@ -95,12 +113,14 @@ for i in range(len(X)):
 hist = res.history
 n_evals = []
 hist_F = []
+hist_X = []
 for algo in hist:
     # store the number of function evaluations
     n_evals.append(algo.evaluator.n_eval)
     # retrieve the optimum from the algorithm
     opt = algo.opt
-    hist_F.append(opt.get("F"))
+    hist_F.extend(opt.get("F"))
+    hist_X.append(opt.get('X'))
 
 plt.figure()
 for i in range(len(hist_F)):
