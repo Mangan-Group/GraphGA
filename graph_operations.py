@@ -95,7 +95,7 @@ def validate(g):
     return list(new_edges)
 
 def compare_circuit(g1, g2):
-        ind = (g1.dose == g2.dose) & (set(g1.edge_list) == set(g2.edge_list))
+        ind =  (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
         return ind
 
 def crossover_naive(g1, g2):
@@ -154,24 +154,39 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
 
     else:
         circuit_in_list = [k for k in g.part_list if k[0] == 'I']
-        if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
-            old_node = np.random.choice(circuit_tf_list)
-        elif len(circuit_tf_list) == 1 & len(circuit_in_list) > 1:
-            old_node = np.random.choice(circuit_in_list)
-        elif len(circuit_tf_list) > 1 & len(circuit_in_list) > 1:
-            old_node = np.random.choice(g.part_list)
+        # if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
+        #     old_node = np.random.choice(circuit_tf_list)
+        # elif len(circuit_tf_list) == 1 & len(circuit_in_list) > 1:
+        #     old_node = np.random.choice(circuit_in_list)
+        # elif len(circuit_tf_list) > 1 & len(circuit_in_list) > 1:
+        #     old_node = np.random.choice(g.part_list)
 
-        g.part_list.remove(old_node)
-        g.dose.pop(old_node)
-        g.graph.remove_node(old_node)
-        new_edges = validate(g)
-        g.update(new_edges)
+        if len(circuit_tf_list) > 1 | len(circuit_in_list) > 1:
+            if len(circuit_in_list) <= 1:
+                old_node = np.random.choice(circuit_tf_list)
+            elif len(circuit_tf_list) <= 1:
+                old_node = np.random.choice(circuit_in_list)
+            else:
+                old_node = np.random.choice(g.part_list)
+
+            g.part_list.remove(old_node)
+            g.dose.pop(old_node)
+            g.graph.remove_node(old_node)
+            new_edges = validate(g)
+            g.update(new_edges)
 
 def get_full_connected(part_list, promo_node):
     edge_list = [(promo_node, k) for k in part_list]
     edge_list.extend([(k, 'Rep') for k in part_list])
-    edge_list.extend(list(combinations_with_replacement(X[0].part_list, 2)))
+    edge_list.extend(list(combinations_with_replacement(part_list, 2)))
     return edge_list
 
 def mutate_edge(g):
-    pass
+    edge_full = get_full_connected(g.part_list, g.promo_node)
+    if len(g.graph.edges) < len(edge_full):
+        edge_avail = [k for k in edge_full if k not in g.graph.edges]
+        ind = np.random.choice(len(edge_avail))
+        g.edge_list.append(edge_avail[ind])
+        g.update(g.edge_list)
+    else:
+        pass
