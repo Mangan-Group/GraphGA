@@ -1,5 +1,3 @@
-import copy
-
 from graph_operations import *
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.core.sampling import Sampling
@@ -23,12 +21,13 @@ def sigcond(g):
     return np.array([-ON_ratio, OFF_ratio])
 
 class MyProblem(ElementwiseProblem):
-    def __init__(self, promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=False, func=amplifier):
-        super().__init__(n_var=1, n_obj=2, n_ieq_constr=0)
+    def __init__(self, promo_node='P1', max_part=3, min_dose=10, max_dose=75, dose_interval=5, inhibitor=False, func=amplifier, **kwargs):
+        super(MyProblem, self).__init__(**kwargs)
         self.promo_node = promo_node
         self.max_part = max_part
-        self.max_dose = max_dose
         self.min_dose = min_dose
+        self.max_dose = max_dose
+        self.dose_interval = dose_interval
         self.inhibitor = inhibitor
         self.func = func
         self.X = []
@@ -64,12 +63,12 @@ class MyProblem(ElementwiseProblem):
 class MySampling(Sampling):
     def _do(self, problem, num_circuit, **kwargs):
         X = np.full((num_circuit, 1), None, dtype=object)
-        X[:, 0] = sample_circuit(problem.promo_node, num_circuit, problem.max_part, problem.max_dose, problem.min_dose, problem.inhibitor)
+        X[:, 0] = sample_circuit(problem.promo_node, num_circuit, problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
         return X
 
 class MyCrossover(Crossover):
-    def __init__(self):
-        super().__init__(n_parents=2, n_offsprings=2, prob=1.0)
+    def __init__(self, **kwargs):
+        super(MyCrossover, self).__init__(n_parents=2, n_offsprings=2, **kwargs)
 
     def _do(self, problem, X, **kwargs):
         # The input of has the following shape (n_parents, n_matings, n_var)
@@ -90,29 +89,29 @@ class MyMutation(Mutation):
         for i in range(len(X)):
             r = np.random.uniform(0, 1)
             if r < 0.3:
-                mutate_node_num(X[i, 0], problem.max_part)
+                mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
             elif r < 0.6:
-                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose)
+                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
                 # mutate_edge(X[i, 0])
             elif r < 0.9:
-                mutate_dose(X[i, 0], problem.min_dose, problem.max_dose)
+                mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
         return X
 
 class MyDuplicateElimination(ElementwiseDuplicateElimination):
     def is_equal(self, x1, x2):
         return compare_circuit(x1.X[0], x2.X[0])
 
-algorithm = NSGA2(pop_size=100,
+algorithm = NSGA2(pop_size=50,
                   sampling=MySampling(),
-                  crossover=MyCrossover(),
+                  crossover=MyCrossover(prob=1.0),
                   mutation=MyMutation(),
                   eliminate_duplicates=MyDuplicateElimination())
 
 # problem = MyProblem(promo_node='P1', max_part=3, max_dose=75, min_dose=10, inhibitor=True, func=sigcond)
-problem=MyProblem()
+problem=MyProblem(inhibitor=True, func=sigcond, n_var=1, n_obj=2, n_ieq_constr=0)
 res = minimize(problem,
                algorithm,
-               ('n_gen', 10),
+               ('n_gen', 5),
                seed=1,
                save_history=True)
 

@@ -34,13 +34,19 @@ def get_edges(promo_node, part_list):
 
     return list(edge_list)
 
-def sample_circuit(promo_node, num_circuit, max_part=2, max_dose=200, min_dose=20, inhibitor=False):
+def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
+    if num_part == 1:
+        return np.random.choice(np.arange(min_dose, max_dose, dose_interval), size=num_part)[0]
+    else:
+        return np.random.choice(np.arange(min_dose, max_dose, dose_interval), size=num_part, replace=True)
+
+def sample_circuit(promo_node, num_circuit, max_part=2, min_dose=20, max_dose=200, dose_interval=5, inhibitor=False):
     circuits = []
     if not inhibitor:
         for i in range(num_circuit):
             num_part = np.random.randint(1, max_part+1)
             part_list = np.random.choice(tf_list, num_part, replace=False)
-            dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=num_part)))
+            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
             edge_list = get_edges(promo_node, part_list)
             circuits.append(Topo(edge_list, dose_list, promo_node))
     else:
@@ -48,7 +54,7 @@ def sample_circuit(promo_node, num_circuit, max_part=2, max_dose=200, min_dose=2
             num_tf = np.random.randint(1, max_part)
             num_in = np.random.randint(1, max_part-num_tf+1)
             part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(in_list, num_in))
-            dose_list = dict(zip(part_list, np.random.randint(min_dose, max_dose, size=(num_tf+num_in))))
+            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf+num_in)))
             edge_list = get_edges(promo_node, part_list)
             circuits.append(Topo(edge_list, dose_list, promo_node))
 
@@ -96,6 +102,7 @@ def validate(g):
 
 def compare_circuit(g1, g2):
         ind =  (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
+
         return ind
 
 def crossover_naive(g1, g2):
@@ -110,21 +117,14 @@ def crossover_naive(g1, g2):
 
     child1 = Topo(child1_edge, child1_dose, g1.promo_node)
     child2 = Topo(child2_edge, child2_dose, g2.promo_node)
-    # validate(child1)
-    # child1.update(child1.edge_list)
-    # validate(child2)
-    # child2.update(child2.edge_list)
-    # child1.check_valid()
-    # child2.check_valid()
-    # if child1.valid == 0 | child2.valid == 0:
-    #     print("error")
+
     return child1, child2
 
-def mutate_dose(g, min_dose=10, max_dose=75):
+def mutate_dose(g, min_dose=10, max_dose=75, dose_interval=5):
     n = np.random.choice(g.part_list)
-    g.dose.update({n: np.random.randint(min_dose, max_dose)})
+    g.dose.update({n: get_dose(min_dose, max_dose, dose_interval, 1)})
 
-def mutate_node_type(g, min_dose=10, max_dose=75):
+def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
     old_node = np.random.choice(g.part_list)
     if old_node[0] == 'Z':
         node_avail = list(set(tf_list).difference(set(g.part_list)))
@@ -132,12 +132,12 @@ def mutate_node_type(g, min_dose=10, max_dose=75):
         node_avail = list(set(in_list).difference(set(g.part_list)))
     new_node = np.random.choice(node_avail)
     g.dose.pop(old_node)
-    g.dose.update({new_node: np.random.randint(min_dose, max_dose)})
+    g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)})
     new_edges = switch_node(g, old_node, new_node)
     g.graph.remove_node(old_node)
     g.update(new_edges)
 
-def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
+def mutate_node_num(g, max_part, min_dose=10, max_dose=75, dose_interval=5, inhibitor=False):
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
     if len(g.part_list) < max_part:
         # print(0)
@@ -146,7 +146,7 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
         else:
             node_avail = [k for k in parts.keys() if k not in g.part_list]
         new_node = np.random.choice(node_avail)
-        g.dose.update({new_node: np.random.randint(min_dose, max_dose)})
+        g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)})
         new_edges = set([k for k in g.edge_list])
         new_edges.update(get_in_path(new_node, g.promo_node, circuit_tf_list))
         new_edges.update(get_out_path(new_node, g.part_list))
@@ -154,12 +154,6 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, inhibitor=False):
 
     else:
         circuit_in_list = [k for k in g.part_list if k[0] == 'I']
-        # if len(circuit_tf_list) > 1 & len(circuit_in_list) <= 1:
-        #     old_node = np.random.choice(circuit_tf_list)
-        # elif len(circuit_tf_list) == 1 & len(circuit_in_list) > 1:
-        #     old_node = np.random.choice(circuit_in_list)
-        # elif len(circuit_tf_list) > 1 & len(circuit_in_list) > 1:
-        #     old_node = np.random.choice(g.part_list)
 
         if len(circuit_tf_list) > 1 | len(circuit_in_list) > 1:
             if len(circuit_in_list) <= 1:
