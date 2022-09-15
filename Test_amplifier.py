@@ -12,7 +12,10 @@ algorithm = NSGA2(pop_size=test_case.num_circuit,
                   eliminate_duplicates=MyDuplicateElimination())
                   #   eliminate_duplicates=None)
 
-problem=MyProblem(func=test_case.objective, n_var=1, n_obj=test_case.n_obj, n_ieq_constr=test_case.n_ieq_constr)
+problem = MyProblem(promo_node=test_case.promo_node, max_part=test_case.max_part,
+                    min_dose=test_case.min_dose, max_dose=test_case.max_dose, dose_interval=test_case.dose_interval,
+                    inhibitor=test_case.inhibitor, func=test_case.objective,
+                    n_var=1, n_obj=test_case.n_obj, n_ieq_constr=test_case.n_ieq_constr)
 res = minimize(problem,
                algorithm,
                ('n_gen', test_case.n_gen),

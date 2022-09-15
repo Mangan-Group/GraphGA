@@ -38,15 +38,15 @@ class signal_conditioner:
     def __init__(self):
         
         self.promo_node = 'P1'
-        self.max_part = 4
+        self.max_part = 3
         self.min_dose = 10
         self.max_dose = 75
         self.dose_interval = 5
         self.inhibitor = True
         self.n_obj = 2
-        self.n_ieq_constr = 0
-        self.num_circuit = 30
-        self.n_gen = 15
+        self.n_ieq_constr = 1
+        self.num_circuit = 50
+        self.n_gen = 5
         
     def objective(self, topology):
         
@@ -56,6 +56,10 @@ class signal_conditioner:
         
         objectives = np.array([-ON_rel, OFF_rel])
                 
-        return objectives   
+        return objectives
 
+    def constr(self, topology):
+        # rep_off, rep_on = topology.simulate()
+        # ON_rel = rep_on / Ref[topology.promo_node]['on']
+        return topology.graph.size()-7
 
