@@ -41,10 +41,12 @@ class signal_conditioner:
         self.max_part = 4
         self.min_dose = 10
         self.max_dose = 75
+        self.dose_interval = 5
         self.inhibitor = True
         self.n_obj = 2
-        self.num_circuit = 50
-        self.n_gen = 5
+        self.n_ieq_constr = 0
+        self.num_circuit = 30
+        self.n_gen = 15
         
     def objective(self, topology):
         
