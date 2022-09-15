@@ -13,21 +13,23 @@ class amplifier:
     def __init__(self):
         
         self.promo_node = 'P1'
-        self.max_part = 4
+        self.max_part = 3
         self.min_dose = 10
         self.max_dose = 75
+        self.dose_interval = 5
         self.inhibitor = False
         self.n_obj = 2
-        self.num_circuit = 50
-        self.n_gen = 5
+        self.n_ieq_constr = 0
+        self.num_circuit = 20
+        self.n_gen = 15
         
     def objective(self, topology):
         
         rep_off, rep_on = topology.simulate()
         ON_rel = rep_on / Ref[topology.promo_node]['on']
-        FI_amp = rep_on / rep_off
-        
-        objectives = -np.array([ON_rel, FI_amp])
+        # FI_amp = rep_on / rep_off
+        objectives = np.array([-ON_rel, topology.num_states-1]) # second one is the number of regulators
+        # objectives = np.array([-ON_rel, topology.graph.number_of_edges()]) # we can also use number of regulations
                 
         return objectives
     

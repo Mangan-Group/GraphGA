@@ -21,11 +21,16 @@ class Topo():
 
         self.in_dict = dict() # Classify nodes
         for n in (self.part_list + ['Rep']):
-            in_edge = self.graph.in_edges(n)
+            # in_edge = self.graph.in_edges(n)
+            # self.in_dict.update({n:
+            #                             {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
+            #                             'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
+            #                             'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
+            pre = list(self.graph.predecessors(n))
             self.in_dict.update({n:
-                                        {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
-                                        'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
-                                        'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
+                                     {'P': [i for i in pre if i[0] == 'P'],
+                                      'Z': [i for i in pre if i[0] == 'Z'],
+                                      'I': [i for i in pre if i[0] == 'I']}})
 
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
@@ -51,11 +56,11 @@ class Topo():
 
         self.in_dict = dict()  # Classify nodes
         for n in (self.part_list + ['Rep']):
-            in_edge = self.graph.in_edges(n)
+            pre = list(self.graph.predecessors(n))
             self.in_dict.update({n:
-                                     {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
-                                      'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
-                                      'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
+                                     {'P': [i for i in pre if i[0] == 'P'],
+                                      'Z': [i for i in pre if i[0] == 'Z'],
+                                      'I': [i for i in pre if i[0] == 'I']}})
 
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))

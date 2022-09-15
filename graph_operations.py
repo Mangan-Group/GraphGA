@@ -35,10 +35,7 @@ def get_edges(promo_node, part_list):
     return list(edge_list)
 
 def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
-    if num_part == 1:
-        return np.random.choice(np.arange(min_dose, max_dose, dose_interval), size=num_part)[0]
-    else:
-        return np.random.choice(np.arange(min_dose, max_dose, dose_interval), size=num_part, replace=True)
+    return np.random.choice(np.arange(min_dose, max_dose+1, dose_interval), size=num_part, replace=True)
 
 def sample_circuit(promo_node, num_circuit, max_part=2, min_dose=20, max_dose=200, dose_interval=5, inhibitor=False):
     circuits = []
@@ -101,7 +98,7 @@ def validate(g):
     return list(new_edges)
 
 def compare_circuit(g1, g2):
-        ind =  (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
+        ind = (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
 
         return ind
 
@@ -122,7 +119,7 @@ def crossover_naive(g1, g2):
 
 def mutate_dose(g, min_dose=10, max_dose=75, dose_interval=5):
     n = np.random.choice(g.part_list)
-    g.dose.update({n: get_dose(min_dose, max_dose, dose_interval, 1)})
+    g.dose.update({n: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
 
 def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
     old_node = np.random.choice(g.part_list)
@@ -132,7 +129,7 @@ def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
         node_avail = list(set(in_list).difference(set(g.part_list)))
     new_node = np.random.choice(node_avail)
     g.dose.pop(old_node)
-    g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)})
+    g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
     new_edges = switch_node(g, old_node, new_node)
     g.graph.remove_node(old_node)
     g.update(new_edges)
@@ -146,7 +143,7 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, dose_interval=5, inhi
         else:
             node_avail = [k for k in parts.keys() if k not in g.part_list]
         new_node = np.random.choice(node_avail)
-        g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)})
+        g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
         new_edges = set([k for k in g.edge_list])
         new_edges.update(get_in_path(new_node, g.promo_node, circuit_tf_list))
         new_edges.update(get_out_path(new_node, g.part_list))
