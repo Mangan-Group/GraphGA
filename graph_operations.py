@@ -74,7 +74,7 @@ def validate(g):
             new_edges.update(get_out_path(n, g.part_list))
         else:
             # if g.graph.in_degree(n) <= len([k for k in g.graph.in_edges(n) if k[0][0] == 'I']):
-            if (len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'P']) == 0):
+            if len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'P']) == 0:
                 if (len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'Z']) == 0) | ([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'Z'] == [n]):
                     new_edges.update(get_in_path(n, g.promo_node, []))
 
@@ -144,16 +144,16 @@ def match_node(new_node, part_list, promo_node, circuit_tf_list, circuit_in_list
         elif n[0] == 'Z':
             node_avail = set(circuit_tf_list).difference(set(new_node))
             if len(node_avail) > 0:
-                n = np.random.choice(list(node_avail))
-                new_node.append(n)
+                n_new = np.random.choice(list(node_avail))
+                new_node.append(n_new)
             else:
-                n = promo_node
-                new_node.append(n)
+                n_new = promo_node
+                new_node.append(n_new)
         elif n[0] == 'I':
             node_avail = set(circuit_in_list).difference(set(new_node))
             if len(node_avail) > 0:
-                n = np.random.choice(list(node_avail))
-                new_node.append(n)
+                n_new = np.random.choice(list(node_avail))
+                new_node.append(n_new)
 
     # return
 
@@ -192,13 +192,8 @@ def switch_edge(g1, pt1, pt2, in_list2, out_list2, dose2):
 def crossover_structure(g1, g2):
     pt1, pt2 = get_crosspt(g1.part_list, g2.part_list)
 
-    in_list2 = [k[0] for k in g2.graph.in_edges(pt2)]
-    out_list2 = [k[0] for k in g2.graph.out_edges(pt2)]
-    child1 = switch_edge(g1, pt1, pt2, in_list2, out_list2, g2.dose[pt2])
-
-    in_list1 = [k[0] for k in g1.graph.in_edges(pt1)]
-    out_list1 = [k[0] for k in g1.graph.out_edges(pt1)]
-    child2 = switch_edge(g2, pt2, pt1, in_list1, out_list1, g1.dose[pt1])
+    child1 = switch_edge(g1, pt1, pt2, list(g2.graph.predecessors(pt2)), list(g2.graph.successors(pt2)), g2.dose[pt2])
+    child2 = switch_edge(g2, pt2, pt1, list(g1.graph.predecessors(pt1)), list(g1.graph.successors(pt1)), g1.dose[pt1])
 
     child1.check_valid()
     child2.check_valid()
