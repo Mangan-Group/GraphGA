@@ -50,8 +50,8 @@ class Topo():
 
     def update(self, edge_list):
         self.edge_list = edge_list
-        self.graph = nx.DiGraph()
-        self.graph.add_edges_from(self.edge_list)
+        self.graph = nx.DiGraph(self.edge_list)
+        # self.graph.add_edges_from(self.edge_list)
         self.part_list = [k for k in self.dose.keys() if k != 'Rep']
 
         self.in_dict = dict()  # Classify nodes

@@ -23,7 +23,7 @@ class MyCrossover(Crossover):
         for k in range(n_matings):
             # get the first and the second parent
             parent1, parent2 = X[0, k, 0], X[1, k, 0]
-            Y[0, k, 0], Y[1, k, 0] = crossover_naive(parent1, parent2)
+            Y[0, k, 0], Y[1, k, 0] = crossover_structure(parent1, parent2)
         # Y = copy.deepcopy(X)
         return Y
 
