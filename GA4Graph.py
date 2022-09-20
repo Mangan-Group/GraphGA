@@ -14,7 +14,7 @@ class MySampling(Sampling):
 
 class MyCrossover(Crossover):
     def __init__(self, **kwargs):
-        super(MyCrossover, self).__init__(n_parents=2, n_offsprings=2, **kwargs)
+        super().__init__(n_parents=2, n_offsprings=2, **kwargs)
 
     def _do(self, problem, X, **kwargs):
         # The input of has the following shape (n_parents, n_matings, n_var)

@@ -7,5 +7,5 @@ with open("parts.pkl", "rb") as fid:
 with open("Ref.pkl", "rb") as fid:
     Ref = pickle.load(fid)
 
-tf_list = [k for k in parts.keys() if k[0]=='Z']
-in_list = [k for k in parts.keys() if k[0]=='I']
+tf_list = [k for k in parts.keys() if k[0] == 'Z']
+inhibitor_list = [k for k in parts.keys() if k[0] == 'I']

@@ -58,7 +58,7 @@ def sample_circuit(promo_node, num_circuit, max_part=2, min_dose=20, max_dose=20
         for i in range(num_circuit):
             num_tf = np.random.randint(1, max_part)
             num_in = np.random.randint(1, max_part-num_tf+1)
-            part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(in_list, num_in))
+            part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf+num_in)))
             edge_list = get_edges(promo_node, part_list)
             circuits.append(Topo(edge_list, dose_list, promo_node))
@@ -73,15 +73,15 @@ def validate(g):
             new_edges.update(get_in_path(n, g.promo_node, circuit_tf_list))
             new_edges.update(get_out_path(n, g.part_list))
         else:
-            # if g.graph.in_degree(n) <= len([k for k in g.graph.in_edges(n) if k[0][0] == 'I']):
-            if len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'P']) == 0:
-                if (len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'Z']) == 0) | ([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'Z'] == [n]):
+            if g.promo_node not in g.graph.predecessors(n):
+                node_tf_list = [k for k in g.graph.predecessors(n) if k[0] == 'Z']
+                if (len(node_tf_list) == 0) | (node_tf_list == [n]):
                     new_edges.update(get_in_path(n, g.promo_node, []))
 
             if len(list(nx.all_simple_paths(g.graph, n, 'Rep'))) == 0:
                 new_edges.update(get_out_path(n, g.part_list))
 
-    if ('Rep' not in g.graph.nodes) | (g.graph.in_degree('Rep') <= len([k for k in g.graph.in_edges('Rep') if k[0][0] == 'I'])):
+    if ('Rep' not in g.graph.nodes) | (g.graph.in_degree('Rep') <= len([k for k in g.graph.predecessors('Rep') if k[0] == 'I'])):
         new_edges.update(get_in_path('Rep', None, circuit_tf_list))
 
     return list(new_edges)
@@ -146,9 +146,9 @@ def match_node(new_node, part_list, promo_node, circuit_tf_list, circuit_in_list
             if len(node_avail) > 0:
                 n_new = np.random.choice(list(node_avail))
                 new_node.append(n_new)
-            else:
-                n_new = promo_node
-                new_node.append(n_new)
+            # else:
+            #     n_new = promo_node
+            #     new_node.append(n_new)
         elif n[0] == 'I':
             node_avail = set(circuit_in_list).difference(set(new_node))
             if len(node_avail) > 0:
@@ -207,7 +207,6 @@ def crossover_structure(g1, g2):
 
     return child1, child2
 
-
 def mutate_dose(g, min_dose=10, max_dose=75, dose_interval=5):
     n = np.random.choice(g.part_list)
     g.dose.update({n: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
@@ -217,7 +216,7 @@ def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
     if old_node[0] == 'Z':
         node_avail = list(set(tf_list).difference(set(g.part_list)))
     else:
-        node_avail = list(set(in_list).difference(set(g.part_list)))
+        node_avail = list(set(inhibitor_list).difference(set(g.part_list)))
     new_node = np.random.choice(node_avail)
     g.dose.pop(old_node)
     g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
