@@ -21,11 +21,6 @@ class Topo():
 
         self.in_dict = dict() # Classify nodes
         for n in (self.part_list + ['Rep']):
-            # in_edge = self.graph.in_edges(n)
-            # self.in_dict.update({n:
-            #                             {'P': [i[0] for i in in_edge if i[0][0] == 'P'],
-            #                             'Z': [i[0] for i in in_edge if i[0][0] == 'Z'],
-            #                             'I': [i[0] for i in in_edge if i[0][0] == 'I']}})
             pre = list(self.graph.predecessors(n))
             self.in_dict.update({n:
                                      {'P': [i for i in pre if i[0] == 'P'],
@@ -39,10 +34,6 @@ class Topo():
     def check_valid(self):
         self.valid = 1
         for n in self.part_list:
-            # if (len(self.in_dict[n]['I']) > 0) & (len(self.in_dict[n]['Z']) == 0):
-            #     self.valid = 0
-            # elif (n != 'Rep') & ((len(self.graph.in_edges(n)) == 0) | (len(self.graph.out_edges(n)) == 0)):
-            #     self.valid = 0
             if self.graph.in_degree(n) <= len(self.in_dict[n]['I']):
                 self.valid = 0
             if len(list(nx.all_simple_paths(self.graph, n, 'Rep'))) == 0:

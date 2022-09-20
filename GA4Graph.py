@@ -39,7 +39,6 @@ class MyMutation(Mutation):
                 mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
             elif r < self.prob*2:
                 mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-                # mutate_edge(X[i, 0])
             elif r < self.prob*3:
                 mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
         return X

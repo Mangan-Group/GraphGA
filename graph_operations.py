@@ -14,11 +14,18 @@ def get_out_path(n, part_list):
     return edges
 
 def get_in_path(n, promo_node, circuit_tf_list):
-    in_node = np.random.choice(circuit_tf_list + [promo_node])
+    if promo_node is not None:
+        in_node = np.random.choice(circuit_tf_list + [promo_node])
+    else:
+        in_node = np.random.choice(circuit_tf_list)
     edges = [(in_node, n)]
     if in_node == n:
         new_tf_list = [k for k in circuit_tf_list if k != n]
-        in_node = np.random.choice(new_tf_list + [promo_node])
+        # in_node = np.random.choice(new_tf_list + [promo_node])
+        if promo_node is not None:
+            in_node = np.random.choice(new_tf_list + [promo_node])
+        else:
+            in_node = np.random.choice(circuit_tf_list)
     edges.append((in_node, n))
 
     return edges
@@ -62,12 +69,20 @@ def validate(g):
     new_edges = set([k for k in g.graph.edges])
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
     for n in g.part_list:
-        # if g.graph.in_degree(n) <= len(g.in_dict[n]['I']):
-        if g.graph.in_degree(n) <= len([k for k in g.graph.in_edges(n) if k[0][0] == 'I']):
+        if n not in g.graph.nodes:
             new_edges.update(get_in_path(n, g.promo_node, circuit_tf_list))
-
-        if len(list(nx.all_simple_paths(g.graph, n, 'Rep'))) == 0:
             new_edges.update(get_out_path(n, g.part_list))
+        else:
+            # if g.graph.in_degree(n) <= len([k for k in g.graph.in_edges(n) if k[0][0] == 'I']):
+            if (len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'P']) == 0):
+                if (len([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'Z']) == 0) | ([k[0] for k in g.graph.in_edges(n) if k[0][0] == 'Z'] == [n]):
+                    new_edges.update(get_in_path(n, g.promo_node, []))
+
+            if len(list(nx.all_simple_paths(g.graph, n, 'Rep'))) == 0:
+                new_edges.update(get_out_path(n, g.part_list))
+
+    if ('Rep' not in g.graph.nodes) | (g.graph.in_degree('Rep') <= len([k for k in g.graph.in_edges('Rep') if k[0][0] == 'I'])):
+        new_edges.update(get_in_path('Rep', None, circuit_tf_list))
 
     return list(new_edges)
 

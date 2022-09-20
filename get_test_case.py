@@ -45,9 +45,9 @@ class signal_conditioner:
         self.dose_interval = 5
         self.inhibitor = True
         self.n_obj = 2
-        self.n_ieq_constr = 1
-        self.num_circuit = 50
-        self.n_gen = 5
+        self.n_ieq_constr = 2
+        self.num_circuit = 100
+        self.n_gen = 10
         
     def objective(self, topology):
         
@@ -62,5 +62,5 @@ class signal_conditioner:
     def constr(self, topology):
         # rep_off, rep_on = topology.simulate()
         # ON_rel = rep_on / Ref[topology.promo_node]['on']
-        return topology.graph.size()-7
+        return [topology.graph.in_degree('Rep') - 2, topology.graph.size() - 7]
 
