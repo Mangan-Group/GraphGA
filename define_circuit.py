@@ -20,12 +20,16 @@ class Topo():
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
 
         self.in_dict = dict() # Classify nodes
+        self.pool = dict()
         for n in (self.part_list + ['Rep']):
             pre = list(self.graph.predecessors(n))
             self.in_dict.update({n:
                                      {'P': [i for i in pre if i[0] == 'P'],
                                       'Z': [i for i in pre if i[0] == 'Z'],
                                       'I': [i for i in pre if i[0] == 'I']}})
+            self.pool.update({n: (self.in_dict[n]['P'] != []) + (self.in_dict[n]['Z'] != [])})
+        if 0 in list(self.pool.values()):
+            raise Exception("Something's wrong. No activator in the circuit.")
 
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
@@ -46,12 +50,16 @@ class Topo():
         self.part_list = [k for k in self.dose.keys() if k != 'Rep']
 
         self.in_dict = dict()  # Classify nodes
+        self.pool = dict()
         for n in (self.part_list + ['Rep']):
             pre = list(self.graph.predecessors(n))
             self.in_dict.update({n:
                                      {'P': [i for i in pre if i[0] == 'P'],
                                       'Z': [i for i in pre if i[0] == 'Z'],
                                       'I': [i for i in pre if i[0] == 'I']}})
+            self.pool.update({n: (self.in_dict[n]['P'] != []) + (self.in_dict[n]['Z'] != [])})
+        if 0 in list(self.pool.values()):
+            raise Exception("Something's wrong. No activator in the circuit.")
 
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
@@ -60,21 +68,28 @@ class Topo():
         system = []
         for n in self.in_dict.keys():
             eq = -2.7 * x[2 * self.var_dict[n]]
-            b = 0
+            # b = 0
+            b = []
             num = 0
             denom = 1
             for k in self.in_dict[n]['P']:
-                eq += self.dose[n] * promo[k][state]
+                eq += float(self.dose[n])/self.pool[n] * promo[k][state]
             for k in self.in_dict[n]['Z']:
                 # print(k)
-                b += parts[k][0]
+                # b += parts[k][0]
+                b.append(parts[k][0])
                 num += parts[k][1] * parts[k][2] * x[2 * self.var_dict[k] + 1]
                 denom += parts[k][2] * x[2 * self.var_dict[k] + 1]
             for k in self.in_dict[n]['I']:
+                if ('Z' + k[1:]) not in self.in_dict[n]['Z']:
+                    b.append(parts['Z' + k[1:]][0])
                 denom += parts[k][0] * x[2 * self.var_dict[k] + 1]
-            if len(self.in_dict[n]['Z']) > 0:
-                b /= len(self.in_dict[n]['Z'])
-            eq += self.dose[n] * (b + num) / denom
+            if len(b) == 0:
+                b = 0
+            else:
+                b = np.mean(b)
+                # b /= len(self.in_dict[n]['Z'])
+            eq += float(self.dose[n])/self.pool[n] * (b + num) / denom
             system.extend([eq, -self.protein_deg[n[0]] * x[2 * self.var_dict[n] + 1] + x[2 * self.var_dict[n]]])
         return system
 

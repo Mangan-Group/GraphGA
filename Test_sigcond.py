@@ -8,7 +8,7 @@ test_case = signal_conditioner()
 algorithm = NSGA2(pop_size=test_case.num_circuit,
                   sampling=MySampling(),
                   crossover=MyCrossover(prob=1.0),
-                  mutation=MyMutation(probs=0.9),
+                  mutation=MyMutation(prob=0.9),
                   eliminate_duplicates=MyDuplicateElimination())
                   #   eliminate_duplicates=None)
 

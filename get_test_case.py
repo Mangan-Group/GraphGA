@@ -13,15 +13,15 @@ class amplifier:
     def __init__(self):
         
         self.promo_node = 'P1'
-        self.max_part = 3
-        self.min_dose = 10
+        self.max_part = 1
+        self.min_dose = 75
         self.max_dose = 75
         self.dose_interval = 5
         self.inhibitor = False
         self.n_obj = 1
         self.n_ieq_constr = 0
-        self.num_circuit = 20
-        self.n_gen = 15
+        self.num_circuit = 12
+        self.n_gen = 30
         
     def objective(self, topology):
         
@@ -53,9 +53,9 @@ class signal_conditioner:
         
         rep_off, rep_on = topology.simulate()
         ON_rel = rep_on / Ref[topology.promo_node]['on']
-        OFF_rel = rep_off / Ref[topology.promo_node]['off']
-        
-        objectives = np.array([-ON_rel, OFF_rel])
+        # OFF_rel = rep_off / Ref[topology.promo_node]['off']
+        FI_rel = (rep_on/rep_off)/(Ref[topology.promo_node]['on']/Ref[topology.promo_node]['off'])
+        objectives = np.array([-ON_rel, -FI_rel])
                 
         return objectives
 

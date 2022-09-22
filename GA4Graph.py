@@ -48,7 +48,7 @@ class MyDuplicateElimination(ElementwiseDuplicateElimination):
         return compare_circuit(x1.X[0], x2.X[0])
 
 class MyProblem(ElementwiseProblem):
-    def __init__(self, promo_node='P1', max_part=3, min_dose=10, max_dose=75, dose_interval=5, inhibitor=False, func=None, constr=None, **kwargs):
+    def __init__(self, promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor=False, func=None, constr=None, **kwargs):
         super().__init__(**kwargs)
         self.promo_node = promo_node
         self.max_part = max_part
