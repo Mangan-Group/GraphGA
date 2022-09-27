@@ -14,7 +14,7 @@ Ref = dict()
 for k in promo.keys():
     off = odeint(reference, np.zeros(2), np.arange(0, 48 + 1), args=(promo[k]['off'],))[-1,-1]
     on = odeint(reference, np.zeros(2), np.arange(0, 48 + 1), args=(promo[k]['on'],))[-1, -1]
-    Ref.update({k: {'off': off, 'on': on}})
+    Ref.update({k: {'off': off, 'on': on, 'fi': on/off}})
 
 with open("Ref.pkl", "wb") as fid:
     pickle.dump(Ref, fid)

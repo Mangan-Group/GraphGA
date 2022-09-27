@@ -24,7 +24,6 @@ class MyCrossover(Crossover):
             # get the first and the second parent
             parent1, parent2 = X[0, k, 0], X[1, k, 0]
             Y[0, k, 0], Y[1, k, 0] = crossover_structure(parent1, parent2)
-        # Y = copy.deepcopy(X)
         return Y
 
 class MyMutation(Mutation):
@@ -35,35 +34,38 @@ class MyMutation(Mutation):
     def _do(self, problem, X, **kwargs):
         for i in range(len(X)):
             r = np.random.uniform(0, 1)
-            if r < self.prob:
+            if r < 0.9:
                 mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
-            elif r < self.prob*2:
-                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-            elif r < self.prob*3:
-                mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+            # elif r < self.prob*2:
+            #     mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+            # elif r < self.prob*3:
+            #     mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
         return X
 
 class MyDuplicateElimination(ElementwiseDuplicateElimination):
     def is_equal(self, x1, x2):
         return compare_circuit(x1.X[0], x2.X[0])
 
-class MyProblem(ElementwiseProblem):
-    def __init__(self, promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor=False, func=None, constr=None, **kwargs):
-        super().__init__(**kwargs)
-        self.promo_node = promo_node
-        self.max_part = max_part
-        self.min_dose = min_dose
-        self.max_dose = max_dose
-        self.dose_interval = dose_interval
-        self.inhibitor = inhibitor
-        self.func = func
-        self.constr = constr
-        self.X = []
-        self.F = []
 
-    def _evaluate(self, x, out, *args, **kwargs):
-        out["F"] = self.func(x[0])
-        self.X.append(x)
-        self.F.append(out["F"])
-        if self.n_ieq_constr > 0:
-            out["G"] = self.constr(x[0])
+
+
+# class MyProblem(ElementwiseProblem):
+#     def __init__(self, promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor=False, func=None, constr=None, **kwargs):
+#         super().__init__(**kwargs)
+#         self.promo_node = promo_node
+#         self.max_part = max_part
+#         self.min_dose = min_dose
+#         self.max_dose = max_dose
+#         self.dose_interval = dose_interval
+#         self.inhibitor = inhibitor
+#         self.func = func
+#         self.constr = constr
+#         self.X = []
+#         self.F = []
+#
+#     def _evaluate(self, x, out, *args, **kwargs):
+#         out["F"] = self.func(x[0])
+#         self.X.append(x)
+#         self.F.append(out["F"])
+#         if self.n_ieq_constr > 0:
+#             out["G"] = self.constr(x[0])

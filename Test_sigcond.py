@@ -1,25 +1,51 @@
 from GA4Graph import *
+from scipy.integrate import odeint
+from load_files import *
+from get_system_equations import system_equations
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
-from get_test_case import signal_conditioner
 
-test_case = signal_conditioner()
+def simulate(topology, max_time=48):
+    t = np.arange(0, max_time + 1, 1)
+    rep_off = odeint(system_equations, np.zeros(topology.num_states * 2), t, args=('off', topology,))[-1, -1]
+    rep_on = odeint(system_equations, np.zeros(topology.num_states * 2), t, args=('on', topology,))[-1, -1]
+    return rep_off, rep_on
 
-algorithm = NSGA2(pop_size=test_case.num_circuit,
+class SignalConditioner(ElementwiseProblem):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.promo_node = 'P1'
+        self.max_part = 3
+        self.min_dose = 10
+        self.max_dose = int(150/self.max_part)
+        self.dose_interval = 5
+        self.inhibitor = True
+        self.num_circuit = 150
+        self.n_gen = 1
+        self.X = []
+        self.F = []
+
+    def _evaluate(self, x, out, *args, **kwargs):
+        rep_off, rep_on = simulate(x[0])
+
+        ON_rel = rep_on / Ref[x[0].promo_node]['on']
+        FI_rel = (rep_on/rep_off)/(Ref[x[0].promo_node]['fi'])
+        out['F'] = [- ON_rel, - FI_rel]
+        self.X.append(x[0])
+        self.F.append(out["F"])
+
+problem = SignalConditioner(n_var=1, n_obj=2, n_ieq_constr=0)
+
+algorithm = NSGA2(pop_size=problem.num_circuit,
                   sampling=MySampling(),
                   crossover=MyCrossover(prob=1.0),
                   mutation=MyMutation(prob=0.9),
                   eliminate_duplicates=MyDuplicateElimination())
                   #   eliminate_duplicates=None)
 
-problem = MyProblem(promo_node=test_case.promo_node, max_part=test_case.max_part,
-                    min_dose=test_case.min_dose, max_dose=test_case.max_dose, dose_interval=test_case.dose_interval,
-                    inhibitor=test_case.inhibitor, func=test_case.objective, constr=test_case.constr,
-                    n_var=1, n_obj=test_case.n_obj, n_ieq_constr=test_case.n_ieq_constr)
-
 res = minimize(problem,
                algorithm,
-               ('n_gen', test_case.n_gen),
+               ('n_gen', problem.n_gen),
                seed=1,
                save_history=True)
 

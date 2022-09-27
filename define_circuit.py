@@ -1,6 +1,6 @@
 import numpy as np
 import networkx as nx
-from scipy.integrate import odeint
+# from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from load_files import *
 
@@ -64,40 +64,40 @@ class Topo():
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
 
-    def system_equations(self, x, t, state):
-        system = []
-        for n in self.in_dict.keys():
-            eq = -2.7 * x[2 * self.var_dict[n]]
-            # b = 0
-            b = []
-            num = 0
-            denom = 1
-            for k in self.in_dict[n]['P']:
-                eq += float(self.dose[n])/self.pool[n] * promo[k][state]
-            for k in self.in_dict[n]['Z']:
-                # print(k)
-                # b += parts[k][0]
-                b.append(parts[k][0])
-                num += parts[k][1] * parts[k][2] * x[2 * self.var_dict[k] + 1]
-                denom += parts[k][2] * x[2 * self.var_dict[k] + 1]
-            for k in self.in_dict[n]['I']:
-                if ('Z' + k[1:]) not in self.in_dict[n]['Z']:
-                    b.append(parts['Z' + k[1:]][0])
-                denom += parts[k][0] * x[2 * self.var_dict[k] + 1]
-            if len(b) == 0:
-                b = 0
-            else:
-                b = np.mean(b)
-                # b /= len(self.in_dict[n]['Z'])
-            eq += float(self.dose[n])/self.pool[n] * (b + num) / denom
-            system.extend([eq, -self.protein_deg[n[0]] * x[2 * self.var_dict[n] + 1] + x[2 * self.var_dict[n]]])
-        return system
-
-    def simulate(self, max_time=48):
-        t = np.arange(0, max_time+1, 1)
-        rep_off = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('off',))[-1,-1]
-        rep_on = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('on',))[-1,-1]
-        return rep_off, rep_on
+    # def system_equations(self, x, t, state):
+    #     system = []
+    #     for n in self.in_dict.keys():
+    #         eq = -2.7 * x[2 * self.var_dict[n]]
+    #         # b = 0
+    #         b = []
+    #         num = 0
+    #         denom = 1
+    #         for k in self.in_dict[n]['P']:
+    #             eq += float(self.dose[n])/self.pool[n] * promo[k][state]
+    #         for k in self.in_dict[n]['Z']:
+    #             # print(k)
+    #             # b += parts[k][0]
+    #             b.append(parts[k][0])
+    #             num += parts[k][1] * parts[k][2] * x[2 * self.var_dict[k] + 1]
+    #             denom += parts[k][2] * x[2 * self.var_dict[k] + 1]
+    #         for k in self.in_dict[n]['I']:
+    #             if ('Z' + k[1:]) not in self.in_dict[n]['Z']:
+    #                 b.append(parts['Z' + k[1:]][0])
+    #             denom += parts[k][0] * x[2 * self.var_dict[k] + 1]
+    #         if len(b) == 0:
+    #             b = 0
+    #         else:
+    #             b = np.mean(b)
+    #             # b /= len(self.in_dict[n]['Z'])
+    #         eq += float(self.dose[n])/self.pool[n] * (b + num) / denom
+    #         system.extend([eq, -self.protein_deg[n[0]] * x[2 * self.var_dict[n] + 1] + x[2 * self.var_dict[n]]])
+    #     return system
+    #
+    # def simulate(self, max_time=48):
+    #     t = np.arange(0, max_time+1, 1)
+    #     rep_off = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('off',))[-1,-1]
+    #     rep_on = odeint(self.system_equations, np.zeros(self.num_states*2), t, args=('on',))[-1,-1]
+    #     return rep_off, rep_on
 
     def plot_graph(self):
         plt.figure()
