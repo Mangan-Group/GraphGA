@@ -15,7 +15,7 @@ class SignalConditioner(ElementwiseProblem):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.promo_node = 'P1'
-        self.max_part = 3
+        self.max_part = 2
         self.min_dose = 10
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
@@ -39,7 +39,7 @@ problem = SignalConditioner(n_var=1, n_obj=2, n_ieq_constr=0)
 algorithm = NSGA2(pop_size=problem.num_circuit,
                   sampling=MySampling(),
                   crossover=MyCrossover(prob=1.0),
-                  mutation=MyMutation(prob=0.9),
+                  mutation=MyMutation_full(prob=0.9),
                   eliminate_duplicates=MyDuplicateElimination())
                   #   eliminate_duplicates=None)
 

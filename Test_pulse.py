@@ -21,8 +21,8 @@ class Pulse(ElementwiseProblem):
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
         self.inhibitor = True
-        self.num_circuit = 150
-        self.n_gen = 2
+        self.num_circuit = 700
+        self.n_gen = 5
         self.X = []
         self.F = []
 
@@ -31,14 +31,14 @@ class Pulse(ElementwiseProblem):
         out["F"] = -np.max(rep_on) / Ref[x[0].promo_node]['on']
         self.X.append(x[0])
         self.F.append(out["F"])
-        out["G"] = 1 - len(find_peaks(rep_on, prominence=50.)[0])
+        out["G"] = 1 - len(find_peaks(rep_on, prominence=5.)[0])
 
 problem = Pulse(n_var=1, n_obj=1, n_ieq_constr=1)
 
 algorithm = GA(pop_size=problem.num_circuit,
                   sampling=MySampling(),
                   crossover=MyCrossover(prob=1.0),
-                  mutation=MyMutation(prob=0.9),
+                  mutation=MyMutation_full(prob=0.9),
                   eliminate_duplicates=MyDuplicateElimination())
                   #   eliminate_duplicates=None)
 

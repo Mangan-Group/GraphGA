@@ -26,20 +26,34 @@ class MyCrossover(Crossover):
             Y[0, k, 0], Y[1, k, 0] = crossover_structure(parent1, parent2)
         return Y
 
-class MyMutation(Mutation):
+class MyMutation_full(Mutation):
     def __init__(self, prob=0.9):
         super().__init__()
-        self.prob = float(prob)/3
+        self.prob = float(prob)
 
     def _do(self, problem, X, **kwargs):
         for i in range(len(X)):
             r = np.random.uniform(0, 1)
-            if r < 0.9:
+            if r < self.prob/3:
                 mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
-            # elif r < self.prob*2:
-            #     mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-            # elif r < self.prob*3:
-            #     mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+            elif r < self.prob * 2./3:
+                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+            elif r < self.prob:
+                mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+        return X
+
+class MyMutation(Mutation):
+    def __init__(self, prob=0.9):
+        super().__init__()
+        self.prob = float(prob)
+
+    def _do(self, problem, X, **kwargs):
+        for i in range(len(X)):
+            r = np.random.uniform(0, 1)
+            if r < self.prob/2:
+                mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
+            elif r < self.prob:
+                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
         return X
 
 class MyDuplicateElimination(ElementwiseDuplicateElimination):

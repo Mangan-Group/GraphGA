@@ -221,8 +221,8 @@ def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
     else:
         node_avail = list(set(inhibitor_list).difference(set(g.part_list)))
     new_node = np.random.choice(node_avail)
+    g.dose.update({new_node: g.dose[old_node]})
     g.dose.pop(old_node)
-    g.dose.update({new_node: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
     new_edges = switch_node(g, old_node, new_node)
     g.graph.remove_node(old_node)
     g.update(new_edges)
