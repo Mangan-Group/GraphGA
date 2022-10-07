@@ -9,7 +9,7 @@ def system_equations(x, t, state, topology):
         num = 0
         denom = 1
         for k in topology.in_dict[n]['P']:
-            eq += float(topology.dose[n]) / topology.pool[n] * promo[k][state]
+            eq += float(topology.dose[n]) / topology.pool[n] * promo[k][state] * promo['k_txn']
         for k in topology.in_dict[n]['Z']:
             b.append(parts[k][0])
             num += parts[k][1] * parts[k][2] * x[2 * topology.var_dict[k] + 1]
@@ -22,7 +22,7 @@ def system_equations(x, t, state, topology):
             b = 0
         else:
             b = np.mean(b)
-        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom
+        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9
         system.extend([eq, -topology.protein_deg[n[0]] * x[2 * topology.var_dict[n] + 1] + x[2 * topology.var_dict[n]]])
     return system
 
@@ -56,7 +56,7 @@ def system_equations_DsRed(x, t, state, topology):
             b = 0
         else:
             b = np.mean(b)
-        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom
+        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9
         system.extend([eq, -topology.protein_deg[n[0]] * x[2 * topology.var_dict[n] + 1] + x[2 * topology.var_dict[n]]])
     return system
 
