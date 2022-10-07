@@ -34,7 +34,7 @@ def system_equations_DsRed(x, t, state, topology):
         num = 0
         denom = 1
         for k in topology.in_dict[n]['P']:
-            eq += float(topology.dose[n]) / topology.pool[n] * promo[k][state]
+            eq += float(topology.dose[n]) / topology.pool[n] * promo[k][state] * promo['k_txn']
 
         if len(topology.in_dict[n]['I']) == 0:
             for k in topology.in_dict[n]['Z']:
