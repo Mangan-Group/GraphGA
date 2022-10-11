@@ -12,8 +12,8 @@ def reference(y,t,k_end):
 
 Ref = dict()
 for k in list(promo.keys())[:2]:
-    off = odeint(reference, np.zeros(2), np.arange(0, 48 + 1), args=(promo[k]['off']*promo['k_txn'],))[-1,-1]
-    on = odeint(reference, np.zeros(2), np.arange(0, 48 + 1), args=(promo[k]['on']*promo['k_txn'],))[-1, -1]
+    off = odeint(reference, np.zeros(2), np.arange(0, 42 + 1), args=(promo[k]['off']*promo['k_txn'],))[-1,-1]
+    on = odeint(reference, np.zeros(2), np.arange(0, 42 + 1), args=(promo[k]['on']*promo['k_txn'],))[-1, -1]
     Ref.update({k: {'off': off, 'on': on, 'fi': on/off}})
 
 with open("Ref.pkl", "wb") as fid:
