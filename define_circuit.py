@@ -14,7 +14,7 @@ class Topo():
         self.promo_node = promo_node  # Get promoter nodes
 
         self.dose = dose_list
-        self.dose.update({'Rep': 9})
+        self.dose.update({'Rep': 1})
         self.part_list = [k for k in self.dose.keys() if k != 'Rep']
 
         self.protein_deg = {'Z': 0.35, 'I': 0.35, 'R': 0.029}
