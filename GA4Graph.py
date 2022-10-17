@@ -33,12 +33,12 @@ class MyMutation_full(Mutation):
 
     def _do(self, problem, X, **kwargs):
         for i in range(len(X)):
-            r = np.random.uniform(0, 1)
-            if r < self.prob/3:
+            # r = np.random.uniform(0, 1)
+            if np.random.uniform(0, 1) < self.prob:
                 mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
-            elif r < self.prob * 2./3:
+            elif np.random.uniform(0, 1) < self.prob:
                 mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-            elif r < self.prob:
+            elif np.random.uniform(0, 1) < self.prob:
                 mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
         return X
 
@@ -49,10 +49,10 @@ class MyMutation(Mutation):
 
     def _do(self, problem, X, **kwargs):
         for i in range(len(X)):
-            r = np.random.uniform(0, 1)
-            if r < self.prob/2:
+            # r = np.random.uniform(0, 1)
+            if np.random.uniform(0, 1) < self.prob:
                 mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
-            elif r < self.prob:
+            if np.random.uniform(0, 1) < self.prob:
                 mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
         return X
 

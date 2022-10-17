@@ -1,7 +1,6 @@
 import networkx as nx
-
 from define_circuit import *
-from itertools import combinations_with_replacement
+from itertools import combinations_with_replacement, combinations, chain, product
 from copy import deepcopy
 
 def get_out_path(n, part_list):
@@ -49,25 +48,60 @@ def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
 
     return np.random.choice(np.arange(min_dose, max_dose+1, dose_interval), size=num_part, replace=True)
 
+# def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_interval, inhibitor):
+#     circuits = []
+#     if not inhibitor:
+#         for i in range(num_circuit):
+#             num_part = np.random.randint(1, max_part+1)
+#             part_list = np.random.choice(tf_list, num_part, replace=False)
+#             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
+#             edge_list = get_edges(promo_node, part_list)
+#             circuits.append(Topo(edge_list, dose_list, promo_node))
+#     else:
+#         for i in range(num_circuit):
+#             num_tf = np.random.randint(1, max_part)
+#             num_in = np.random.randint(1, max_part-num_tf+1)
+#             part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
+#             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf+num_in)))
+#             edge_list = get_edges(promo_node, part_list)
+#             circuits.append(Topo(edge_list, dose_list, promo_node))
+#
+#     return circuits
 def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_interval, inhibitor):
-    circuits = []
-    if not inhibitor:
-        for i in range(num_circuit):
-            num_part = np.random.randint(1, max_part+1)
-            part_list = np.random.choice(tf_list, num_part, replace=False)
-            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
-            edge_list = get_edges(promo_node, part_list)
-            circuits.append(Topo(edge_list, dose_list, promo_node))
-    else:
-        for i in range(num_circuit):
-            num_tf = np.random.randint(1, max_part)
-            num_in = np.random.randint(1, max_part-num_tf+1)
-            part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
-            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf+num_in)))
-            edge_list = get_edges(promo_node, part_list)
-            circuits.append(Topo(edge_list, dose_list, promo_node))
+    if (max_part == 1) & (num_circuit >= 24):
+        raise Exception("Should use fewer circuits.")
+    if inhibitor & (max_part < 2):
+        raise Exception("Should use more parts.")
 
-    return circuits
+    combo = []
+
+    if not inhibitor:
+        for i in range(1, max_part + 1):
+            combo.extend(list(combinations(tf_list, i)))
+    else:
+        for num_part in range(2, max_part + 1):
+            for num_tf in range(1, num_part):
+                num_in = num_part - num_tf
+                list1 = combinations(tf_list, num_tf)
+                list2 = combinations(inhibitor_list, num_in)
+                combo_two = [(i[0] + i[1]) for i in list(product(list1, list2))]
+                combo.extend(combo_two)
+
+    sample_dict = {}
+    while len(list(chain.from_iterable(sample_dict.values()))) < num_circuit:
+        part_list = combo[np.random.choice(len(combo))]
+        if part_list not in sample_dict.keys():
+            edge_list = get_edges(promo_node, list(part_list))
+            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, len(part_list))))
+            sample_dict[part_list] = [Topo(edge_list, dose_list, promo_node)]
+        else:
+            edge_list = get_edges('P1', list(part_list))
+            ind = [(set(edge_list) != set(g.edge_list)) for g in sample_dict[part_list]]
+            if all(ind):
+                dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, len(part_list))))
+                sample_dict[part_list].append(Topo(edge_list, dose_list, promo_node))
+
+    return list(chain.from_iterable(sample_dict.values()))
 
 def validate(g):
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']

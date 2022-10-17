@@ -5,7 +5,7 @@ from get_system_equations import system_equations
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.optimize import minimize
 
-def simulate(topology, max_time=48):
+def simulate(topology, max_time=42):
     t = np.arange(0, max_time + 1, 1)
     rep_on = odeint(system_equations, np.zeros(topology.num_states * 2), t, args=('on', topology,))[-1, -1]
     return rep_on
@@ -19,8 +19,8 @@ class Amplifier(ElementwiseProblem):
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
         self.inhibitor = False
-        self.num_circuit = 10
-        self.n_gen = 20
+        self.num_circuit = 3720
+        self.n_gen = 1
         self.X = []
         self.F = []
 
@@ -34,8 +34,8 @@ problem = Amplifier(n_var=1, n_obj=1, n_ieq_constr=0)
 
 algorithm = GA(pop_size=problem.num_circuit,
                   sampling=MySampling(),
-                  crossover=MyCrossover(prob=1.0),
-                  mutation=MyMutation(prob=0.9),
+                  crossover=MyCrossover(prob=1.),
+                  mutation=MyMutation(prob=1.),
                   eliminate_duplicates=MyDuplicateElimination())
                   #   eliminate_duplicates=None)
 

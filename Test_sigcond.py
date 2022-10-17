@@ -20,7 +20,7 @@ class SignalConditioner(ElementwiseProblem):
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
         self.inhibitor = True
-        self.num_circuit = 150
+        self.num_circuit = 50
         self.n_gen = 1
         self.X = []
         self.F = []
