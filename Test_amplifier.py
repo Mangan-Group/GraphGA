@@ -19,7 +19,7 @@ class Amplifier(ElementwiseProblem):
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
         self.inhibitor = False
-        self.num_circuit = 3720
+        self.num_circuit = 300
         self.n_gen = 1
         self.X = []
         self.F = []

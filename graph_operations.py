@@ -88,20 +88,29 @@ def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_i
                 combo.extend(combo_two)
 
     sample_dict = {}
-    while len(list(chain.from_iterable(sample_dict.values()))) < num_circuit:
+    num_it = 0
+    while (len(list(chain.from_iterable(sample_dict.values()))) < num_circuit) & (num_it < 100*num_circuit):
+        num_it += 1
         part_list = combo[np.random.choice(len(combo))]
         if part_list not in sample_dict.keys():
             edge_list = get_edges(promo_node, list(part_list))
             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, len(part_list))))
             sample_dict[part_list] = [Topo(edge_list, dose_list, promo_node)]
         else:
-            edge_list = get_edges('P1', list(part_list))
-            ind = [(set(edge_list) != set(g.edge_list)) for g in sample_dict[part_list]]
-            if all(ind):
-                dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, len(part_list))))
-                sample_dict[part_list].append(Topo(edge_list, dose_list, promo_node))
+            num_it_sub = 0
+            while num_it_sub < 100:
+                num_it_sub += 1
+                edge_list = get_edges(promo_node, list(part_list))
+                ind = [(set(edge_list) != set(g.edge_list)) for g in sample_dict[part_list]]
+                if all(ind):
+                    dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, len(part_list))))
+                    sample_dict[part_list].append(Topo(edge_list, dose_list, promo_node))
+                    break
 
-    return list(chain.from_iterable(sample_dict.values()))
+    circuits = list(chain.from_iterable(sample_dict.values()))
+    if len(circuits) < num_circuit:
+        circuits.extend([0]*(num_circuit-len(circuits)))
+    return circuits
 
 def validate(g):
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
