@@ -17,7 +17,7 @@ class Pulse(ElementwiseProblem):
         super().__init__(**kwargs)
         self.promo_node = 'P1'
         self.max_part = 2
-        self.min_dose = 10
+        self.min_dose = 5
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
         self.inhibitor = True
