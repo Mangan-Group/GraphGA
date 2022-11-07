@@ -1,4 +1,5 @@
 from scipy.integrate import odeint
+from multiprocessing import Pool
 from load_files_pop import *
 from get_system_equations_pop import system_equations_pop
 from define_circuit import Topo
@@ -8,19 +9,26 @@ def simulate_cell(topology, Z_list, max_time=42):
     rep_on = odeint(system_equations_pop, np.zeros(topology.num_states * 2), t, args=('on', Z_list, topology,))[-1, -1]
     return rep_on
 
-def simulate_pop(topology, Z, max_time=42):
-    pop_rep = []
-    for i in range(0, len(Z)):
-        Z_list = Z[i, :]
-        rep_on = simulate_cell(topology, Z_list, max_time)
-        pop_rep.append(rep_on)
+def simulate_pop(topology, Z, num_processes, max_time=42):
+    nc = len(Z)
+    zipped_args = list(zip([topology]*nc, Z, [max_time]*nc))
+    pop_rep_on = []
+    with Pool(num_processes) as pool:
+        pop_rep_on = pool.starmap(
+            simulate_cell,
+            zipped_args,
+        )
 
-    pop_rep_mean = np.mean(pop_rep)
+    pool.close()
+    pool.join()
 
-    return pop_rep_mean
+    rep_on_mean = np.mean(pop_rep_on)
+    return rep_on_mean
 
-topology = Topo([('P1', 'Z6'), ('Z6', 'Rep')], {'Z6': 75}, 'P1')
 
-pop_rep_mean = simulate_pop(topology, Z_200, 42)
+if __name__ == '__main__':
 
-print(pop_rep_mean)
+    topology = Topo([('P1', 'Z6'), ('P1', 'I6'), ('Z6', 'Rep'), ('I6', 'Rep')], {'Z6': 75, 'I6': 5}, 'P1')
+    rep_on_mean = simulate_pop(topology, Z_200, 42)
+
+    print(rep_on_mean)
