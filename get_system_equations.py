@@ -56,7 +56,7 @@ def system_equations_DsRed(x, t, state, topology):
             b = 0
         else:
             b = np.mean(b)
-        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9
+        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9.
         system.extend([eq, -topology.protein_deg[n[0]] * x[2 * topology.var_dict[n] + 1] + x[2 * topology.var_dict[n]]])
     return system
 
