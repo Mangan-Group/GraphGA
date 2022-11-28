@@ -51,13 +51,10 @@ def system_equations_DsRed_pop(x, t, state, Z_list, topology):
         else:
             zfa = topology.in_dict[n]['Z'][0]
             zfi = topology.in_dict[n]['I'][0]
-            b.extend([parts[zfa][0], parts[zfi][0]])
-            if zfa[1:] == zfi[1:]:
-                A = parts[zfa][1] + (1 - parts[zfa][1])/6 * (4 * parts[zfa][2] * x[2 * topology.var_dict[zfi] + 1]/(1e-10 + parts[zfa][2] * x[2 * topology.var_dict[zfa] + 1]) - 2)
-                m = np.piecewise(A, [A < 1, A >= parts[zfa][1]], [1., parts[zfa][1], A])
-                num += m * parts[zfa][2] * x[2 * topology.var_dict[zfa] + 1]
-            else:
-                num += parts[zfa][1] * parts[zfa][2] * x[2 * topology.var_dict[zfa] + 1]
+            b.extend([parts[zfa][0], parts['Z' + zfi[1:]][0]])
+            A = parts[zfa][1] + (1 - parts[zfa][1])/6 * (4 * parts[zfi][0] * x[2 * topology.var_dict[zfi] + 1]/(1e-10 + parts[zfa][2] * x[2 * topology.var_dict[zfa] + 1]) - 2)
+            m = np.piecewise(A, [A < 1, A >= parts[zfa][1]], [1., parts[zfa][1], A])
+            num += m * parts[zfa][2] * x[2 * topology.var_dict[zfa] + 1]
             denom += parts[zfa][2] * x[2 * topology.var_dict[zfa] + 1] + 4 * parts[zfi][0] * x[2 * topology.var_dict[zfi] + 1]
         if len(b) == 0:
             b = 0
