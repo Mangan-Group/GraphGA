@@ -19,7 +19,7 @@ class RankAndCrowding(Survival):
         self.nds = nds if nds is not None else NonDominatedSorting()
         self.crowding_func = crowding_func_
 
-    def do(self, F, n_survive=None):
+    def do(self, F, n_survive=None, return_rank=False):
         # the final indices of surviving individuals
         survivors = []
 
@@ -54,5 +54,7 @@ class RankAndCrowding(Survival):
             for j, i in enumerate(front):
                 rank_dict.update({i: {"rank": k, "crowding": crowding_of_front[j]}})
             survivors.extend(front[I])
-
-        return survivors
+        if return_rank:
+            return survivors, rank_dict
+        else:
+            return survivors

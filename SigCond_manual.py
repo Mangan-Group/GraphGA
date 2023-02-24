@@ -38,9 +38,44 @@ population = sampling(problem.promo_node, num_dict, problem.min_dose, problem.ma
 # with open("init_pop_%d.pkl" % seed, "wb") as fid:
 #     pickle.dump(population, fid)
 
+nds = RankAndCrowding()
 num_circuits = len(population)
-n_gen = 30
+n_gen = 10
 
-obj = np.asarray([problem.func(g[0]) for g in population])
+all_obj = []
+obj = [problem.func(g[0]) for g in population]
+all_obj.append(obj)
+obj = np.asarray(obj)
 
+# obj_min = dict()
+# circuit_min = []
+#
+# obj_min[0] = obj[ind_min]
+# circuit_min.append(population[ind_min])
+
+
+for gen in range(n_gen):
+    _, rank_dict = nds.do(obj, num_circuits, return_rank=True)
+    # if np.random.uniform() < prob:
+    children = crossover(population, obj, rank_dict)
+    # else:
+    # children = deepcopy(population)
+    mutate(problem, children, 1.)
+    obj_children = [problem.func(g[0]) for g in children]
+    all_obj.append(obj_children)
+    obj_children = np.asarray(obj_children)
+
+    obj = np.vstack((obj, obj_children))
+    population = np.vstack((population, children))
+
+    S = nds.do(obj, num_circuits)
+    obj = obj[S]
+    population = population[S, :]
+
+    # ind_min = np.argmin(obj)
+    #
+    # obj_min[gen + 1] = obj[ind_min]
+    # circuit_min.append(population[ind_min])
+fronts = NonDominatedSorting().do(obj)
+all_obj = np.asarray(all_obj).reshape(num_circuits*(1 + n_gen), 2)
 a = 1

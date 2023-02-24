@@ -38,7 +38,7 @@ problem = Problem(promo_node, max_part, min_dose, max_dose, dose_interval, inhib
 # with open("init_population.pkl", "rb") as fid:
 #    population = pickle.load(fid)
 
-population = sampling(problem.promo_node, problem.num_dict, problem.min_dose, problem.max_dose, problem.dose_interval)
+population = sampling(problem.promo_node, num_dict, problem.min_dose, problem.max_dose, problem.dose_interval)
 
 # with open("init_pop_%d.pkl" % seed, "wb") as fid:
 #     pickle.dump(population, fid)
@@ -51,7 +51,7 @@ obj = np.asarray([problem.func(g[0]) for g in population])
 obj_min = np.zeros(n_gen + 1)
 circuit_min = []
 
-ind_min = np.argmin(obj)
+# ind_min = np.argmin(obj)
 
 ind_min = np.argmin(obj)
 obj_min[0] = obj[ind_min]

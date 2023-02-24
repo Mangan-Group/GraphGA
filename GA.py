@@ -427,7 +427,7 @@ def get_full_connected(part_list, promo_node):
     return edge_list
 
 
-def mutate_edge(g):
+def mutate_edge(g, inhibitor=False):
     if len(g.part_list) == 1:
         if g.graph.size() == 3:
             g.edge_list.remove((g.part_list[0], g.part_list[0]))
@@ -437,9 +437,24 @@ def mutate_edge(g):
     else:
         edge_full = get_full_connected(g.part_list, g.promo_node)
         if g.graph.size() == len(edge_full):
-            ind = np.random.choice(g.graph.size())
-            g.edge_list.remove(edge_full[ind])
-            g.update(g.edge_list)
+            if inhibitor:
+                num_parts = len(g.part_list)
+
+                # edge_avail = [k for k in g.edge_list]
+                valid = 0
+                while (valid == 0) and (len(edge_full) > 0):
+                    g_graph = deepcopy(g.graph)
+                    ind = np.random.choice(len(edge_full))
+                    edge_removed = edge_full[ind]
+                    g_graph.remove_edge(edge_removed[0], edge_removed[1])
+                    valid = check_valid(g_graph, num_parts)
+                    edge_full.remove(edge_removed)
+                if valid == 1:
+                    g.update(list(g_graph.edges))
+            else:
+                ind = np.random.choice(g.graph.size())
+                g.edge_list.remove(edge_full[ind])
+                g.update(g.edge_list)
 
         else:
             if np.random.uniform() < 0.5:
@@ -472,28 +487,38 @@ def tournament(X, obj, pressure=3):
     return throuple[obj[throuple].argsort()][1:]
 
 
-def crossover(X, obj, strategy="tournament", **kwargs):
+def crossover(X, obj, rank_dict=None, **kwargs):
     n_matings = int(len(X) / 2)
     Y = np.full_like(X, None, dtype=object)
     for k in range(n_matings):
-        # throuple = np.random.choice(range(len(X)), 3, replace=False)
-        # parents = throuple[obj[throuple].argsort()][1:]
-        if strategy == "tournament":
-            parents = tournament(X, obj)
-        elif strategy == "random":
-            parents = np.random.choice(len(X), size=2, replace=False)
+        throuple = np.random.choice(range(len(X)), 3, replace=False)
+        if rank_dict is None:
+            parents = throuple[obj[throuple].argsort()][:-1]
+        else:
+            throuple_rank = np.asarray([rank_dict[i]['rank'] for i in throuple])
+            parents = throuple[throuple_rank.argsort()][:-1]
+        # if strategy == "tournament":
+        #     parents = tournament(X, obj)
+        # elif strategy == "random":
+        #     parents = np.random.choice(len(X), size=2, replace=False)
         Y[2 * k, 0], Y[2 * k + 1, 0] = crossover_structure(X[parents[0], 0], X[parents[1], 0])
     return Y
 
 
-def mutate(problem, X, prob, **kwargs):
+def mutate(problem, X, prob, dose=False, **kwargs):
     for i in range(len(X)):
         if np.random.uniform(0, 1) < prob:
-            r = np.random.choice(range(3))
+            if dose:
+                r = np.random.choice(4)
+            else:
+                r = np.random.choice(3)
+
             if r == 0:
                 mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval,
                                 problem.inhibitor)
             elif r == 1:
                 mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+            elif r == 2:
+                mutate_edge(X[i, 0], problem.inhibitor)
             else:
-                mutate_edge(X[i, 0])
+                mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
