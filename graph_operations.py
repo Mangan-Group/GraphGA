@@ -3,6 +3,7 @@ from define_circuit import *
 from itertools import combinations_with_replacement, combinations, chain, product
 from copy import deepcopy
 
+
 def get_out_path(n, part_list):
     out_list = [k for k in part_list if k != n]
     out_path = [n]
@@ -13,6 +14,7 @@ def get_out_path(n, part_list):
     edges = [(i, j) for i, j in zip(out_path[:-1], out_path[1:])]
 
     return edges
+
 
 def get_in_path(n, promo_node, circuit_tf_list):
     if promo_node is not None:
@@ -33,17 +35,18 @@ def get_in_path(n, promo_node, circuit_tf_list):
 
     return edges
 
+
 def get_edges(promo_node, part_list):
     circuit_tf_list = []
     same_list = []
     for k in part_list:
         if k[0] == 'Z':
             circuit_tf_list.append(k)
-            if ('I'+k[1:]) in part_list:
-                same_list.append([k, ('I'+k[1:])])
+            if ('I' + k[1:]) in part_list:
+                same_list.append([k, ('I' + k[1:])])
     edge_list = set([(promo_node, np.random.choice(circuit_tf_list)), (np.random.choice(circuit_tf_list), 'Rep')])
     for n in part_list:
-        if not any(n in sublist for sublist in same_list):    
+        if not any(n in sublist for sublist in same_list):
             in_edges = get_in_path(n, promo_node, circuit_tf_list)
             edge_list.update(in_edges)
             out_edges = get_out_path(n, part_list)
@@ -55,20 +58,21 @@ def get_edges(promo_node, part_list):
         edge_list.update(in_edges_i)
         out_edges_z = get_out_path(z, part_list)
         edge_list.update(out_edges_z)
-        all_out_edges_z = [edge for edge in (in_edges_z + in_edges_i) if edge[0]==z] + out_edges_z
+        all_out_edges_z = [edge for edge in (in_edges_z + in_edges_i) if edge[0] == z] + out_edges_z
         edge_list.update([(i, k[1]) for k in all_out_edges_z])
 
     return list(edge_list)
 
-def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
 
-    return np.random.choice(np.arange(min_dose, max_dose+1, dose_interval), size=num_part, replace=True)
+def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
+    return np.random.choice(np.arange(min_dose, max_dose + 1, dose_interval), size=num_part, replace=True)
+
 
 def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_interval, inhibitor):
     circuits = []
     if not inhibitor:
         for i in range(num_circuit):
-            num_part = np.random.randint(1, max_part+1)
+            num_part = np.random.randint(1, max_part + 1)
             part_list = np.random.choice(tf_list, num_part, replace=False)
             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
             edge_list = get_edges(promo_node, part_list)
@@ -76,13 +80,14 @@ def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_i
     else:
         for i in range(num_circuit):
             num_tf = np.random.randint(1, max_part)
-            num_in = np.random.randint(1, max_part-num_tf+1)
+            num_in = np.random.randint(1, max_part - num_tf + 1)
             part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
-            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf+num_in)))
+            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf + num_in)))
             edge_list = get_edges(promo_node, part_list)
             circuits.append(Topo(edge_list, dose_list, promo_node))
 
     return circuits
+
 
 def sampling(promo_node, num_dict, min_dose, max_dose, dose_interval, inhibitor=False):
     combo = []
@@ -112,14 +117,15 @@ def sampling(promo_node, num_dict, min_dose, max_dose, dose_interval, inhibitor=
 
     return np.asarray(circuits)
 
+
 def validate(g):
     circuit_tf_list = []
     same_list = []
     for k in g.part_list:
         if k[0] == 'Z':
             circuit_tf_list.append(k)
-            if ('I'+k[1:]) in g.part_list:
-                same_list.append([k, ('I'+k[1:])])
+            if ('I' + k[1:]) in g.part_list:
+                same_list.append([k, ('I' + k[1:])])
 
     if len(circuit_tf_list) == 0:
         raise Exception("Something's wrong. No TFs in the circuit.")
@@ -159,10 +165,12 @@ def validate(g):
     if set(g.graph.edges) != set(g.edge_list):
         g.update(list(g.graph.edges))
 
-def compare_circuit(g1, g2):
-        ind = (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
 
-        return ind
+def compare_circuit(g1, g2):
+    ind = (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
+
+    return ind
+
 
 def get_crosspt(list1, list2):
     same = set(list1).intersection(set(list2))
@@ -179,6 +187,7 @@ def get_crosspt(list1, list2):
 
     return pt1, pt2
 
+
 def switch_node(g, old_node, new_node):
     child_edge = []
     for edge in list(g.graph.edges):
@@ -191,6 +200,7 @@ def switch_node(g, old_node, new_node):
         child_edge.append(tuple(edge))
 
     return child_edge
+
 
 def crossover_node(g1, g2):
     pt1, pt2 = get_crosspt(g1.part_list, g2.part_list)
@@ -206,6 +216,7 @@ def crossover_node(g1, g2):
     child2 = Topo(child2_edge, child2_dose, g2.promo_node)
 
     return child1, child2
+
 
 def match_node(new_node, part_list, promo_node, circuit_tf_list, circuit_in_list, pt2, node_list2):
     for n in node_list2:
@@ -256,6 +267,7 @@ def switch_edge(g1, pt1, pt2, in_list2, out_list2, dose2):
 
     return child
 
+
 def crossover_structure(g1, g2):
     pt1, pt2 = get_crosspt(g1.part_list, g2.part_list)
 
@@ -274,9 +286,11 @@ def crossover_structure(g1, g2):
 
     return child1, child2
 
+
 def mutate_dose(g, min_dose=10, max_dose=75, dose_interval=5):
     n = np.random.choice(g.part_list)
     g.dose.update({n: get_dose(min_dose, max_dose, dose_interval, 1)[0]})
+
 
 def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
     old_node = np.random.choice(g.part_list)
@@ -305,6 +319,7 @@ def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
             g.graph.remove_edges_from(same_out)
             g.graph.add_edges_from(same_out_new)
         g.update(list(g.graph.edges))
+
 
 def add_node(g, circuit_tf_list, min_dose=10, max_dose=75, dose_interval=5, inhibitor=False):
     if not inhibitor:
@@ -335,12 +350,13 @@ def add_node(g, circuit_tf_list, min_dose=10, max_dose=75, dose_interval=5, inhi
             new_edges.difference_update(same_out)
             new_node_out = get_out_path(new_node, g.part_list)
             new_edges.update(new_node_out)
-            all_out_edges_new = [edge for edge in new_node_in if edge[0]==new_node] + new_node_out
+            all_out_edges_new = [edge for edge in new_node_in if edge[0] == new_node] + new_node_out
             new_edges.update([(same, k[1]) for k in all_out_edges_new])
         else:
             new_edges.update(get_out_path(new_node, g.part_list))
-            
+
     g.update(list(new_edges))
+
 
 def remove_node(g, circuit_tf_list):
     circuit_in_list = [k for k in g.part_list if k[0] == 'I']
@@ -359,6 +375,7 @@ def remove_node(g, circuit_tf_list):
 
         validate(g)
 
+
 def mutate_node_num(g, max_part, min_dose=10, max_dose=75, dose_interval=5, inhibitor=False):
     circuit_tf_list = [k for k in g.part_list if k[0] == 'Z']
     if max_part > 1:
@@ -372,11 +389,13 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, dose_interval=5, inhi
         else:
             remove_node(g, circuit_tf_list)
 
+
 def get_full_connected(part_list, promo_node):
     edge_list = [(promo_node, k) for k in part_list]
     edge_list.extend([(k, 'Rep') for k in part_list])
     edge_list.extend(list(combinations_with_replacement(part_list, 2)))
     return edge_list
+
 
 def mutate_edge(g):
     edge_full = get_full_connected(g.part_list, g.promo_node)
@@ -387,7 +406,6 @@ def mutate_edge(g):
         g.update(g.edge_list)
     else:
         pass
-
 
 # topology = Topo([('P1', 'Z6'), ('Z6', 'Z6'), ('Z6', 'I6'), ('Z6', 'Rep'), ('I6', 'Rep')], {'Z6': 50, 'I6': 5}, 'P1')
 # topology = Topo([('P1', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep')], {'Z6': 50}, 'P1')
