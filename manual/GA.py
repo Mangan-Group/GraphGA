@@ -7,6 +7,7 @@ from scipy.integrate import odeint
 from load_files import *
 from get_system_equations import system_equations
 
+import matplotlib.pyplot as plt
 from itertools import combinations_with_replacement, combinations, permutations, chain, product
 
 

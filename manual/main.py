@@ -1,13 +1,10 @@
 from GA import *
 import sys
-import matplotlib.pyplot as plt
 
-# seed = int(sys.argv[1])
-# np.random.seed(seed)
-np.random.seed(20)
+seed = int(sys.argv[1])
+np.random.seed(seed)
 
-
-class Problem:
+class Problem():
     def __init__(self, promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor):
         self.promo_node = promo_node
         self.max_part = max_part
@@ -16,9 +13,8 @@ class Problem:
         self.dose_interval = dose_interval
         self.inhibitor = inhibitor
 
-
 promo_node = 'P1'
-num_dict = {1: 10, 2: 30}
+num_dict = {1: 10, 2: 1000}
 min_dose = 75
 max_dose = 75
 dose_interval = 5
@@ -27,20 +23,21 @@ inhibitor = False
 
 problem = Problem(promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor)
 
-# with open("init_population.pkl", "rb") as fid:
+#with open("init_population.pkl", "rb") as fid:
 #    population = pickle.load(fid)
 
 population = sampling(promo_node, num_dict, min_dose, max_dose, dose_interval)
 
-# with open("init_pop_%d.pkl" % seed, "wb") as fid:
-#     pickle.dump(population, fid)
+with open("init_pop_%d.pkl" % seed, "wb") as fid:
+    pickle.dump(population, fid)
 
 num_circuits = len(population)
-n_gen = 30
+n_gen = 40
 
-obj = np.asarray([-simulate(g[0]) / Ref[g[0].promo_node]['on'] for g in population])
 
-obj_min = np.zeros(n_gen + 1)
+obj = np.asarray([-simulate(g[0])/Ref[g[0].promo_node]['on'] for g in population])
+
+obj_min = np.zeros(n_gen+1)
 circuit_min = []
 
 ind_min = np.argmin(obj)
@@ -52,7 +49,7 @@ circuit_min.append(population[ind_min])
 for gen in range(n_gen):
     # if np.random.uniform() < prob:
     children = crossover(None, population, obj)
-    # else:
+# else:
     # children = deepcopy(population)
     mutate(problem, children, 1.)
     obj_children = np.asarray([-simulate(g[0]) / Ref[g[0].promo_node]['on'] for g in children])
@@ -67,10 +64,8 @@ for gen in range(n_gen):
     obj_min[gen + 1] = obj[ind_min]
     circuit_min.append(population[ind_min])
 
-generations = np.arange(n_gen + 1)
+generations = np.arange(n_gen+1)
 
-#
-# with open("min_topo_%d.pkl" % seed, "wb") as fid:
-#     pickle.dump(circuit_min, fid)
 
-a = 1
+with open("min_topo_%d.pkl" % seed, "wb") as fid:
+    pickle.dump(circuit_min, fid)
