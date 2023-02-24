@@ -1,7 +1,20 @@
 import networkx as nx
 from define_circuit import *
-from itertools import combinations_with_replacement, combinations, chain, product
-from copy import deepcopy
+from copy import deepcopy, copy
+
+
+from scipy.integrate import odeint
+from load_files import *
+from get_system_equations import system_equations
+
+import matplotlib.pyplot as plt
+from itertools import combinations_with_replacement, combinations, permutations, chain, product
+
+
+def simulate(topology, max_time=42):
+    t = np.arange(0, max_time + 1, 1)
+    rep_on = odeint(system_equations, np.zeros(topology.num_states * 2), t, args=('on', topology,))[-1, -1]
+    return rep_on
 
 def get_out_path(n, part_list):
     out_list = [k for k in part_list if k != n]
@@ -159,6 +172,39 @@ def validate(g):
     if set(g.graph.edges) != set(g.edge_list):
         g.update(list(g.graph.edges))
 
+def check_valid(g, num_parts):
+    graph_parts = [i[0] for i in g.nodes]
+    if ('P' not in graph_parts) or ('R' not in graph_parts) or ('Z' not in graph_parts):
+        return 0
+    elif (len(graph_parts) - 2) < num_parts:
+        return 0
+
+    for n in g.nodes:
+        if n[0] == 'P':
+            out_types = set([i[0] for i in list(g.successors(n))])
+            if 'Z' not in out_types:
+                return 0
+        elif n[0] == 'R':
+            in_types = set([i[0] for i in list(g.predecessors(n))])
+            if (not in_types) or (('I' in in_types) and ('Z' not in in_types)):
+                return 0
+        else:
+            if (n[0] == 'Z') and ('I' + n[1:] in g.nodes):
+                if list(g.successors(n)) != list(g.successors('I' + n[1:])):
+                    return 0
+            in_nodes = list(g.predecessors(n))
+            if not in_nodes:
+                return 0
+            elif in_nodes == [n]:
+                return 0
+            else:
+                in_types = set([i[0] for i in in_nodes])
+                if ('I' in in_types) and ('Z' not in in_types):
+                    return 0
+            if len(list(nx.all_simple_paths(g, n, 'Rep'))) == 0:
+                return 0
+    return 1
+
 def compare_circuit(g1, g2):
         ind = (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
 
@@ -262,15 +308,6 @@ def crossover_structure(g1, g2):
     child1 = switch_edge(g1, pt1, pt2, list(g2.graph.predecessors(pt2)), list(g2.graph.successors(pt2)), g2.dose[pt2])
     child2 = switch_edge(g2, pt2, pt1, list(g1.graph.predecessors(pt1)), list(g1.graph.successors(pt1)), g1.dose[pt1])
 
-    # child1.check_valid()
-    # child2.check_valid()
-    # if child1.valid == 0 | child2.valid == 0:
-    #     print(pt1)
-    #     print(pt2)
-    #     print(g1.edge_list)
-    #     print(g2.edge_list)
-    #     print(child1.edge_list)
-    #     print(child2.edge_list)
 
     return child1, child2
 
@@ -375,21 +412,66 @@ def mutate_node_num(g, max_part, min_dose=10, max_dose=75, dose_interval=5, inhi
 def get_full_connected(part_list, promo_node):
     edge_list = [(promo_node, k) for k in part_list]
     edge_list.extend([(k, 'Rep') for k in part_list])
-    edge_list.extend(list(combinations_with_replacement(part_list, 2)))
+    edge_list.extend([(k, k) for k in part_list])
+    edge_list.extend(list(permutations(part_list, 2)))
     return edge_list
 
+
 def mutate_edge(g):
-    edge_full = get_full_connected(g.part_list, g.promo_node)
-    if g.graph.size() < len(edge_full):
-        edge_avail = [k for k in edge_full if k not in g.graph.edges]
-        ind = np.random.choice(len(edge_avail))
-        g.edge_list.append(edge_avail[ind])
+    if len(g.part_list) == 1:
+        if g.graph.size() == 3:
+            g.edge_list.remove((g.part_list[0], g.part_list[0]))
+        else:
+            g.edge_list.append((g.part_list[0], g.part_list[0]))
         g.update(g.edge_list)
     else:
-        pass
+        edge_full = get_full_connected(g.part_list, g.promo_node)        
+        if g.graph.size() == len(edge_full):
+            ind = np.random.choice(g.graph.size())
+            g.edge_list.remove(edge_full[ind])
+            g.update(g.edge_list)
+            
+        else:
+            if np.random.uniform() < 0.5:
+                edge_avail = [k for k in edge_full if k not in g.graph.edges]
+                ind = np.random.choice(len(edge_avail))
+                g.edge_list.append(edge_avail[ind])
+                g.update(g.edge_list)
+            else:
+                num_parts = len(g.part_list)
+                
+                edge_avail = [k for k in g.edge_list]
+                valid = 0
+                while (valid == 0) and (len(edge_avail) > 0):  
+                    g_graph = deepcopy(g.graph)
+                    ind = np.random.choice(len(edge_avail))
+                    edge_removed = edge_avail[ind]
+                    g_graph.remove_edge(edge_removed[0], edge_removed[1])
+                    valid = check_valid(g_graph, num_parts)
+                    edge_avail.remove(edge_removed)
+                if valid == 1:
+                    g.update(list(g_graph.edges))
+                
+def is_equal(x1, x2):
+    return compare_circuit(x1[0], x2[0])
 
 
-# topology = Topo([('P1', 'Z6'), ('Z6', 'Z6'), ('Z6', 'I6'), ('Z6', 'Rep'), ('I6', 'Rep')], {'Z6': 50, 'I6': 5}, 'P1')
-# topology = Topo([('P1', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep')], {'Z6': 50}, 'P1')
-# add_node(topology, ['Z6'], inhibitor=True)
-# print(topology.edge_list)
+def crossover(problem, X, obj, **kwargs):
+    n_matings = int(len(X)/2)
+    Y = np.full_like(X, None, dtype=object)
+    for k in range(n_matings):
+        throuple = np.random.choice(range(len(X)), 3, replace=False)
+        parents = throuple[obj[throuple].argsort()][1:]
+        Y[2*k, 0], Y[2*k+1, 0]  = crossover_structure(X[parents[0], 0], X[parents[1], 0])
+    return Y
+
+def mutate(problem, X, prob, **kwargs):
+    for i in range(len(X)):
+        if np.random.uniform(0, 1) < prob:
+            r = np.random.choice(range(3))
+            if r == 0:
+                mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval, problem.inhibitor)
+            elif r == 1:
+                mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
+            else:
+                mutate_edge(X[i, 0])

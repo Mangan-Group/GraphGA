@@ -19,8 +19,8 @@ class Amplifier(ElementwiseProblem):
         self.max_dose = int(150/self.max_part)
         self.dose_interval = 5
         self.inhibitor = False
-        self.num_circuit = 300
-        self.n_gen = 1
+        self.num_circuit = 30
+        self.n_gen = 10
         self.X = []
         self.F = []
 
@@ -36,7 +36,7 @@ algorithm = GA(pop_size=problem.num_circuit,
                   sampling=MySampling(),
                   crossover=MyCrossover(prob=1.),
                   mutation=MyMutation(prob=1.),
-                  eliminate_duplicates=MyDuplicateElimination())
+                  eliminate_duplicates=None)
                   #   eliminate_duplicates=None)
 
 res = minimize(problem,
