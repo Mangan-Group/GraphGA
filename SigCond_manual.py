@@ -47,12 +47,6 @@ obj = [problem.func(g[0]) for g in population]
 all_obj.append(obj)
 obj = np.asarray(obj)
 
-# obj_min = dict()
-# circuit_min = []
-#
-# obj_min[0] = obj[ind_min]
-# circuit_min.append(population[ind_min])
-
 
 for gen in range(n_gen):
     _, rank_dict = nds.do(obj, num_circuits, return_rank=True)
