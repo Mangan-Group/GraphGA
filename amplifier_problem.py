@@ -41,43 +41,43 @@ class Amplifier:
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
             self.Z = Z_20
             # set simulate function for population using multiprocessing
-            self.simulate = simulate_pop
+            self.simulate = self.simulate_pop
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
             self.Z = None
             # set simulate function for single cell
-            self.simulate = simulate_cell
+            self.simulate = self.simulate_cell
 
-@staticmethod
-def simulate_cell(
-    topology: object,
-    max_time: int =42,
-    Z_row: np.ndarray = np.ones(5)
-):
+    @staticmethod
+    def simulate_cell(
+        topology: object,
+        max_time: int =42,
+        Z_row: np.ndarray = np.ones(5)
+    ):
 
-    t = np.arange(0, max_time + 1, 1)
-    rep_on = odeint(system_equations_pop, np.zeros(topology.num_states * 2), t, args=('on', Z_row, topology,))[-1, -1]
-    return rep_on
+        t = np.arange(0, max_time + 1, 1)
+        rep_on = odeint(system_equations_pop, np.zeros(topology.num_states * 2), t, args=('on', Z_row, topology,))[-1, -1]
+        return rep_on
 
-def simulate_pop(
-    self, 
-    topology: object, 
-    max_time: int =42
-):
+    def simulate_pop(
+        self, 
+        topology: object, 
+        max_time: int =42
+    ):
 
-    nc = len(self.Z)
-    zipped_args = list(zip([topology]*nc, self.Z, [max_time]*nc))
-    with Pool(self.num_processes) as pool:
-        pop_rep_on = pool.starmap(
-            simulate_cell,
-            zipped_args,
-        )
-    rep_on_mean = np.mean(pop_rep_on)
-    return rep_on_mean
+        nc = len(self.Z)
+        zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
+        with Pool(self.num_processes) as pool:
+            pop_rep_on = pool.starmap(
+                self.simulate_cell,
+                zipped_args,
+            )
+        rep_on_mean = np.mean(pop_rep_on)
+        return rep_on_mean
 
-def func(
-    self,
-    topology: object
-):
-    return -self.simulate(topology) / self.ref[topology.promo_node]['on']
+    def func(
+        self,
+        topology: object
+    ):
+        return -self.simulate(topology) / self.ref[topology.promo_node]['on']

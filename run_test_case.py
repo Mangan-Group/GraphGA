@@ -1,10 +1,13 @@
 import numpy as np
 from amplifier_problem import Amplifier
+# from define_circuit import Topo
 from GA import (
     sampling,
     crossover,
     mutate 
 )
+
+# 10 1 part, 20 2 part
 
 def set_testcase(
     case: object,
@@ -38,21 +41,6 @@ def set_testcase(
 
     return testcase
 
-testcase = set_testcase(
-    Amplifier,
-    ['P1',
-    1,
-    150,
-    150,
-    5,
-    False,
-    {1: 3, 2: 0},
-    3,
-    False,
-    None,
-    False
-])
-
 def run(testcase: object):
     population = sampling(
         testcase.promo_node,
@@ -74,10 +62,11 @@ def run(testcase: object):
     for gen in range(n_gen):
         # if np.random.uniform() < prob:
         children = crossover(population, obj)
-        # else:
-        # children = deepcopy(population)
+        # print(children)
+        # print(np.shape(children))
+
         mutate(testcase, children, 1.)
-        obj_children = np.asarray([-testcase.simulate(g[0]) / testcase.ref[g[0].promo_node]['on'] for g in children])
+        obj_children = np.asarray([testcase.func(g[0]) for g in children])
         obj = np.append(obj, obj_children)
         population = np.vstack((population, children))
         S = np.lexsort([obj])
@@ -91,4 +80,23 @@ def run(testcase: object):
 
     generations = np.arange(n_gen + 1)
 
-    # return
+    return obj_min, circuit_min , generations
+
+testcase_amp = set_testcase(
+    Amplifier,
+    ['P1',
+    1,
+    150,
+    150,
+    5,
+    False,
+    {1: 10, 2: 30},
+    30,
+    False,
+    None,
+    False
+])
+
+obj_min, topology_min, gens = run(testcase_amp)
+
+print(obj_min[-1], topology_min[-1][0].edge_list)
