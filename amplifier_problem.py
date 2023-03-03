@@ -20,7 +20,8 @@ class Amplifier:
             num_dict: dict, 
             n_gen: int,
             pop: bool=False,
-            num_processes: int=None
+            num_processes: int=None, 
+            combinatorial: bool=False,
             ) -> None:
         
         self.promo_node = promo_node
@@ -31,7 +32,8 @@ class Amplifier:
         self.inhibitor = inhibitor
         self.num_dict = num_dict
         self.n_gen = n_gen
-        self.num_processes = num_processes 
+        self.num_processes = num_processes
+        self.combinatorial = combinatorial
 
         if pop:
             # set ref = simulation for 20-cell population
