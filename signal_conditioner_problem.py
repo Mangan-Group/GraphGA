@@ -11,7 +11,7 @@ from load_files_pop import (
     Ref_pop20,
 )
 
-class Amplifier:
+class SignalConditioner:
     def __init__(
             self,
             promo_node: str,
@@ -64,13 +64,19 @@ class Amplifier:
     ):
 
         t = np.arange(0, max_time + 1, 1)
+        rep_off = odeint(
+            system_equations_pop,
+            np.zeros(topology.num_states * 2), 
+            t,
+            args=('off', Z_row, topology,)
+        )[-1, -1]
         rep_on = odeint(
             system_equations_pop,
             np.zeros(topology.num_states * 2),
-            t,
+            t, 
             args=('on', Z_row, topology,)
         )[-1, -1]
-        return rep_on
+        return rep_off, rep_on
 
     def simulate_pop(
         self, 
@@ -81,12 +87,14 @@ class Amplifier:
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
         with Pool(self.num_processes) as pool:
-            pop_rep_on = pool.starmap(
+            results = pool.starmap(
                 self.simulate_cell,
                 zipped_args,
             )
+        pop_rep_off, pop_rep_on = zip(*results)
+        rep_off_mean = np.mean(pop_rep_off)
         rep_on_mean = np.mean(pop_rep_on)
-        return rep_on_mean
+        return rep_off_mean, rep_on_mean
 
     def calc_ON_rel(self, topology, rep_on):
         reference_on = self.ref[topology.promo_node]['on']
@@ -98,9 +106,11 @@ class Amplifier:
         FI = on/off
         return FI
 
-    @staticmethod
-    def calc_FI_rel(ref_FI, FI):
-        FI_rel = FI/ref_FI
+    def calc_FI_rel(self, topology, FI):
+        reference_off = self.ref[topology.promo_node]['off']
+        reference_on = self.ref[topology.promo_node]['on']
+        FI_ref = self.calc_FI(reference_off, reference_on)
+        FI_rel = FI/FI_ref
         return FI_rel
 
     def func(
@@ -108,7 +118,9 @@ class Amplifier:
         topology: object
     ):
         
-        rep_on = self.simulate(topology)
+        rep_off, rep_on = self.simulate(topology)
         ON_rel = self.calc_ON_rel(topology, rep_on)
+        FI_sc = self.calc_FI(rep_off, rep_on)
+        FI_rel = self.calc_FI_rel(topology, FI_sc)
 
-        return -ON_rel
+        return [-ON_rel, -FI_rel]

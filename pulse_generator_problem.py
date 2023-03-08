@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
+from scipy.signal import find_peaks, peak_prominences
 from multiprocessing import Pool
 from get_system_equations_pop import (
     system_equations_pop,
@@ -11,7 +12,7 @@ from load_files_pop import (
     Ref_pop20,
 )
 
-class Amplifier:
+class PulseGenerator:
     def __init__(
             self,
             promo_node: str,
@@ -64,13 +65,13 @@ class Amplifier:
     ):
 
         t = np.arange(0, max_time + 1, 1)
-        rep_on = odeint(
+        rep_on_ts = odeint(
             system_equations_pop,
             np.zeros(topology.num_states * 2),
-            t,
+            t, 
             args=('on', Z_row, topology,)
-        )[-1, -1]
-        return rep_on
+        )[:, -1]
+        return rep_on_ts
 
     def simulate_pop(
         self, 
@@ -81,34 +82,55 @@ class Amplifier:
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
         with Pool(self.num_processes) as pool:
-            pop_rep_on = pool.starmap(
+            results = pool.starmap(
                 self.simulate_cell,
                 zipped_args,
             )
-        rep_on_mean = np.mean(pop_rep_on)
-        return rep_on_mean
 
-    def calc_ON_rel(self, topology, rep_on):
+        rep_on_ts_mean = [np.mean(k) for k in zip(*results)]
+        rep_on_ts_all = results
+        return rep_on_ts_mean #, rep_on_ts_all
+
+    def calc_rep_rel(self, topology, rep_on_ts):
         reference_on = self.ref[topology.promo_node]['on']
-        ON_rel = rep_on/reference_on
-        return ON_rel
+        rep_on_ts_rel = [i/reference_on for i in rep_on_ts]
+
+        return rep_on_ts_rel
 
     @staticmethod
-    def calc_FI(off, on):
-        FI = on/off
-        return FI
+    def calc_peak_rel(rep_on_ts_rel):
+        return max(rep_on_ts_rel)
 
     @staticmethod
-    def calc_FI_rel(ref_FI, FI):
-        FI_rel = FI/ref_FI
-        return FI_rel
+    def calc_prominence_rel(rep_on_ts_rel, peak_rel):
+        peaks_rep, _ = find_peaks(rep_on_ts_rel, prominence=0.1*peak_rel)
+        prominence_rep_list = peak_prominences(rep_on_ts_rel, peaks_rep)[0]
+        if len(prominence_rep_list) == 0:
+            prominence_rel = 0
+        else:
+            prominence_rel = prominence_rep_list[0]
+        return prominence_rel
+
+    # def calc_num_pulses(self, topology, rep_on_ts_all):
+    #     count = 0
+    #     pulse_cell_ts = []
+
+    #     for cell_ts in rep_on_ts_all:
+    #         rep_on_ts_rel = self.calc_rep_rel(topology, cell_ts)
+    #         peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+    #         prominence_cell = self.calc_prominence(rep_on_ts_rel, peak_rel)
+
+    #         if prominence_cell != 0:
+    #             pulse_cell_ts.append(rep_on_ts_rel)
+    #             count += 1
+    #     return count, pulse_cell_ts
 
     def func(
         self,
         topology: object
     ):
-        
-        rep_on = self.simulate(topology)
-        ON_rel = self.calc_ON_rel(topology, rep_on)
-
-        return -ON_rel
+        rep_on_ts = self.simulate(topology)
+        rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+        return [-peak_rel, -prominence_rel]
