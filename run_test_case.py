@@ -1,20 +1,21 @@
 import numpy as np
 from amplifier_problem import Amplifier
-# from define_circuit import Topo
+from signal_conditioner_problem import SignalConditioner
+from pulse_generator_problem import PulseGenerator
 from GA import (
     sampling,
     crossover,
     mutate 
 )
 
-# 10 1 part, 20 2 part
+#amp: 10 1 part, 20 2 part
 
 def set_testcase(
     case: object,
     settings: tuple,
 ):
     [promo_node, 
-    max_part, #no need for this anymore?
+    # max_part, #no need for this anymore?
     min_dose, #pack into [min, max, interval]
     max_dose, 
     dose_interval, 
@@ -22,12 +23,11 @@ def set_testcase(
     num_dict, # defines max part
     n_gen, 
     pop,
-    num_processes, 
-    combinatorial] = settings
+    num_processes] = settings
 
     testcase = case(
         promo_node,
-        max_part,
+        # max_part,
         min_dose, 
         max_dose, 
         dose_interval, 
@@ -36,7 +36,6 @@ def set_testcase(
         n_gen, 
         pop,
         num_processes, 
-        combinatorial
     )
 
     return testcase
@@ -51,9 +50,23 @@ def run(testcase: object):
     )
 
     num_circuits = len(population)
+
+    # raise an exception if num_circuits is odd
+    if num_circuits % 2 != 0:
+        raise Exception("Population size must be an even number")
+
+    # set # generations according to testcase attribute
     n_gen = testcase.n_gen
+
+    # calculate objective for each circuit in initial population
     obj = np.asarray([testcase.func(g[0]) for g in population])
+
+    # create array to store min obj function value for initial
+    # population and all generations
     obj_min = np.zeros(n_gen + 1)
+
+    # create list to store circuits with min obj function for 
+    # initial population and all generations
     circuit_min = []
     ind_min = np.argmin(obj)
     obj_min[0] = obj[ind_min]
@@ -82,10 +95,18 @@ def run(testcase: object):
 
     return obj_min, circuit_min , generations
 
+def run_combinitorial(
+        testcase: object,
+        topo_path: str
+):
+    # topologies = 
+    
+    return
+
 testcase_amp = set_testcase(
     Amplifier,
     ['P1',
-    1,
+    # 1,
     150,
     150,
     5,
@@ -94,7 +115,6 @@ testcase_amp = set_testcase(
     30,
     False,
     None,
-    False
 ])
 
 obj_min, topology_min, gens = run(testcase_amp)
