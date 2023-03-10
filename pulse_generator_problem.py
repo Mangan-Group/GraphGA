@@ -16,10 +16,8 @@ class PulseGenerator:
     def __init__(
             self,
             promo_node: str,
-            # max_part: int, 
-            min_dose: int, 
-            max_dose: int, 
-            dose_interval: int, 
+            dose_specs: list,
+            max_part: int,
             inhibitor: bool,
             DsRed_inhibitor: bool,
             num_dict: dict, 
@@ -29,10 +27,10 @@ class PulseGenerator:
             ) -> None:
         
         self.promo_node = promo_node
-        # self.max_part = max_part
-        self.min_dose = min_dose
-        self.max_dose = max_dose
-        self.dose_interval = dose_interval
+        self.min_dose = dose_specs[0]
+        self.max_dose = dose_specs[1]
+        self.dose_interval = dose_specs[2]
+        self.max_part = max_part
         self.inhibitor = inhibitor
         self.num_dict = num_dict
         self.n_gen = n_gen

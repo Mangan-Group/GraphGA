@@ -1,190 +1,189 @@
+import timeit
 import numpy as np
 import pickle
-from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
+import networkx
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
-from rankcrowding import RankAndCrowding
-from diversity_metrics import (
-    geno_diversity,
-    pheno_diversity
-)
-from GA import (
-    sampling,
-    crossover,
-    mutate 
+from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
+from GA import sampling
+from GA_setup import (
+    single_obj_GA,
+    multi_obj_GA
 )
 # from define_circuit import Topo
 
 # To-Do:
-# add metrics for single obj opt
-# separate file with function for single_obj_GA and multi_obj_GA
-# save files: add results path attribute to testcases
-
-
-#amp: 10 1 part, 20 2 part
-
-def set_testcase(
-    case: object,
-    settings: tuple,
-):
-    [promo_node, 
-    # max_part, #no need for this anymore?
-    min_dose, #pack into [min, max, interval]
-    max_dose, 
-    dose_interval, 
-    inhibitor,
-    DsRed_inhibitor,
-    num_dict, # defines max part
-    n_gen, 
-    pop,
-    num_processes] = settings
-
-    testcase = case(
-        promo_node,
-        # max_part,
-        min_dose, 
-        max_dose, 
-        dose_interval, 
-        inhibitor,
-        DsRed_inhibitor,
-        num_dict, 
-        n_gen, 
-        pop,
-        num_processes, 
-    )
-
-    return testcase
+# save files: add results path key:val to settings dict
 
 def run(
         testcase: object,
+        settings: dict,
         metrics: bool =False
     ):
     '''Run the genetic algorithm for a given test case class instance'''
 
+    problem = testcase(
+        settings["promo_node"],
+        settings["dose_specs"],
+        settings["max_part"],
+        settings["inhibitor"],
+        settings["DsRed_inhibitor"],
+        settings["num_dict"],
+        settings["n_gen"],
+        settings["pop"],
+        settings["num_processes"],
+    )
+    
     population = sampling(
-        testcase.promo_node,
-        testcase.num_dict,
-        testcase.min_dose,
-        testcase.max_dose,
-        testcase.dose_interval,
-        testcase.inhibitor
+        problem.promo_node,
+        problem.num_dict,
+        problem.min_dose,
+        problem.max_dose,
+        problem.dose_interval,
+        problem.inhibitor
     )
     num_circuits = len(population)
     # raise an exception if num_circuits is odd
     if num_circuits % 2 != 0:
         raise Exception("Population size must be an even number")
+    
     # set # generations according to testcase attribute; store as array
-    n_gen = testcase.n_gen
+    n_gen = problem.n_gen
     generations = np.arange(n_gen + 1)
 
     # calculate objective for each circuit in initial population
-    obj = np.asarray([testcase.func(g[0]) for g in population])
+    obj = np.asarray([problem.func(g[0]) for g in population])
     
     if isinstance (obj[0], np.ndarray):
         print('objective is an array- using multi-objective optimization')
-        all_obj = []
-        all_obj.append(obj)
-        nds = RankAndCrowding()
-        for gen in range(n_gen):
-            _, rank_dict = nds.do(obj, num_circuits, return_rank=True)
-            children = crossover(population, obj, rank_dict)
-            mutate(testcase, children, 1.)
-            obj_children = np.asarray([testcase.func(g[0]) for g in children])
-            all_obj.append(obj_children)
+        fronts, all_obj = multi_obj_GA(
+            problem,
+            n_gen,
+            population,
+            num_circuits,
+            obj
+        )
+        results = {
+            "settings": settings,
+            "fronts": fronts,
+            "all_obj": all_obj
+        }
 
-            obj = np.vstack((obj, obj_children))
-            population = np.vstack((population, children))
-
-            S = nds.do(obj, num_circuits)
-            obj = obj[S]
-            population = population[S, :]
-
-        fronts = NonDominatedSorting().do(obj)
-        all_obj = np.asarray(all_obj).reshape(num_circuits*(1 + n_gen), 2)
-
-        return fronts, all_obj
+        with open(
+            settings["results_path"]+
+            "GA_results/"+
+            settings["file_name"],
+            "wb"
+        ) as fid:
+            pickle.dump(results, fid)
 
     else:
         print('objective is not an array- using single objective optimization')
-        # create array to store min obj function value for initial
-        # population and all generations
-        obj_min = np.zeros(n_gen + 1)
+        all_obj, obj_min, circuit_min, geno, pheno = single_obj_GA(
+            problem,
+            n_gen,
+            population,
+            num_circuits,
+            obj,
+            metrics
+        )
+        results = {
+            "settings": settings,
+            "all_obj": all_obj,
+            "obj_min": obj_min,
+            "circuit_min": circuit_min,
+            "genotype": geno,
+            "phenotype": pheno
+        }
 
-        # create list to store circuits with min obj function for 
-        # initial population and all generations
-        circuit_min = []
-        ind_min = np.argmin(obj)
-        obj_min[0] = obj[ind_min]
-        circuit_min.append(population[ind_min])
+        with open(
+            settings["results_path"]+
+            "GA_results/"+
+            settings["file_name"],
+            "wb"
+        ) as fid:
+            pickle.dump(results, fid)
 
-        for gen in range(n_gen):
-            children = crossover(population, obj)
-            mutate(testcase, children, 1.)
-            obj_children = np.asarray([testcase.func(g[0]) for g in children])
-            obj = np.append(obj, obj_children)
-            population = np.vstack((population, children))
-            S = np.lexsort([obj])
-            obj = obj[S[:num_circuits]]
-            population = population[S[:num_circuits], :]
-
-            ind_min = np.argmin(obj)
-
-            obj_min[gen + 1] = obj[ind_min]
-            circuit_min.append(population[ind_min])
-
-        return obj, obj_min, circuit_min, generations
+    return results
 
 def run_combinitorial(
         testcase: object,
+        settings: dict,
         topo_path: str
 ):
+    
+    problem = testcase(
+        settings["promo_node"],
+        settings["dose_specs"],
+        settings["max_part"],
+        settings["inhibitor"],
+        settings["DsRed_inhibitor"],
+        settings["num_dict"],
+        settings["n_gen"],
+        settings["pop"],
+        settings["num_processes"],
+    )
+    
     with open(topo_path, "rb") as fid:
         topologies = pickle.load(fid)
     
-    objectives = [testcase.func(g) for g in topologies]
-    
-    return objectives
+    obj = np.asarray([problem.func(g) for g in topologies])
 
-testcase_amp = set_testcase(
-    Amplifier,
-    ['P1',
-    # 1,
-    150,
-    150,
-    5,
-    False,
-    False,
-    {1: 10, 2: 30},
-    30,
-    False,
-    None,
-])
+    if isinstance (obj[0], np.ndarray):
+        print('objective is an array- using non-dominated sorting')
 
-testcase_sc = set_testcase(
-    SignalConditioner,
-    ['P1',
-    # 1,
-    150,
-    150,
-    5,
-    False,
-    False,
-    {1: 10, 2: 30},
-    30,
-    False,
-    None,
-])
+    else:
+        print('objective is not an array- sorting by single objective')
+        sorted_idx = np.argsort(obj)
+        obj_sorted = obj[sorted_idx]
+        topo_sorted = np.asarray(topologies)[sorted_idx]
 
-run(testcase_sc)
+        results = {
+            "objectives": obj_sorted,
+            "topologies": topo_sorted
+        }
 
-# obj_min, topology_min, gens = run(testcase_amp)
+        with open(
+            settings["results_path"]+
+            "Combinatorial_results/"+
+            settings["file_name"],
+            "wb"
+        ) as fid:
+            pickle.dump(results, fid)
 
-# edge_list = [('P1', 'Z1'), ('Z1', 'Z6'), ('Z6', 'Rep')]
-# dose_list = {'Z1': 75, 'Z6': 10, 'Rep': 9}
-# promo_node = 'P1'
+        return results
 
-# obj_val = testcase_amp.func(Topo(edge_list, dose_list, promo_node))
-# print(isinstance(obj_val, list))
 
-# print(obj_min[-1], topology_min[-1][0].edge_list)
+settings = {
+    "promo_node":"P1",
+    "dose_specs": [75, 75, 5],
+    "max_part": 2,
+    "inhibitor": False,
+    "DsRed_inhibitor": False,
+    "num_dict": {1: 10, 2: 20},
+    "n_gen": 30,
+    "pop": True,
+    "num_processes": 1,
+    "results_path": "/Users/kdreyer/Desktop/Github/GraphGA/Results/",
+    "file_name": "230309_Amplifier_2part.pkl"
+}
+# topo_path = "Amplifier/Amplifier_combo_2.pkl"
+
+# results = run_combinitorial(Amplifier, settings, topo_path)
+results = run(Amplifier, settings, metrics=True)
+print(results["obj_min"][-1])
+print(results["circuit_min"][-1][0].edge_list)
+print(results["circuit_min"][-1][0].dose)
+
+results["circuit_min"][-1][0].plot_graph()
+
+# print(settings)
+
+# if __name__ == '__main__':
+#     run_amp_pop_GA = '''run(Amplifier, settings)'''
+
+#     n = 5
+#     result = timeit.timeit(stmt=run_amp_pop_GA, globals=globals(), number=n)
+#     print(f"Execution time is {result / n} seconds")
+
