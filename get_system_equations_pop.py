@@ -4,7 +4,8 @@ from load_files import *
 def system_equations_pop(x, t, state, Z_list, topology):
     system = []
     index = 0
-    for n in topology.in_dict.keys():
+    sorted_in_dict_keys = sorted(topology.in_dict)
+    for n in sorted_in_dict_keys:
         eq = -2.7 * x[2 * topology.var_dict[n]]
         b = []
         num = 0
@@ -34,7 +35,8 @@ def system_equations_pop(x, t, state, Z_list, topology):
 def system_equations_DsRed_pop(x, t, state, Z_list, topology):
     system = []
     index = 0
-    for n in topology.in_dict.keys():
+    sorted_in_dict_keys = sorted(topology.in_dict)
+    for n in sorted_in_dict_keys:
         eq = -2.7 * x[2 * topology.var_dict[n]]
         b = []
         num = 0
