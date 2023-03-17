@@ -18,3 +18,6 @@ with open("Ref_pop20.pkl", "rb") as fid:
 
 tf_list = [k for k in parts.keys() if k[0] == 'Z']
 inhibitor_list = [k for k in parts.keys() if k[0] == 'I']
+
+key_list = tf_list + inhibitor_list + ['Rep']
+parts_order = {key: i for i, key in enumerate(key_list)}

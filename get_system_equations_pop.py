@@ -1,11 +1,12 @@
 import numpy as np
-from load_files import *
+from load_files_pop import (
+    promo, parts, parts_order
+)
 
 def system_equations_pop(x, t, state, Z_list, topology):
     system = []
     index = 0
-    sorted_in_dict_keys = sorted(topology.in_dict)
-    for n in sorted_in_dict_keys:
+    for n in topology.in_dict.keys():
         eq = -2.7 * x[2 * topology.var_dict[n]]
         b = []
         num = 0
@@ -35,8 +36,7 @@ def system_equations_pop(x, t, state, Z_list, topology):
 def system_equations_DsRed_pop(x, t, state, Z_list, topology):
     system = []
     index = 0
-    sorted_in_dict_keys = sorted(topology.in_dict)
-    for n in sorted_in_dict_keys:
+    for n in topology.in_dict.keys():
         eq = -2.7 * x[2 * topology.var_dict[n]]
         b = []
         num = 0
