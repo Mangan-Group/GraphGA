@@ -22,6 +22,7 @@ class Amplifier:
             num_dict: dict, 
             n_gen: int,
             pop: bool=False,
+            Z_mat: np.ndarray=Z_20,
             num_processes: int=None, 
             ) -> None:
         
@@ -44,7 +45,7 @@ class Amplifier:
             # set ref = simulation for 20-cell population
             self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
-            self.Z = Z_20
+            self.Z = Z_mat
             # set simulate function for population using multiprocessing
             self.simulate = self.simulate_pop
         else:
@@ -58,7 +59,7 @@ class Amplifier:
     def simulate_cell(
         topology: object,
         max_time: int =42,
-        Z_row: np.ndarray = np.ones(5)
+        Z_row: np.ndarray =np.ones(5)
     ):
 
         t = np.arange(0, max_time + 1, 1)

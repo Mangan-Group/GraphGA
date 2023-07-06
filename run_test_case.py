@@ -11,6 +11,7 @@ from GA_setup import (
     single_obj_GA,
     multi_obj_GA
 )
+from load_Z_mat_samples import Z_mat_list
 # from define_circuit import Topo
 
 def run(
@@ -182,6 +183,66 @@ def run_combinitorial(
         print(results["topologies"][0].edge_list)
         return results
 
+def run_combinitorial_pop_samples(
+        testcase: object,
+        settings: dict,
+        path: str,
+        topo_fname: str,
+        sc_obj_fname: str,
+        Z_mat_list: list,
+        obj_threshold: float
+):
+    
+    problem = testcase(
+        settings["promo_node"],
+        settings["dose_specs"],
+        settings["max_part"],
+        settings["inhibitor"],
+        settings["DsRed_inhibitor"],
+        settings["num_dict"],
+        settings["n_gen"],
+        settings["pop"],
+    )
+    
+    with open(path+topo_fname, "rb") as fid:
+        topologies = pickle.load(fid)
+
+    with open(path+sc_obj_fname, "rb") as fid:
+        sc_obj = pickle.load(fid)
+    
+
+    idx_list = np.argwhere(sc_obj >= obj_threshold)
+    topologies_list = topologies[idx_list]
+    Z_mat_sampling = {}
+    # Z_mat_sampling["Z_mat_list"] = Z_mat_list
+    # Z_mat_sampling["topology_list"] = topologies_list
+
+    for i, topology in enumerate(topologies_list):
+        topology_dict = {}
+        obj_list = []
+        for Z_mat in Z_mat_list:
+            problem.Z = Z_mat
+            obj = problem.func(topology[0])
+            obj_list.append(obj)
+        
+        topology_dict["objectives_range"] = max(obj_list) - min(obj_list)
+        topology_dict["objectives_mean"] = np.mean(obj_list)
+        topology_dict["objectives [min, max]"] = [min(obj_list), max(obj_list)]
+        topology_dict["objectives_list"] = obj_list
+        topology_dict["edge_list"] = topology[0].edge_list
+        Z_mat_sampling["topologies_list["+str(i)+"]"] = topology_dict
+
+        with open(
+                settings["results_path"]+
+                "Combinatorial_results/"+
+                settings["file_name"],
+                "wb"
+            ) as fid:
+                pickle.dump(Z_mat_sampling, fid)
+
+    return Z_mat_sampling
+
+
 
 settings = {
     "promo_node":"P1",
@@ -194,18 +255,18 @@ settings = {
     "pop": True,
     "num_processes": 1,
     "results_path": "/Users/kdreyer/Desktop/Github/GraphGA/Results/",
-    "file_name": "230316_Amplifier_2part"
+    "file_name": "230403_Amplifier_pop_sampling3.pkl"
 }
 
 
-topo_path_1 = "Amplifier/Amplifier_combo_1.pkl"
-topo_path_2 = "Amplifier/Amplifier_combo_2.pkl"
+# topo_path_1 = "Amplifier/Amplifier_combo_1.pkl"
+# topo_path_2 = "Amplifier/Amplifier_combo_2.pkl"
 
-run_amp_pop_GA = '''run_combinitorial(Amplifier, settings, topo_path_2)'''
+# run_amp_pop_GA = '''run_combinitorial(Amplifier, settings, topo_path_2)'''
 
-n = 1
-result = timeit.timeit(stmt=run_amp_pop_GA, globals=globals(), number=n)
-print(f"Execution time is {result / n} seconds")
+# n = 1
+# result = timeit.timeit(stmt=run_amp_pop_GA, globals=globals(), number=n)
+# print(f"Execution time is {result / n} seconds")
 
 
 
@@ -238,4 +299,9 @@ print(f"Execution time is {result / n} seconds")
 # print(settings)
 
 
+Z_mat_sampling = run_combinitorial_pop_samples(
+    Amplifier, settings, "/Users/kdreyer/Desktop/Github/GraphGA/Amplifier/",
+    "Amplifier_topos_all.pkl", "Amplifier_ON_rel_all.pkl",
+    Z_mat_list, 64.86873478791355)
 
+print(Z_mat_sampling)
