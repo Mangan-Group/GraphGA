@@ -73,25 +73,25 @@ def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
     return np.random.choice(np.arange(min_dose, max_dose + 1, dose_interval), size=num_part, replace=True)
 
 
-def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_interval, inhibitor):
-    circuits = []
-    if not inhibitor:
-        for i in range(num_circuit):
-            num_part = np.random.randint(1, max_part + 1)
-            part_list = np.random.choice(tf_list, num_part, replace=False)
-            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
-            edge_list = get_edges(promo_node, part_list)
-            circuits.append(Topo(edge_list, dose_list, promo_node))
-    else:
-        for i in range(num_circuit):
-            num_tf = np.random.randint(1, max_part)
-            num_in = np.random.randint(1, max_part - num_tf + 1)
-            part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
-            dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf + num_in)))
-            edge_list = get_edges(promo_node, part_list)
-            circuits.append(Topo(edge_list, dose_list, promo_node))
+# def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_interval, inhibitor):
+#     circuits = []
+#     if not inhibitor:
+#         for i in range(num_circuit):
+#             num_part = np.random.randint(1, max_part + 1)
+#             part_list = np.random.choice(tf_list, num_part, replace=False)
+#             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
+#             edge_list = get_edges(promo_node, part_list)
+#             circuits.append(Topo(edge_list, dose_list, promo_node))
+#     else:
+#         for i in range(num_circuit):
+#             num_tf = np.random.randint(1, max_part)
+#             num_in = np.random.randint(1, max_part - num_tf + 1)
+#             part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
+#             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf + num_in)))
+#             edge_list = get_edges(promo_node, part_list)
+#             circuits.append(Topo(edge_list, dose_list, promo_node))
 
-    return circuits
+#     return circuits
 
 
 def sampling(promo_node, num_dict, min_dose, max_dose, dose_interval, inhibitor=False):
@@ -147,7 +147,7 @@ def validate(g):
             if len(viable_type) == 0:
                 g.graph.add_edges_from(get_in_path(n, g.promo_node, circuit_tf_list))
             else:
-                if ('I' in viable_type) & ('Z' not in viable_type):
+                if ('I' in viable_type) and (('Z' not in viable_type) and ('P' not in viable_type)):
                     # g.graph.add_edges_from(get_in_path(n, None, circuit_tf_list))
                     g.graph.add_edges_from(get_in_path(n, g.promo_node, circuit_tf_list))
 
@@ -171,38 +171,73 @@ def validate(g):
         g.update(list(g.graph.edges))
 
 
-def check_valid(g, num_parts):
-    graph_parts = [i[0] for i in g.nodes]
-    if ('P' not in graph_parts) or ('R' not in graph_parts) or ('Z' not in graph_parts):
+def check_valid(g, promo_node, part_list):
+    if (promo_node not in g.nodes) or ('Rep' not in g.nodes):
         return 0
-    elif (len(graph_parts) - 2) < num_parts:
+    circuit_tf_list = []
+    same_list = []
+    for k in part_list:
+        if k[0] == 'Z':
+            circuit_tf_list.append(k)
+            if ('I' + k[1:]) in part_list:
+                same_list.append([k, ('I' + k[1:])])
+    if len(circuit_tf_list) == 0:
         return 0
-
-    for n in g.nodes:
-        if n[0] == 'P':
-            out_types = set([i[0] for i in list(g.successors(n))])
-            if 'Z' not in out_types:
-                return 0
-        elif n[0] == 'R':
-            in_types = set([i[0] for i in list(g.predecessors(n))])
-            if (not in_types) or (('I' in in_types) and ('Z' not in in_types)):
-                return 0
+    if ('Rep' not in g.nodes) | (len([k for k in g.predecessors('Rep') if k[0] == 'Z']) == 0):
+        return 0
+    for n in part_list:
+        if n not in g.nodes:
+            return 0
         else:
-            if (n[0] == 'Z') and ('I' + n[1:] in g.nodes):
-                if list(g.successors(n)) != list(g.successors('I' + n[1:])):
-                    return 0
-            in_nodes = list(g.predecessors(n))
-            if not in_nodes:
-                return 0
-            elif in_nodes == [n]:
+            viable_type = [k[-2][0] for k in nx.all_simple_paths(g, promo_node, n)]
+            if len(viable_type) == 0:
                 return 0
             else:
-                in_types = set([i[0] for i in in_nodes])
-                if ('I' in in_types) and ('Z' not in in_types):
+                if ('I' in viable_type) and (('Z' not in viable_type) and ('P' not in viable_type)):
                     return 0
             if len(list(nx.all_simple_paths(g, n, 'Rep'))) == 0:
                 return 0
+
+    for z, i in same_list:
+        z_succ = set(g.successors(z))
+        i_succ = set(g.successors(i))
+        if z_succ != i_succ:
+            return 0
     return 1
+
+
+# def check_valid(g, num_parts):
+#     graph_parts = [i[0] for i in g.nodes]
+#     if ('P' not in graph_parts) or ('R' not in graph_parts) or ('Z' not in graph_parts):
+#         return 0
+#     elif (len(graph_parts) - 2) < num_parts:
+#         return 0
+#
+#     for n in g.nodes:
+#         if n[0] == 'P':
+#             out_types = set([i[0] for i in list(g.successors(n))])
+#             if 'Z' not in out_types:
+#                 return 0
+#         elif n[0] == 'R':
+#             in_types = set([i[0] for i in list(g.predecessors(n))])
+#             if (not in_types) or (('I' in in_types) and ('Z' not in in_types)):
+#                 return 0
+#         else:
+#             if (n[0] == 'Z') and ('I' + n[1:] in g.nodes):
+#                 if list(g.successors(n)) != list(g.successors('I' + n[1:])):
+#                     return 0
+#             in_nodes = list(g.predecessors(n))
+#             if not in_nodes:
+#                 return 0
+#             elif in_nodes == [n]:
+#                 return 0
+#             else:
+#                 in_types = set([i[0] for i in in_nodes])
+#                 if ('I' in in_types) and ('Z' not in in_types):
+#                     return 0
+#             if len(list(nx.all_simple_paths(g, n, 'Rep'))) == 0:
+#                 return 0
+#     return 1
 
 
 def compare_circuit(g1, g2):
@@ -447,7 +482,7 @@ def mutate_edge(g, inhibitor=False):
                     ind = np.random.choice(len(edge_full))
                     edge_removed = edge_full[ind]
                     g_graph.remove_edge(edge_removed[0], edge_removed[1])
-                    valid = check_valid(g_graph, num_parts)
+                    valid = check_valid(g_graph, g.promo_node, g.part_list)
                     edge_full.remove(edge_removed)
                 if valid == 1:
                     g.update(list(g_graph.edges))
@@ -472,7 +507,7 @@ def mutate_edge(g, inhibitor=False):
                     ind = np.random.choice(len(edge_avail))
                     edge_removed = edge_avail[ind]
                     g_graph.remove_edge(edge_removed[0], edge_removed[1])
-                    valid = check_valid(g_graph, num_parts)
+                    valid = check_valid(g_graph, g.promo_node, g.part_list)
                     edge_avail.remove(edge_removed)
                 if valid == 1:
                     g.update(list(g_graph.edges))
