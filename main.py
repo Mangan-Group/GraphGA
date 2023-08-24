@@ -1,10 +1,22 @@
 from GA import *
 import sys
-import matplotlib.pyplot as plt
 from define_problem import *
-# seed = int(sys.argv[1])
-# np.random.seed(seed)
-np.random.seed(20)
+import copy
+
+seed = int(sys.argv[1])
+np.random.seed(seed)
+
+def first_seen(progression):
+
+    looking = True
+    gen_num = 0
+
+    for gen in reversed(progression):
+        if progression[-1] != gen:
+            return len(progression) - gen_num
+        gen_num += 1
+
+    return 0
 
 
 # class Problem:
@@ -23,6 +35,8 @@ def simulate(topology, max_time=42):
 
 def func(topology):
     return -simulate(topology) / Ref[topology.promo_node]['on']
+    # on_rel / Ref[topology.promo_node]['on']
+    # should be in the range 30 - 69
 
 
 promo_node = 'P1'
@@ -35,50 +49,62 @@ inhibitor = False
 
 problem = Problem(promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor, func)
 
-# with open("init_population.pkl", "rb") as fid:
-#    population = pickle.load(fid)
+# with open("init_pop_2.pkl", "rb") as fid:
+#     population = pickle.load(fid)
 
 population = sampling(problem.promo_node, num_dict, problem.min_dose, problem.max_dose, problem.dose_interval)
 
-# with open("init_pop_%d.pkl" % seed, "wb") as fid:
-#     pickle.dump(population, fid)
+with open("init_pop_%d.pkl" % seed, "wb") as fid:
+    pickle.dump(population, fid)
 
 num_circuits = len(population)
-n_gen = 30
+n_gen = 35
 
-obj = np.asarray([problem.func(g[0]) for g in population])
+needed_gens = []
+results = []
 
-obj_min = np.zeros(n_gen + 1)
-circuit_min = []
+for i in range(1,21):
+    pop_i = copy.deepcopy(population)
 
-# ind_min = np.argmin(obj)
+    np.random.seed(i)
 
-ind_min = np.argmin(obj)
-obj_min[0] = obj[ind_min]
-circuit_min.append(population[ind_min])
+    obj = np.asarray([problem.func(g[0]) for g in pop_i])
 
-for gen in range(n_gen):
-    # if np.random.uniform() < prob:
-    children = crossover(population, obj)
-    # else:
-    # children = deepcopy(population)
-    mutate(problem, children, 1.)
-    obj_children = np.asarray([-simulate(g[0]) / Ref[g[0].promo_node]['on'] for g in children])
-    obj = np.append(obj, obj_children)
-    population = np.vstack((population, children))
-    S = np.lexsort([obj])
-    obj = obj[S[:num_circuits]]
-    population = population[S[:num_circuits], :]
+    obj_min = np.zeros(n_gen + 1)
+    circuit_min = []
+
+    # ind_min = np.argmin(obj)
 
     ind_min = np.argmin(obj)
+    obj_min[0] = obj[ind_min]
+    circuit_min.append(pop_i[ind_min])
 
-    obj_min[gen + 1] = obj[ind_min]
-    circuit_min.append(population[ind_min])
+    for gen in range(n_gen):
+        #if np.random.randint(2) == 1:
+        if np.random.uniform() < .7:
+            children = crossover(pop_i, obj)
+        else:
+            children = deepcopy(pop_i)
+        if np.random.uniform() < 0.2:
+            mutate(problem, children, 1.)
+        obj_children = np.asarray([-simulate(g[0]) / Ref[g[0].promo_node]['on'] for g in children])
+        obj = np.append(obj, obj_children)
+        pop_i = np.vstack((pop_i, children))
+        S = np.lexsort([obj])
+        obj = obj[S[:num_circuits]]
+        pop_i = pop_i[S[:num_circuits], :]
+
+        ind_min = np.argmin(obj)
+
+        obj_min[gen + 1] = obj[ind_min]
+        circuit_min.append(pop_i[ind_min])
+
+    needed_gens.append(first_seen(circuit_min))
+    results.append(circuit_min[-1])
+
+    print("Seed: ", i)
 
 generations = np.arange(n_gen + 1)
 
-#
-# with open("min_topo_%d.pkl" % seed, "wb") as fid:
-#     pickle.dump(circuit_min, fid)
-
-a = 1
+with open("min_topo_%d.pkl" % seed, "wb") as fid:
+    pickle.dump(circuit_min, fid)
