@@ -33,10 +33,10 @@ def full_sim(mut_rate, cov_rate, promo_node, num_dict, max_part, min_dose, max_d
     problem = Problem(promo_node, max_part, min_dose, max_dose, dose_interval, inhibitor, func)
 
     # Generate a population using the commented code or use a set population
-    #  population = sampling(problem.promo_node, num_dict, problem.min_dose, problem.max_dose, problem.dose_interval)
+    population = sampling(problem.promo_node, num_dict, problem.min_dose, problem.max_dose, problem.dose_interval)
 
-    with open("init_pop_inhib_fixed.pkl", "rb") as fid:
-         population = pickle.load(fid)
+    # with open("init_pop_inhib_fixed.pkl", "rb") as fid:
+    #      population = pickle.load(fid)
 
     # From this point, the code continues the same as the original main.py file
     num_circuits = len(population)

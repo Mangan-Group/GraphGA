@@ -5,8 +5,8 @@ from define_problem import *
 from rankcrowding import *
 
 # seed = int(sys.argv[1])
-# np.random.seed(seed)
-np.random.seed(2)
+seed = 2
+np.random.seed(seed)
 
 
 def simulate(topology, max_time=42):
@@ -24,7 +24,7 @@ def func(toplogy):
 
 
 promo_node = 'P1'
-num_dict = {1: 5000, 2: 5000}
+num_dict = {1: 20, 2: 20}
 min_dose = 5  # originally 15
 max_dose = 75
 dose_interval = 5
@@ -49,7 +49,7 @@ hvs = []
 
 nds = RankAndCrowding()
 num_circuits = len(population)
-n_gen = 100
+n_gen = 50
 
 all_obj = []
 obj = [problem.func(g[0]) for g in population]
@@ -62,7 +62,7 @@ for gen in range(n_gen):
         children = crossover(population, obj, rank_dict)
     else:
         children = deepcopy(population)
-    # mutate(problem, children, 1, dose=True)
+    mutate(problem, children, 1, dose=True)
     obj_children = [problem.func(g[0]) for g in children]
     all_obj.append(obj_children)
     obj_children = np.asarray(obj_children)
@@ -78,11 +78,15 @@ for gen in range(n_gen):
     #
     # obj_min[gen + 1] = obj[ind_min]
     # circuit_min.append(population[ind_min])
-    print("Generation: ", gen, " HV:", ind(obj))
     hvs.append(ind(obj))
+
 fronts = NonDominatedSorting().do(obj)
 all_obj = np.asarray(all_obj).reshape(num_circuits*(1 + n_gen), 2)
 a = 1
+
+# Save the progression of hypervolumes over generations in a pickle file
+with open("Hypervolumes.pkl", "wb") as fid:
+    pickle.dump(hvs, fid)
 
 # Create a plot of the population compared to the original pareto front
 import pandas as pd
@@ -97,29 +101,26 @@ for topo in population:
             inhib = "Inhibitors"
     types.append(inhib)
 
-
+# Add types vector to the dataframe
 df = pd.DataFrame(obj)
 df['Type'] = types
 
-# with open("EqualLarger.pkl", "wb") as fid:
-#     pickle.dump(hvs, fid)
 
-
+# Load combinatorial pareto front for comparison
 with open('SigCond_obj_pareto.pkl', 'rb') as f:
     circuit = pd.read_pickle(f)
 
 circuit = pd.DataFrame(circuit)
-
 circuit['color'] = 'Combo'
 
 # Plot pareto front with the simulation output
 sns.scatterplot(data = circuit, x = circuit[0], y = circuit[1], hue = 'color', palette = 'cividis')
 sns.scatterplot(data=df, x= df[0], y= df[1], hue='Type')
 plt.suptitle("Signal Conditioner Pareto Front")
-plt.title("Population of 100, Varied Population Dose")
+plt.title("Population of 40, Varied Population Dose")
 plt.ylabel("FI_rel")
 plt.xlabel("ON_rel")
-plt.savefig("Massive", bbox_inches="tight")
+plt.savefig("VaryDose", bbox_inches="tight")
 plt.show()
 
 

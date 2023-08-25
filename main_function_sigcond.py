@@ -72,7 +72,7 @@ def full_sim(mut_rate, cov_rate, promo_node, num_dict, max_part, min_dose, max_d
             children = crossover(population, obj, rank_dict)
         else:
             children = deepcopy(population)
-        mutate(problem, children, mut_rate, dose=True)
+        mutate(problem, children, mut_rate, dose=True) # Add dose mutations to improve hypervolume
         obj_children = [problem.func(g[0]) for g in children]
         all_obj.append(obj_children)
         obj_children = np.asarray(obj_children)

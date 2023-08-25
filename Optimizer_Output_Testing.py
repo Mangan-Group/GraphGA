@@ -12,7 +12,7 @@ ind = HV(ref_point=ref_point)
 cov_rate = 0.458389
 mut_rate = 0.970409
 promo_node = 'P1'
-min_dose = 75
+min_dose = 5
 max_dose = 75
 dose_interval = 5
 max_part = 2
@@ -44,10 +44,7 @@ for i in range(88,101):
     objectives.append(values[0])
 
     # Print results (and calculate the hypervolume when working with a pareto front)
-    #print("Seed:", i, " HV:", -ind(fitness), " Conv:", convergence)
-    print(convergence)
-    if(fitness > -69.98):
-        print("Problem!")
+    print("Seed:", i, " HV:", -ind(fitness), " Conv:", convergence)
 
     # Uncomment the following code to plot pareto front with combinatorial pareto front
     # with open('SigCond_obj_pareto.pkl', 'rb') as f:
@@ -58,5 +55,6 @@ for i in range(88,101):
     # plt.scatter(fitness[:, 0], fitness[:, 1], c = "Blue")
     # plt.savefig('SigCond Fixed/SigcCond_Pareto_%d' %i)
 
+# Save the objective data
 with open("optimizer_output_test.pkl", "wb") as fid:
     pickle.dump(objectives, fid)
