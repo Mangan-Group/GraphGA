@@ -70,5 +70,3 @@ class Topo():
         plt.tight_layout()
         nx.draw_networkx(self.graph, arrows=True, arrowsize=15, node_size=600, node_shape='s')
         plt.show()
-
-
