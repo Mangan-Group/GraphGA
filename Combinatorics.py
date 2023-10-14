@@ -1,4 +1,4 @@
-from graph_operations import *
+from GA import *
 
 
 def check_valid(g, num_parts):
@@ -37,13 +37,15 @@ def get_combinatorics(promo_node, num_part, min_dose, max_dose, dose_interval, i
 
     if not inhibitor:
         #for i in range(1, max_part + 1):
+        #get all combinations of tfs (order doesn't matter- (Z6, Z2) = (Z2, Z6))
         combo.extend(list(combinations(tf_list, num_part)))
     else:
         #for num_part in range(2, max_part + 1):
+        #get all combinations of tf and inhibitor (1 of each for 2 part)
         for num_tf in range(1, num_part):
             num_in = num_part - num_tf
-            list1 = combinations(tf_list, num_tf)
-            list2 = combinations(inhibitor_list, num_in)
+            list1 = combinations(tf_list[:2], num_tf)
+            list2 = combinations(inhibitor_list[:2], num_in)
             combo_two = [(i[0] + i[1]) for i in list(product(list1, list2))]
             combo.extend(combo_two)
 
@@ -51,15 +53,25 @@ def get_combinatorics(promo_node, num_part, min_dose, max_dose, dose_interval, i
 
     for i in range(len(combo)):
         part_list = combo[i]
+        #all nodes have P1->node->rep, node1->node2, node2->node1,
+        #node1->node1, node2->node2
         full_edge_list = get_full_connected(part_list, promo_node)
+        #set doses to max_dose for each part
         dose_list = dict(zip(part_list, [max_dose]*len(part_list)))
+        #add fully connected circuit to list 
         circuits.append(Topo(full_edge_list, dose_list, promo_node))
+        #max number of edges that can be removed has to leave enough edges
+        #so each part has edge going in and edge going out
         max_remove = len(full_edge_list) - 2*len(part_list)
 
         for j in range(1, max_remove+1):
+            #get all possible combinations of all allowable amounts of edges
+            #to remove
             combo_remove = list(combinations(full_edge_list, j))
             for k in combo_remove:
+                #remove each edge in combo_remove
                 edges = [e for e in full_edge_list if e not in k]
+                #check that circuit is still valid
                 if check_valid(nx.DiGraph(edges), len(part_list)) == 1:
                     circuits.append(Topo(edges, dose_list, promo_node))
     return circuits

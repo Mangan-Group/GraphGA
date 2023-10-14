@@ -335,14 +335,20 @@ def get_crosspt(list1, list2):
         if item in list2:
             same.append(item)
 
+    #crossover point is same part if there are any
     if len(same) > 0:
         pt1 = np.random.choice(same)
         pt2 = pt1
+    
+    #otherwise, pick random part from 1st cicuit as crossover point
     else:
         pt1 = np.random.choice(list1)
 
+        #if TF, select crossover point for 2nd circuit as another TF
         if pt1[0] == 'Z':
             pt2 = np.random.choice([k for k in list2 if k[0] == 'Z'])
+
+        #if inhibitor, select crossover point for 2nd circuit as another inhibitor
         else:
             list2_inhibitors = [k for k in list2 if k[0] == 'I']
 
@@ -688,8 +694,10 @@ def crossover(X, obj, rank_dict=None, **kwargs):
     n_matings = int(len(X) / 2)
     Y = np.full_like(X, None, dtype=object)
     for k in range(n_matings):
+        #choose 3 random indices in X
         throuple = np.random.choice(range(len(X)), 3, replace=False)
         if rank_dict is None:
+            #parents = indices of circuits with top 2 obj func in those indices
             parents = throuple[obj[throuple].argsort()][:-1]
         else:
             throuple_rank = np.asarray([rank_dict[i]['rank'] for i in throuple])
