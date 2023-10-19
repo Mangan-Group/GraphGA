@@ -20,7 +20,8 @@ def run(
         metrics: bool =False
     ):
     '''Run the genetic algorithm for a given test case'''
-
+    # look at GAMES code- create directory and cd into directory
+    # based on settings 
     problem = testcase(
         settings["promo_node"],
         settings["dose_specs"],
@@ -41,6 +42,7 @@ def run(
         problem.dose_interval,
         problem.inhibitor
     )
+    #add code to save population
     num_circuits = len(population)
     # raise an exception if num_circuits is odd
     if num_circuits % 2 != 0:
@@ -60,7 +62,9 @@ def run(
             n_gen,
             population,
             num_circuits,
-            obj
+            obj,
+            settings["probability_crossover"],
+            settings["probability_mutation"],
         )
         results = {
             "settings": settings,
@@ -84,6 +88,8 @@ def run(
             population,
             num_circuits,
             obj,
+            settings["probability_crossover"],
+            settings["probability_mutation"],
             metrics
         )
         results = {
@@ -243,7 +249,8 @@ def run_combinitorial_pop_samples(
     return Z_mat_sampling
 
 
-
+# add results folder name 
+# make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
     "promo_node":"P1",
     "dose_specs": [75, 75, 5],
@@ -253,6 +260,8 @@ settings = {
     "num_dict": {1: 10, 2: 20},
     "n_gen": 1,
     "pop": True,
+    "probability_crossover": 1.0,
+    "probability_mutation": 1.0,
     "num_processes": 1,
     "results_path": "/Users/kdreyer/Desktop/Github/GraphGA/Results/",
     "file_name": "230403_Amplifier_pop_sampling3.pkl"
