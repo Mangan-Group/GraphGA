@@ -1,18 +1,23 @@
 import timeit
 import numpy as np
 import pickle
-import networkx
+import networkx as nx
+import matplotlib.pyplot as plt
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
+from saving import make_main_directory
 from GA import sampling
 from GA_setup import (
     single_obj_GA,
     multi_obj_GA
 )
-from load_Z_mat_samples import Z_mat_list
+# from load_Z_mat_samples import Z_mat_list
 # from define_circuit import Topo
+
+seed = 1
+np.random.seed(seed)
 
 def run(
         testcase: object,
@@ -20,8 +25,9 @@ def run(
         metrics: bool =False
     ):
     '''Run the genetic algorithm for a given test case'''
-    # look at GAMES code- create directory and cd into directory
-    # based on settings 
+
+    folder_path = make_main_directory(settings)
+
     problem = testcase(
         settings["promo_node"],
         settings["dose_specs"],
@@ -31,7 +37,7 @@ def run(
         settings["num_dict"],
         settings["n_gen"],
         settings["pop"],
-        settings["num_processes"],
+        num_processes=settings["num_processes"],
     )
     
     population = sampling(
@@ -40,24 +46,28 @@ def run(
         problem.min_dose,
         problem.max_dose,
         problem.dose_interval,
-        problem.inhibitor
+        inhibitor=problem.inhibitor
     )
-    #add code to save population
+    file_name = "initial_population.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(population, fid)
+
     num_circuits = len(population)
     # raise an exception if num_circuits is odd
     if num_circuits % 2 != 0:
         raise Exception("Population size must be an even number")
     
-    # set # generations according to testcase attribute; store as array
+    # set # generations according to testcase attribute
     n_gen = problem.n_gen
-    generations = np.arange(n_gen + 1)
 
     # calculate objective for each circuit in initial population
     obj = np.asarray([problem.func(g[0]) for g in population])
     
     if isinstance (obj[0], np.ndarray):
-        print('objective is an array- using multi-objective optimization')
-        fronts, all_obj = multi_obj_GA(
+        print('objective is an array- using'+
+              'multi-objective optimization')
+        (_, obj, _, top_circuits_each_gen,
+         top_obs_each_gen) = multi_obj_GA(
             problem,
             n_gen,
             population,
@@ -65,24 +75,28 @@ def run(
             obj,
             settings["probability_crossover"],
             settings["probability_mutation"],
+            settings["mutate_dose"]
         )
-        results = {
-            "settings": settings,
-            "fronts": fronts,
-            "all_obj": all_obj
-        }
+        print("final objectives: ", obj)
 
-        with open(
-            settings["results_path"]+
-            "GA_results/"+
-            settings["file_name"],
-            "wb"
-        ) as fid:
-            pickle.dump(results, fid)
+        file_name = "final_objectives.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(obj, fid)
 
+        file_name = "top_circuits_each_gen.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(top_circuits_each_gen, fid)
+
+        file_name = "top_objs_each_gen.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(top_objs_each_gen, fid)
+    
+        
     else:
-        print('objective is not an array- using single objective optimization')
-        all_obj, obj_min, circuit_min, geno, pheno = single_obj_GA(
+        print('objective is not an array- using'+
+              'single objective optimization')
+        (obj_min, circuit_min, top_circuits_each_gen,
+        top_objs_each_gen, _, _) = single_obj_GA(
             problem,
             n_gen,
             population,
@@ -90,42 +104,38 @@ def run(
             obj,
             settings["probability_crossover"],
             settings["probability_mutation"],
+            settings["mutate_dose"],
             metrics
         )
-        results = {
-            "settings": settings,
-            "all_obj": all_obj,
-            "obj_min": obj_min,
-            "circuit_min": circuit_min,
-            "genotype": geno,
-            "phenotype": pheno
-        }
 
-        if settings["pop"]:
-            with open(
-                settings["results_path"]+
-                "GA_results/"+
-                settings["file_name"]+
-                "_pop"+
-                ".pkl",
-                "wb"
-            ) as fid:
-                pickle.dump(results, fid)
+        print("minimum objectives:", obj_min)
+        # unique objectives in top num_circuit topologies
+        ### could add all circuits from all gens (initial
+        ### pop + children from each gen and get unique)
+        unique_obj, unique_indices = np.unique(top_objs_each_gen,
+                                               return_index=True)
+        print(len(top_circuits_each_gen[unique_indices]))
 
-        else:
-            with open(
-                settings["results_path"]+
-                "GA_results/"+
-                settings["file_name"]+
-                ".pkl",
-                "wb"
-            ) as fid:
-                pickle.dump(results, fid)
+        graph_file_name = "circuit_with_min_obj"
+        plot_graph(circuit_min[-1][0], 
+                   folder_path + "/" + graph_file_name)
 
-    print(results["obj_min"])
-    print(results["circuit_min"][-1][0].edge_list)
+        file_name = "minimum_obj_all_gens.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(obj_min, fid)
 
-    return results
+        file_name = "min_obj_circuit_all_gens.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(circuit_min, fid)
+
+        file_name = "top_num_circuit_obj_each_gen.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(top_objs_each_gen, fid)
+
+        file_name = "top_num_circuit_circuits_each_gen.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(top_circuits_each_gen, fid)
+
 
 def run_combinitorial(
         testcase: object,
@@ -248,6 +258,12 @@ def run_combinitorial_pop_samples(
 
     return Z_mat_sampling
 
+def plot_graph(topology, file_name):
+    plt.figure()
+    plt.tight_layout()
+    nx.draw_networkx(topology.graph, arrows=True, arrowsize=15, node_size=600, node_shape='s')
+    plt.savefig(file_name+".svg")
+
 
 # add results folder name 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
@@ -255,18 +271,18 @@ settings = {
     "promo_node":"P1",
     "dose_specs": [75, 75, 5],
     "max_part": 2,
-    "inhibitor": False,
+    "inhibitor": True,
     "DsRed_inhibitor": False,
-    "num_dict": {1: 10, 2: 20},
-    "n_gen": 1,
-    "pop": True,
+    "num_dict": {1: 26, 2: 26},
+    "n_gen": 1,#40,
+    "pop": False,
     "probability_crossover": 1.0,
     "probability_mutation": 1.0,
+    "mutate_dose": False,
     "num_processes": 1,
-    "results_path": "/Users/kdreyer/Desktop/Github/GraphGA/Results/",
-    "file_name": "230403_Amplifier_pop_sampling3.pkl"
+    "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
+    "folder_name": "Amplifier_single_cell_test",
 }
-
 
 # topo_path_1 = "Amplifier/Amplifier_combo_1.pkl"
 # topo_path_2 = "Amplifier/Amplifier_combo_2.pkl"
@@ -308,9 +324,11 @@ settings = {
 # print(settings)
 
 
-Z_mat_sampling = run_combinitorial_pop_samples(
-    Amplifier, settings, "/Users/kdreyer/Desktop/Github/GraphGA/Amplifier/",
-    "Amplifier_topos_all.pkl", "Amplifier_ON_rel_all.pkl",
-    Z_mat_list, 64.86873478791355)
+# Z_mat_sampling = run_combinitorial_pop_samples(
+#     Amplifier, settings, "/Users/kdreyer/Desktop/Github/GraphGA/Amplifier/",
+#     "Amplifier_topos_all.pkl", "Amplifier_ON_rel_all.pkl",
+#     Z_mat_list, 64.86873478791355)
 
-print(Z_mat_sampling)
+# print(Z_mat_sampling)
+
+run(Amplifier, settings)

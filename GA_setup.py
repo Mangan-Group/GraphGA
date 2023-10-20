@@ -20,6 +20,7 @@ def single_obj_GA(
         obj: np.ndarray,
         probability_crossover: float,
         probability_mutation: float,
+        mutate_dose: bool,
         metrics: bool =False
 ):
     # create list to store min obj function, 
@@ -36,6 +37,12 @@ def single_obj_GA(
     obj_min[0] = obj[ind_min]
     circuit_min = []
     circuit_min.append(population[ind_min])
+    # save all circuits from intial population
+    # and top num_circuits from each generation
+    top_circuits_each_gen = []
+    top_circuits_each_gen.append(population)
+    top_obj_each_gen = []
+    top_obj_each_gen.append(obj)
 
     geno = None
     pheno = None
@@ -53,7 +60,7 @@ def single_obj_GA(
         # population (children) from parent 
         # circuits if randomly generated float  
         # is less than probability_crossover
-        if np.random.uniform < probability_crossover:
+        if np.random.uniform() < probability_crossover:
             children = crossover(population, obj)
         else:
             children = deepcopy(population)
@@ -62,7 +69,11 @@ def single_obj_GA(
         # randomly generated float is less 
         # than probability_mutation (used 
         # in mutate function)
-        mutate(problem, children, probability_mutation)
+        mutate(problem, children, 
+               probability_mutation, 
+               dose=mutate_dose
+        )
+        ### add all children here###
 
         # simulate topology and calculate obj
         # function for each circuit in children
@@ -70,6 +81,8 @@ def single_obj_GA(
         obj_children = np.asarray([problem.func(g[0]) for g in children])
         # all_obj.append(obj_children)
         obj = np.append(obj, obj_children)
+        ### add all obj here ###
+
         # add children to population array
         population = np.vstack((population, children))
         # return array of indices that would sort
@@ -80,6 +93,8 @@ def single_obj_GA(
         # (initial population + children of each gen)
         obj = obj[S[:num_circuits]]
         population = population[S[:num_circuits], :]
+        top_circuits_each_gen.append(population)
+        top_obj_each_gen.append(obj)
 
         # return index of minimum obj function
         # from obj
@@ -97,8 +112,15 @@ def single_obj_GA(
 
     # reshape all_obj to be 1 column array
     # all_obj = np.asarray(all_obj).reshape(num_circuits*(1 + n_gen), 1)
+    top_circuits_each_gen = np.asarray(
+        top_circuits_each_gen
+        ).reshape(num_circuits*(1 + n_gen), 1)
+    top_obj_each_gen = np.asarray(
+        top_obj_each_gen
+        ).reshape(num_circuits*(1 + n_gen), 1)
 
-    return  obj_min, circuit_min, geno, pheno #all_obj
+    return  (obj_min, circuit_min, top_circuits_each_gen,
+             top_obj_each_gen ,geno, pheno) #all_obj
 
 
 def multi_obj_GA(
@@ -109,12 +131,20 @@ def multi_obj_GA(
         obj: np.ndarray,
         probability_crossover: float,
         probability_mutation: float,
+        mutate_dose: bool,
 ):
     # create list to store all obj 
     # functions for initial population and 
     # all generations 
     all_obj = []
     all_obj.append(obj)
+    # save all circuits from intial population
+    # and top num_circuits from each generation
+    top_circuits_each_gen = []
+    top_circuits_each_gen.append(population)
+    top_obj_each_gen = []
+    top_obj_each_gen.append(obj)
+
     # create class instance of non-dominated
     # sorting class (to sort multi-objective
     # and determine pareto front)
@@ -129,7 +159,7 @@ def multi_obj_GA(
         # population (children) from parent 
         # circuits if randomly generated float  
         # is less than probability_crossover
-        if np.random.uniform < probability_crossover:
+        if np.random.uniform() < probability_crossover:
             children = crossover(population, obj, rank_dict)
         else:
             children = deepcopy(population)
@@ -138,7 +168,10 @@ def multi_obj_GA(
         # randomly generated float is less 
         # than probability_mutation (used 
         # in mutate function)
-        mutate(problem, children, probability_mutation)
+        mutate(problem, children, 
+                probability_mutation, 
+                dose=mutate_dose
+        )
 
         # simulate topology and calculate obj
         # function for each circuit in children
@@ -161,9 +194,21 @@ def multi_obj_GA(
         # (initial population + children of each gen)
         obj = obj[S]
         population = population[S, :]
+        top_circuits_each_gen.append(population)
+        top_obj_each_gen.append(obj)
 
 
     fronts = NonDominatedSorting().do(obj)
-    all_obj = np.asarray(all_obj).reshape(num_circuits*(1 + n_gen), 2)
+    # reshape all_obj and top_circuits_each_gen
+    # to be 1 column arrays
+    all_obj = np.asarray(
+        all_obj).reshape(num_circuits*(1 + n_gen), 2)
+    top_circuits_each_gen = np.asarray(
+        top_circuits_each_gen
+        ).reshape(num_circuits*(1 + n_gen), 1)
+    top_obj_each_gen = np.asarray(
+        top_obj_each_gen
+        ).reshape(num_circuits*(1 + n_gen), 1)
 
-    return fronts, obj, all_obj
+    return (fronts, obj, all_obj, top_circuits_each_gen,
+            top_obj_each_gen)
