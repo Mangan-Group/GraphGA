@@ -7,9 +7,10 @@ with open("parts.pkl", "rb") as fid:
     parts = pickle.load(fid)
 with open("Ref.pkl", "rb") as fid:
     Ref = pickle.load(fid)
-with open("Z_200.npy", 'rb') as fid:
-    Z_200 = np.load(fid)
-with open("Z_20.npy", 'rb') as fid:
+# with open("Z_200.npy", 'rb') as fid:
+#     Z_200 = np.load(fid)
+Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrices/"
+with open(Z_path + "Z_mat_20_cell0.npy", 'rb') as fid:
     Z_20 = np.load(fid)
 with open("Ref_pop200.pkl", "rb") as fid:
     Ref_pop200 = pickle.load(fid)
