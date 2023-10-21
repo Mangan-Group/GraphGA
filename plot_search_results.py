@@ -1,35 +1,32 @@
 import numpy as np
 import networkx as nx
 import pickle
+import pandas as pd
 import matplotlib.pyplot as plt
-from load_files_pop import (
-    Z_20,
-    Z_200
-)
+
+plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
+
+
 
 def plot_obj_distribution(
-        obj_list: np.ndarray, 
-        x_label: str, 
+        figure_path: str,
+        obj_list: list, 
+        x_label: str,
+        text: str, 
         n_bins: int =30,
-        log_scale =False
 ):
-    fig, axs = plt.subplots(1, 2, figsize= (6, 4))
-    axs.ravel()
+    plt.figure(figsize=(3,3))
+    plt.hist(obj_list, bins=n_bins)
+    plt.xlabel(x_label)
+    plt.ylabel("count")
+    plt.text(1, 100, text)
     
-    if log_scale:
-        hist, bins, _ = axs[1].hist(obj_list, bins=n_bins)
-        logbins = np.logspace(np.log10(bins[0]),np.log10(bins[-1]),len(bins))
-        axs[0].hist(obj_list, bins=logbins)
-        axs[0].set_xscale('log')
-    else:
-        axs[0].hist(obj_list, bins=n_bins)
+    # plt.show()
+    plt.savefig(figure_path)
+    
 
-    axs[0].set_xlabel(x_label)
-    axs[0].set_ylabel("Count")
-    plt.show()
-    # plt.savefig("230316_amp_1part_ON_rel_dist.svg")
-    
 def plot_metric(metric_list: np.ndarray, label: str):
+
     generations = np.arange(len(metric_list))
 
     fig, ax = plt.subplots(1, 1, figsize= (4, 4))
@@ -38,24 +35,37 @@ def plot_metric(metric_list: np.ndarray, label: str):
     ax.set_ylabel(label)
     plt.savefig("Amplifier_"+label+"_"+str(len(generations)-1)+".svg")
 
-with open("Results/GA_results/230316_Amplifier_n_gen20_pop.pkl", "rb") as fid:
-    amp_GA = pickle.load(fid)
+def plot_pareto(figure_path, all_obj, top_obj):
+    fig, ax = plt.figure()
 
-# print(type(amp_GA["genotype"]))
-# print(amp_GA["phenotype"])
-# print(np.arange(len(amp_GA["phenotype"])))
-# print(amp_GA["obj_min"][-1])
-# print(amp_GA["circuit_min"][-1][0].edge_list)
+# Amplifier single cell GA with constant dose, Z_mat sampling
+# with population model
+path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
+        "2023-10-20_Amplifier_Z_matrix_samples_obj/" + 
+        "Z_mat_sampling_all_GA_circuits.pkl")
+amp_const_dose = pd.read_pickle(path)
 
-# plot_metric(amp_GA["phenotype"], "Phenotype")
+ON_rel_range = amp_const_dose["objectives_range"].tolist()
+ON_rel_range_mean = round(np.mean(ON_rel_range), 4)
+fig_text = "mean = " + str(ON_rel_range_mean)
+fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
+        "2023-10-20_Amplifier_Z_matrix_samples_obj/" + 
+        "ON_rel_range_distribution.svg")
+plot_obj_distribution(fig_path, ON_rel_range, 
+                      "ON_rel range", fig_text)
 
+# Amplifier single cell GA with varied dose, Z_mat sampling
+# with population model
+path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
+        "2023-10-20_Amplifier_Z_matrix_samples_obj_vary_dose/" + 
+        "Z_mat_sampling_all_GA_circuits.pkl")
+amp_varied_dose = pd.read_pickle(path)
 
-
-plot_obj_distribution(
-    Z_200[:, 0],
-    "mean-centered fluor. (log10 a.u.)",
-    n_bins=20,
-    log_scale=True
-)
-
-# print(Z_20[:, 1])
+ON_rel_range_varied_dose = amp_varied_dose["objectives_range"].tolist()
+ON_rel_range_vd_mean = round(np.mean(ON_rel_range_varied_dose), 4)
+fig_text_vd = "mean = " + str(ON_rel_range_vd_mean)
+fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
+        "2023-10-20_Amplifier_Z_matrix_samples_obj_vary_dose/" + 
+        "ON_rel_range_distribution.svg")
+plot_obj_distribution(fig_path, ON_rel_range_varied_dose,
+                      "ON_rel range", fig_text_vd)
