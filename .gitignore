@@ -101,6 +101,7 @@ dmypy.json
 
 # Results folders
 Results/Combinatorial_results
+GA_results
 
 # generally informed by:
 # https://gist.github.com/GhostofGoes/94580e76cd251972b15b4821c8a06f59/

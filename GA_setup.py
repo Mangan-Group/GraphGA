@@ -42,7 +42,8 @@ def single_obj_GA(
     all_circuits = []
     all_circuits.append(population)
 
-    # index of list that contains min obj function
+    # index of obj list that contains min 
+    # obj function
     ind_min = np.argmin(obj)
     obj_min[0] = obj[ind_min]
     circuit_min = []
