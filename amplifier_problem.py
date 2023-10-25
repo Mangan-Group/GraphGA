@@ -21,7 +21,11 @@ class Amplifier:
             DsRed_inhibitor: bool,
             num_dict: dict, 
             n_gen: int,
+            probability_crossover: float, 
+            probability_mutation: float,
+            mutate_dose: bool=False,
             pop: bool=False,
+            CI: float=None,
             Z_mat: np.ndarray=Z_20,
             num_processes: int=None, 
             ) -> None:
@@ -34,6 +38,11 @@ class Amplifier:
         self.inhibitor = inhibitor
         self.num_dict = num_dict
         self.n_gen = n_gen
+        self.prob_crossover = probability_crossover
+        self.prob_mutation = probability_mutation
+        self.mutate_dose = mutate_dose
+        self.pop = pop
+        self.CI = CI
         self.num_processes = num_processes
         self.system_eqs = system_equations_pop
         

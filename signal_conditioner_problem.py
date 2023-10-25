@@ -21,7 +21,12 @@ class SignalConditioner:
             DsRed_inhibitor: bool,
             num_dict: dict, 
             n_gen: int,
+            probability_crossover: float, 
+            probability_mutation: float,
+            mutate_dose: bool=False,
             pop: bool=False,
+            CI: list=None,
+            Z_mat: np.ndarray=Z_20,
             num_processes: int=None, 
             ) -> None:
         
@@ -33,6 +38,11 @@ class SignalConditioner:
         self.inhibitor = inhibitor
         self.num_dict = num_dict
         self.n_gen = n_gen
+        self.prob_crossover = probability_crossover
+        self.prob_mutation = probability_mutation
+        self.mutate_dose = mutate_dose
+        self.pop = pop
+        self.CI = CI
         self.num_processes = num_processes
         self.system_eqs = system_equations_pop
         
@@ -44,7 +54,7 @@ class SignalConditioner:
             # set ref = simulation for 20-cell population
             self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
-            self.Z = Z_20
+            self.Z = Z_mat
             # set simulate function for population using multiprocessing
             self.simulate = self.simulate_pop
         else:
@@ -82,14 +92,23 @@ class SignalConditioner:
         max_time: int =42
     ):
 
+        pop_rep_off = []
+        pop_rep_on = []
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
-        with Pool(self.num_processes) as pool:
-            results = pool.starmap(
-                self.simulate_cell,
-                zipped_args,
-            )
-        pop_rep_off, pop_rep_on = zip(*results)
+        for cell in range(0, nc):
+            rep_off, rep_on = self.simulate_cell(
+                zipped_args[cell][0],
+                zipped_args[cell][1],
+                zipped_args[cell][2])
+            pop_rep_off.append(rep_off)
+            pop_rep_on.append(rep_on)
+        # with Pool(self.num_processes) as pool:
+        #     results = pool.starmap(
+        #         self.simulate_cell,
+        #         zipped_args,
+        #     )
+        # pop_rep_off, pop_rep_on = zip(*results)
         rep_off_mean = np.mean(pop_rep_off)
         rep_on_mean = np.mean(pop_rep_on)
         return rep_off_mean, rep_on_mean

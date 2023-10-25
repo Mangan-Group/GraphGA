@@ -22,7 +22,12 @@ class PulseGenerator:
             DsRed_inhibitor: bool,
             num_dict: dict, 
             n_gen: int,
+            probability_crossover: float, 
+            probability_mutation: float,
+            mutate_dose: bool=False,
             pop: bool=False,
+            CI: list=None,
+            Z_mat: np.ndarray=Z_20,
             num_processes: int=None, 
             ) -> None:
         
@@ -34,6 +39,11 @@ class PulseGenerator:
         self.inhibitor = inhibitor
         self.num_dict = num_dict
         self.n_gen = n_gen
+        self.prob_crossover = probability_crossover
+        self.prob_mutation = probability_mutation
+        self.mutate_dose = mutate_dose
+        self.pop = pop
+        self.CI = CI
         self.num_processes = num_processes
         self.system_eqs = system_equations_pop
         
@@ -45,7 +55,7 @@ class PulseGenerator:
             # set ref = simulation for 20-cell population
             self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
-            self.Z = Z_20
+            self.Z = Z_mat
             # set simulate function for population using multiprocessing
             self.simulate = self.simulate_pop
         else:
@@ -76,18 +86,25 @@ class PulseGenerator:
         topology: object, 
         max_time: int =42
     ):
-
+        rep_on_ts_all = []
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
-        with Pool(self.num_processes) as pool:
-            results = pool.starmap(
-                self.simulate_cell,
-                zipped_args,
-            )
+        for cell in range(0, nc):
+            rep_on_ts = self.simulate_cell(                
+                zipped_args[cell][0],
+                zipped_args[cell][1],
+                zipped_args[cell][2])
+            rep_on_ts_all.append(rep_on_ts)
+        rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
+        # with Pool(self.num_processes) as pool:
+        #     results = pool.starmap(
+        #         self.simulate_cell,
+        #         zipped_args,
+        #     )
 
-        rep_on_ts_mean = [np.mean(k) for k in zip(*results)]
-        rep_on_ts_all = results
-        return rep_on_ts_mean #, rep_on_ts_all
+        # rep_on_ts_means = [np.mean(k) for k in zip(*results)]
+        # rep_on_ts_all = results
+        return rep_on_ts_means #, rep_on_ts_all
 
     def calc_rep_rel(self, topology, rep_on_ts):
         reference_on = self.ref[topology.promo_node]['on']
@@ -129,6 +146,8 @@ class PulseGenerator:
     ):
         rep_on_ts = self.simulate(topology)
         rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        # want peak_rel >= 0.25
         peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        # want prominence_rel >= 0.2
         prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
         return [-peak_rel, -prominence_rel]

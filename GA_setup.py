@@ -4,6 +4,7 @@ from copy import deepcopy
 import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from pymoo.indicators.hv import HV
 from rankcrowding import RankAndCrowding
@@ -20,19 +21,17 @@ from diversity_metrics import (
 def single_obj_GA(
         folder_path: str,
         problem: object,
-        n_gen: int,
         population: np.ndarray,
         num_circuits: int, 
         obj: np.ndarray,
-        probability_crossover: float,
-        probability_mutation: float,
-        mutate_dose: bool,
+        get_unique: bool=False,
         metrics: bool =False
 ):
+    
     # create list to store min obj function, 
     # circuits with min obj function for each
     # generation
-    obj_min = np.zeros(n_gen + 1)
+    obj_min = np.zeros(problem.n_gen + 1)
 
     # create list to store all obj functions 
     # and circuits for initial population 
@@ -54,18 +53,18 @@ def single_obj_GA(
     # if storing metrics, create lists for those
     # metrics and store initial population value
     if metrics:
-        geno = np.zeros(n_gen+1)
+        geno = np.zeros(problem.n_gen+1)
         geno[0] = geno_diversity(population)
 
         pheno = np.zeros_like(geno)
         pheno[0] = pheno_diversity(obj)
 
-    for gen in range(n_gen):
+    for gen in range(problem.n_gen):
         # perform crossover to generate new
         # population (children) from parent 
         # circuits if randomly generated float  
         # is less than probability_crossover
-        if np.random.uniform() < probability_crossover:
+        if np.random.uniform() < problem.prob_crossover:
             children = crossover(population, obj)
         else:
             children = deepcopy(population)
@@ -75,8 +74,8 @@ def single_obj_GA(
         # than probability_mutation (used 
         # in mutate function)
         mutate(problem, children, 
-               probability_mutation, 
-               dose=mutate_dose
+               problem.prob_mutation, 
+               dose=problem.mutate_dose
         )
 
         # simulate topology and calculate obj
@@ -115,39 +114,20 @@ def single_obj_GA(
              geno[gen+1] = geno_diversity(population)
              pheno[gen+1] = pheno_diversity(obj)
 
-        print("generation "+ str(gen) + "  complete")
+        print("generation "+ str(gen) + " complete")
     
     # print in which gen the min obj first appeared
-    print(first_seen(obj_min))
-    print(circuit_min[-1][0].dose)
+    # print(first_seen(obj_min))
+    # print(circuit_min[-1][0].dose)
 
     # reshape all_obj and all_circuits to be 
     # 1 column arrays
     all_obj = np.asarray(all_obj).reshape(
-        num_circuits*(1 + n_gen), 1)
+        num_circuits*(1 + problem.n_gen), 1)
     all_circuits = np.asarray(all_circuits).reshape(
-        num_circuits*(1 + n_gen), 1)
+        num_circuits*(1 + problem.n_gen), 1)
     
-    # print minimum objectives from each
-    # generation
-    # print("minimum objectives: ", obj_min)
-    # unique objectives and circuits for all
-    # objectives and all_circuits (all gens)
-    unique_obj, unique_indices = np.unique(all_obj,
-                                            return_index=True)
-    unique_circuits = all_circuits[unique_indices]
-
-    print(len(unique_circuits))
-
-    # save results as .pkl files
-    file_name = "minimum_obj_all_gens.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(obj_min, fid)
-
-    file_name = "min_obj_circuit_all_gens.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(circuit_min, fid)
-
+    # save results for either single cell or population
     file_name = "all_objectives.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(all_obj, fid)
@@ -155,32 +135,98 @@ def single_obj_GA(
     file_name = "all_circuits.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(all_circuits, fid)
+    
+    if problem.pop:
+        all_obj = all_obj.flatten()*-1
+        sorted_index = np.lexsort([all_obj])
+        sorted_all_obj = all_obj[sorted_index]
+        sorted_all_ciruits = all_circuits[sorted_index]
+        index_obj_within_CI = np.argwhere(
+            sorted_all_obj >= sorted_all_obj[-1] - 
+            problem.CI).flatten()
+        final_objs_within_CI = sorted_all_obj[
+            index_obj_within_CI]
+        final_circuits_within_CI = sorted_all_ciruits[
+            index_obj_within_CI]
+        
+        if problem.min_dose != problem.max_dose:
+            edges_circuits_within_CI = []
+            for circuit in final_circuits_within_CI:
+                circuit_edges = circuit[0].edge_list
+                for key, val in circuit[0].dose.items():
+                    circuit_edges.append((key, val))
+                edges_circuits_within_CI.append(circuit_edges)
+            unique_edges_set = set(map(frozenset, edges_circuits_within_CI))
 
-    file_name = "all_unique_obj.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(unique_obj, fid)
+        else:
+            edges_circuits_within_CI = []
+            for circuit in final_circuits_within_CI:
+                edges_circuits_within_CI.append(circuit[0].edge_list)
 
-    file_name = "all_unique_circuits.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(unique_circuits, fid)
+            unique_edges_set = set(map(frozenset, edges_circuits_within_CI))
 
-    # plot graph of circuit with final min 
-    # objective
-    graph_file_name = "circuit_with_min_obj"
-    plot_graph(circuit_min[-1][0], 
-                folder_path + "/" + graph_file_name)
+        # save final objs, circuits within confidence
+        # interval (CI), and unique_edges_list (not
+        # order by obj function)
+        file_name = "final_objs_within_CI.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(final_objs_within_CI, fid)
+
+        file_name = "final_circuits_within_CI.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(final_circuits_within_CI, fid)
+
+        file_name = "unique_edges_set.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(unique_edges_set, fid)
+        
+
+        graph_file_name = "circuit_with_min_obj"
+        plot_graph(final_circuits_within_CI[-1, 0], 
+            folder_path + "/" + graph_file_name)
+
+    else:
+        # save single cell specific results as .pkl files
+        file_name = "minimum_obj_all_gens.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(obj_min, fid)
+
+        file_name = "min_obj_circuit_all_gens.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(circuit_min, fid)
+    
+        # plot graph of circuit with final min 
+        # objective
+        graph_file_name = "circuit_with_min_obj"
+        plot_graph(circuit_min[-1][0], 
+                    folder_path + "/" + graph_file_name)
+
+        if get_unique:
+            # unique objectives and circuits for all
+            # objectives and all_circuits (all gens),
+            # for determining population model CI
+            unique_obj, unique_indices = np.unique(all_obj,
+                                                    return_index=True)
+            unique_circuits = all_circuits[unique_indices]
+
+            print(len(unique_circuits))
+
+            file_name = "all_unique_obj.pkl"
+            with open(folder_path + "/" + file_name, "wb") as fid:
+                pickle.dump(unique_obj, fid)
+
+            file_name = "all_unique_circuits.pkl"
+            with open(folder_path + "/" + file_name, "wb") as fid:
+                pickle.dump(unique_circuits, fid)
 
 
 def multi_obj_GA(
         folder_path: str,
         problem: object, 
-        n_gen: int,
         population: np.ndarray,
         num_circuits: int,
         obj: np.ndarray,
-        probability_crossover: float,
-        probability_mutation: float,
-        mutate_dose: bool,
+        get_unique: bool=False,
         plot: str=False
 ):
     
@@ -204,7 +250,7 @@ def multi_obj_GA(
     # sorting class (to sort multi-objective
     # and determine pareto front)
     nds = RankAndCrowding()
-    for gen in range(n_gen):
+    for gen in range(problem.n_gen):
         # sort objectives using non-dominated
         # sorting algorithm and return ranks 
         # for each circuit index in population
@@ -214,7 +260,7 @@ def multi_obj_GA(
         # population (children) from parent 
         # circuits if randomly generated float  
         # is less than probability_crossover
-        if np.random.uniform() < probability_crossover:
+        if np.random.uniform() < problem.prob_crossover:
             children = crossover(population, obj, rank_dict)
         else:
             children = deepcopy(population)
@@ -224,8 +270,8 @@ def multi_obj_GA(
         # than probability_mutation (used 
         # in mutate function)
         mutate(problem, children, 
-                probability_mutation, 
-                dose=mutate_dose
+                problem.prob_mutation, 
+                dose=problem.mutate_dose
         )
 
         # simulate topology and calculate obj
@@ -257,7 +303,7 @@ def multi_obj_GA(
         # append hypervolume to list
         hypervolumes.append(hv(obj))
 
-        print("generation "+ str(gen) + "  complete")
+        print("generation "+ str(gen) + " complete")
 
     fronts = NonDominatedSorting().do(obj)
 
@@ -271,24 +317,18 @@ def multi_obj_GA(
                 inhib = "Inhibitors"
         types.append(inhib)
 
-    obj_df = pd.DataFrame(obj, columns=["ON_rel", "FI_rel"])
+    obj_df = pd.DataFrame(obj*-1, columns=["ON_rel", "FI_rel"])
     obj_df["type"] = types
 
     # reshape all_obj to be 2 column array and
     # all_circuits to be to be 1 column array
     all_obj = np.asarray(
-        all_obj).reshape(num_circuits*(1 + n_gen), 2)
+        all_obj).reshape(num_circuits*(1 + problem.n_gen), 2)
     all_circuits = np.asarray(all_circuits).reshape(
-        num_circuits*(1 + n_gen), 1)
+        num_circuits*(1 + problem.n_gen), 1)
     
     # print final objectives
-    print("final objectivces: ", obj)
-    # unique objectives and circuits for all
-    # objectives and all_circuits (all gens)
-    unique_obj, unique_indices = np.unique(all_obj,
-                                           axis=0,
-                                            return_index=True)
-    unique_circuits = all_circuits[unique_indices]
+    # print("final objectivces: ", obj)
 
     # save results as .pkl files
     file_name = "final_objectives_df_with_type.pkl"
@@ -296,7 +336,7 @@ def multi_obj_GA(
  
     file_name = "final_population.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(population)
+        pickle.dump(population, fid)
 
     file_name = "all_objectives.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
@@ -306,17 +346,103 @@ def multi_obj_GA(
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(all_circuits, fid)
 
-    file_name = "all_unique_obj.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(unique_obj, fid)
-
-    file_name = "all_unique_circuits.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(unique_circuits, fid)
-
     file_name = "hypervolumes.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(hypervolumes, fid)
+    print(hypervolumes)
+    # objectives within both CIs for objs on
+    # pareto front
+    if problem.pop:
+        S_all = nds.do(all_obj, len(all_obj))
+        sorted_all_obj = all_obj[S_all, :]*-1
+        sorted_all_circuits = all_circuits[S_all]
+        index_obj_within_CI = np.argwhere(
+            (all_obj[:, 0] >= obj[:, 0] - problem.CI[0]) &
+            (all_obj[:, 1] >= obj[:, 1] - problem.CI[1])
+            ).flatten()
+        final_objs_within_CI = sorted_all_obj[
+            index_obj_within_CI]
+        final_circuits_within_CI = sorted_all_circuits[
+            index_obj_within_CI]
+
+        edges_circuits_within_CI = []
+        for circuit in final_circuits_within_CI:
+            circuit_edges = circuit[0].edge_list
+            for key, val in circuit[0].dose.items():
+                circuit_edges.append((key, val))
+            edges_circuits_within_CI.append(circuit_edges)
+        unique_edges_set = set(map(frozenset, edges_circuits_within_CI))
+
+        types_CI = []
+        for topo in final_circuits_within_CI:
+            inhib = "Activators"
+            for part in topo[0].part_list:
+                if part[0] == "I":
+                    inhib = "Inhibitors"
+            types_CI.append(inhib)
+
+        types_all = types.extend(types_CI)
+        obj_within_CI = np.vstack((obj*-1, final_objs_within_CI))
+        obj_within_CI_df = pd.DataFrame(obj_within_CI, columns=["ON_rel", "FI_rel"])
+        obj_within_CI_df["types"] = types_all
+
+        # save final objs, circuits within confidence
+        # interval (CI), and unique_edges_list (not
+        # order by obj function)
+        file_name = "all_obj_within_CI_df_with_type.pkl"
+        obj_within_CI_df.to_pickle(folder_path + "/" + file_name)
+
+        file_name = "final_objs_within_CI.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(final_objs_within_CI, fid)
+
+        file_name = "final_circuits_within_CI.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(final_circuits_within_CI, fid)
+
+        file_name = "unique_edges_set.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(unique_edges_set, fid)
+
+        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+        sns.scatterplot(data=obj_within_CI_df, x= obj_within_CI_df["ON_rel"],
+                        y= obj_within_CI_df["FI_rel"], hue='type', 
+                        palette="colorblind", ax=ax)
+        plt.title("Signal Conditioner Population Pareto Front")
+        plt.ylabel("FI_rel")
+        plt.xlabel("ON_rel")
+        plt.savefig("population_pareto_front.svg", bbox_inches="tight")
+
+    # for single cell model, plot pareto front:
+    else:
+        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+        sns.scatterplot(data=obj_df, x= obj_df["ON_rel"],
+                        y= obj_df["FI_rel"], hue='type', 
+                        palette="colorblind", ax=ax)
+        plt.title("Signal Conditioner Pareto Front")
+        plt.ylabel("FI_rel")
+        plt.xlabel("ON_rel")
+        plt.savefig("pareto_front.svg", bbox_inches="tight")
+
+
+    if get_unique:
+        # unique objectives and circuits for all
+        # objectives and all_circuits (all gens),
+        # for determining population model CI
+        unique_obj, unique_indices = np.unique(all_obj,
+                                        axis=0,
+                                        return_index=True)
+        unique_circuits = all_circuits[unique_indices]
+
+        print(len(unique_circuits))
+
+        file_name = "all_unique_obj.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(unique_obj, fid)
+
+        file_name = "all_unique_circuits.pkl"
+        with open(folder_path + "/" + file_name, "wb") as fid:
+            pickle.dump(unique_circuits, fid)
 
     if plot:
         for i, circuit in enumerate(population):
