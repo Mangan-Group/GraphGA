@@ -65,8 +65,8 @@ class PulseGenerator:
             # set simulate function for single cell
             self.simulate = self.simulate_cell
 
-    @staticmethod
     def simulate_cell(
+        self,
         topology: object,
         max_time: int =42,
         Z_row: np.ndarray = np.ones(5)
@@ -74,7 +74,7 @@ class PulseGenerator:
 
         t = np.arange(0, max_time + 1, 1)
         rep_on_ts = odeint(
-            system_equations_pop,
+            self.system_eqs,
             np.zeros(topology.num_states * 2),
             t, 
             args=('on', Z_row, topology,)
