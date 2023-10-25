@@ -356,14 +356,20 @@ def multi_obj_GA(
         S_all = nds.do(all_obj, len(all_obj))
         sorted_all_obj = all_obj[S_all, :]*-1
         sorted_all_circuits = all_circuits[S_all]
-        index_obj_within_CI = np.argwhere(
-            (all_obj[:, 0] >= obj[:, 0] - problem.CI[0]) &
-            (all_obj[:, 1] >= obj[:, 1] - problem.CI[1])
-            ).flatten()
-        final_objs_within_CI = sorted_all_obj[
-            index_obj_within_CI]
-        final_circuits_within_CI = sorted_all_circuits[
-            index_obj_within_CI]
+        i = 0
+        index_obj_within_CI = []
+        for row1 in sorted_all_obj:
+            for row2 in obj:
+                if ((row1[0] >= row2[0] - problem.CI[0]) & 
+                    (row1[1] >= row2[1] - problem.CI[1])):
+                    # print(row1, row2)
+                    index_obj_within_CI.append(i)
+                    # print(i)
+                    break
+            i += 1
+        final_objs_within_CI = sorted_all_obj[index_obj_within_CI]
+        final_circuits_within_CI = sorted_all_circuits[index_obj_within_CI]
+
 
         edges_circuits_within_CI = []
         for circuit in final_circuits_within_CI:
@@ -381,10 +387,10 @@ def multi_obj_GA(
                     inhib = "Inhibitors"
             types_CI.append(inhib)
 
-        types_all = types.extend(types_CI)
+        types.extend(types_CI)
         obj_within_CI = np.vstack((obj*-1, final_objs_within_CI))
         obj_within_CI_df = pd.DataFrame(obj_within_CI, columns=["ON_rel", "FI_rel"])
-        obj_within_CI_df["types"] = types_all
+        obj_within_CI_df["type"] = types
 
         # save final objs, circuits within confidence
         # interval (CI), and unique_edges_list (not
@@ -408,10 +414,20 @@ def multi_obj_GA(
         sns.scatterplot(data=obj_within_CI_df, x= obj_within_CI_df["ON_rel"],
                         y= obj_within_CI_df["FI_rel"], hue='type', 
                         palette="colorblind", ax=ax)
+        plt.title("Signal Conditioner Population CI Pareto Front")
+        plt.ylabel("FI_rel")
+        plt.xlabel("ON_rel")
+        plt.savefig("population_CI_pareto_front.svg", bbox_inches="tight")
+
+        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+        sns.scatterplot(data=obj_df, x= obj_df["ON_rel"],
+                        y= obj_df["FI_rel"], hue='type', 
+                        palette="colorblind", ax=ax)
         plt.title("Signal Conditioner Population Pareto Front")
         plt.ylabel("FI_rel")
         plt.xlabel("ON_rel")
         plt.savefig("population_pareto_front.svg", bbox_inches="tight")
+
 
     # for single cell model, plot pareto front:
     else:

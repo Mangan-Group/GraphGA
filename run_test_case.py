@@ -272,7 +272,7 @@ settings = {
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": False,
+    "DsRed_inhibitor": True,
     "num_dict": {1: 46, 2: 122},
     "n_gen": 50,
     "probability_crossover": 0.32,
@@ -285,7 +285,7 @@ settings = {
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_cond_pop_inhibitor_seed_"
+    "folder_name": "Signal_cond_pop_DsRED_inhibitor_seed_"
 }
 
 
@@ -299,7 +299,7 @@ settings = {
 for seed in range(0, 1):
     np.random.seed(seed)
     settings["seed"] = seed
-    settings["folder_name"] = "Signal_cond_pop_inhibitor_seed_" + str(seed)
+    settings["folder_name"] = "Signal_cond_pop_DsRED_inhibitor_seed_" + str(seed)
 
     run(SignalConditioner, settings)
     print("seed "+str(seed)+" complete")

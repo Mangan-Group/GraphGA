@@ -37,20 +37,21 @@ def plot_metric(metric_list: np.ndarray, label: str):
 
 def plot_hypervolumes(hypervolumes_list: np.ndarray,
                       testcase: str, gens_to_plot: int,
-                      y_lower: float):
+                      y_lower: float, path: str):
 
-    generations = np.arange(len(hypervolumes_list))
+    generations = np.arange(50)[-gens_to_plot:]
 
-    gens_to_plot = generations[-gens_to_plot:]
-    hvs_to_plot = [l[-gens_to_plot:] for l in hypervolumes_list]
+    # gens_to_plot = generations[-gens_to_plot:]
+    # hvs_to_plot = [l[-gens_to_plot:] for l in hypervolumes_list]
 
     fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-    for hvs in hvs_to_plot:
-        ax.plot(gens_to_plot, hvs)
+    for hvs in hypervolumes_list:
+        ax.plot(generations, hvs)
     ax.set_xlabel("Generation")
-    ax.set_ylabel("Hypervolumes")
-    ax.set_ylim(bottom=y_lower)
-    plt.savefig(testcase + "_hypervolumes.svg")
+    ax.set_ylabel("Hypervolume")
+    # ax.set_ylim(bottom=y_lower)
+    plt.show()
+    # plt.savefig(path + testcase + "_hypervolumes.svg")
 
 # Amplifier single cell GA with constant dose, Z_mat sampling
 # with population model
@@ -101,15 +102,30 @@ def plot_hypervolumes(hypervolumes_list: np.ndarray,
 
 # Signal Conditioner single cell GA with inhibitor, Z_mat sampling
 # with population model
-path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-        "2023-10-24_SignalConditioner_Z_matrix_samples_obj/" +
-        "Z_mat_sampling_all_GA_circuits.pkl")
-SC_varied_dose = pd.read_pickle(path)
-FI_rel_range = SC_varied_dose["objectives[1]_range"].tolist()
-FI_rel_range_mean = round(np.mean(FI_rel_range), 4)
-fig_text = "mean = " + str(FI_rel_range_mean)
-fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-            "2023-10-24_SignalConditioner_Z_matrix_samples_obj/" +
-            "FI_rel_range_distribution.svg")
-plot_obj_distribution(fig_path, FI_rel_range, 
-                      "FI_rel range", fig_text) 
+# path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
+#         "2023-10-24_SignalConditioner_Z_matrix_samples_obj/" +
+#         "Z_mat_sampling_all_GA_circuits.pkl")
+# SC_varied_dose = pd.read_pickle(path)
+# FI_rel_range = SC_varied_dose["objectives[1]_range"].tolist()
+# FI_rel_range_mean = round(np.mean(FI_rel_range), 4)
+# fig_text = "mean = " + str(FI_rel_range_mean)
+# fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
+#             "2023-10-24_SignalConditioner_Z_matrix_samples_obj/" +
+#             "FI_rel_range_distribution.svg")
+# plot_obj_distribution(fig_path, FI_rel_range, 
+#                       "FI_rel range", fig_text) 
+
+# Signal Conditioner single cell GA hypervolumes for all seeds
+hv_list = []
+for seed in range(0, 20):
+    path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
+            "SC_seed_single_cell_DsRED_inhibitor/2023-10-24_Signal_cond_single_cell_DsRED_inhibitor_seed_" +
+            str(seed) + "/hypervolumes.pkl")
+    with open(path, "rb") as fid:
+        hv = pickle.load(fid)
+    hv_list.append(hv[-40:])
+
+# print(hv_list)
+
+plot_hypervolumes(hv_list, "signal_conditioner", 40, 47.3, "/Users/kdreyer/Documents/Github/GraphGA/GA_results SC_seed_single_cell_DsRED_inhibitor/")
+    
