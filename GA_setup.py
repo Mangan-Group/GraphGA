@@ -140,13 +140,13 @@ def single_obj_GA(
         all_obj = all_obj.flatten()*-1
         sorted_index = np.lexsort([all_obj])
         sorted_all_obj = all_obj[sorted_index]
-        sorted_all_ciruits = all_circuits[sorted_index]
+        sorted_all_circuits = all_circuits[sorted_index]
         index_obj_within_CI = np.argwhere(
             sorted_all_obj >= sorted_all_obj[-1] - 
             problem.CI).flatten()
         final_objs_within_CI = sorted_all_obj[
             index_obj_within_CI]
-        final_circuits_within_CI = sorted_all_ciruits[
+        final_circuits_within_CI = sorted_all_circuits[
             index_obj_within_CI]
         
         if problem.min_dose != problem.max_dose:
