@@ -738,7 +738,7 @@ def add_node(g, circuit_tf_list, min_dose=10,
                 if new_edges[i] in same_out:
                     new_edges.pop(i)
 
-            # get our edges for new node
+            # get out edges for new node
             new_node_out = get_out_path(new_node, g.part_list)
 
             # Add new edges from new_node_out to 
@@ -884,7 +884,7 @@ def mutate_edge(g, inhibitor=False):
             # if circuit does not have all possible edges
             # add or remove edges with 50/50 probability
             if np.random.uniform() < 0.5:
-                # available dges to add are not in circuit but
+                # available edges to add are not in circuit but
                 # are in full list of edges
                 edge_avail = [k for k in edge_full if k not in g.graph.edges]
                 # choose random edge to add

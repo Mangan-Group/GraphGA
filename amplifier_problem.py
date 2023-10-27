@@ -27,7 +27,8 @@ class Amplifier:
             pop: bool=False,
             CI: float=None,
             Z_mat: np.ndarray=Z_20,
-            num_processes: int=None, 
+            num_processes: int=None,
+            obj_label: str="ON_rel" 
             ) -> None:
         
         self.promo_node = promo_node
@@ -44,6 +45,7 @@ class Amplifier:
         self.pop = pop
         self.CI = CI
         self.num_processes = num_processes
+        self.obj_label = obj_label
         self.system_eqs = system_equations_pop
         
         if inhibitor:

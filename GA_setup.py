@@ -16,6 +16,12 @@ from diversity_metrics import (
     geno_diversity,
     pheno_diversity
 )
+from plot_search_results import(
+    plot_graph,
+    plot_1D_obj_scatter,
+    plot_pareto_front, 
+    plot_hypervolume
+)
 
 # set up GA for single objective
 def single_obj_GA(
@@ -73,15 +79,17 @@ def single_obj_GA(
         # randomly generated float is less 
         # than probability_mutation (used 
         # in mutate function)
-        mutate(problem, children, 
-               problem.prob_mutation, 
-               dose=problem.mutate_dose
+        mutate(
+            problem, children, 
+            problem.prob_mutation, 
+            dose=problem.mutate_dose
         )
 
         # simulate topology and calculate obj
         # function for each circuit in children
         # and append to obj array
-        obj_children = np.asarray([problem.func(g[0]) for g in children])
+        obj_children = np.asarray(
+            [problem.func(g[0]) for g in children])
         obj = np.append(obj, obj_children)
 
         # append obj of children and children
@@ -137,53 +145,47 @@ def single_obj_GA(
         pickle.dump(all_circuits, fid)
     
     if problem.pop:
-        all_obj = all_obj.flatten()*-1
-        sorted_index = np.lexsort([all_obj])
-        sorted_all_obj = all_obj[sorted_index]
-        sorted_all_circuits = all_circuits[sorted_index]
-        index_obj_within_CI = np.argwhere(
-            sorted_all_obj >= sorted_all_obj[-1] - 
-            problem.CI).flatten()
-        final_objs_within_CI = sorted_all_obj[
-            index_obj_within_CI]
-        final_circuits_within_CI = sorted_all_circuits[
-            index_obj_within_CI]
-        
-        if problem.min_dose != problem.max_dose:
-            edges_circuits_within_CI = []
-            for circuit in final_circuits_within_CI:
-                circuit_edges = circuit[0].edge_list
-                for key, val in circuit[0].dose.items():
-                    circuit_edges.append((key, val))
-                edges_circuits_within_CI.append(circuit_edges)
-            unique_edges_set = set(map(frozenset, edges_circuits_within_CI))
+        circuit_edge_lists = []
+        for circuit in all_circuits:
+            circuit_edges = circuit[0].edge_list
+            for key, val in circuit[0].dose.items():
+                circuit_edges.append((key, str(val)))
+            circuit_edge_lists.append(circuit_edges)
 
-        else:
-            edges_circuits_within_CI = []
-            for circuit in final_circuits_within_CI:
-                edges_circuits_within_CI.append(circuit[0].edge_list)
+        combo_edges_lists = []
+        for edges in circuit_edge_lists:
+            edge_combos = list([edge[0] + edge[1] for
+                edge in edges])
+            combo_edges_lists.append(edge_combos)
 
-            unique_edges_set = set(map(frozenset, edges_circuits_within_CI))
+        unique_edge_combo = []
+        index_list = []
+        seen = set()
+        for i, combo_list in enumerate(
+            combo_edges_lists):
+            combo_set = frozenset(combo_list)
+            if combo_set not in seen:
+                seen.add(combo_set)
+                index_list.append(i)
+                unique_edge_combo.append(combo_list)
 
-        # save final objs, circuits within confidence
-        # interval (CI), and unique_edges_list (not
-        # order by obj function)
-        file_name = "final_objs_within_CI.pkl"
+        unique_obj = all_obj[index_list]
+        unique_circuits = all_circuits[index_list]
+
+        file_name = "unique_objectives.pkl"
         with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(final_objs_within_CI, fid)
+            pickle.dump(unique_obj, fid)
 
-        file_name = "final_circuits_within_CI.pkl"
+        file_name = "unique_circuits.pkl"
         with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(final_circuits_within_CI, fid)
+            pickle.dump(unique_circuits, fid)
 
-        file_name = "unique_edges_set.pkl"
-        with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(unique_edges_set, fid)
-        
-
-        graph_file_name = "circuit_with_min_obj"
-        plot_graph(final_circuits_within_CI[-1, 0], 
-            folder_path + "/" + graph_file_name)
+        graph_file_name = "objs_scatter_plot.svg"
+        plot_1D_obj_scatter(
+            folder_path + "/" + graph_file_name,
+            unique_obj, 
+            problem.obj_label,
+        )
 
     else:
         # save single cell specific results as .pkl files
@@ -197,16 +199,18 @@ def single_obj_GA(
     
         # plot graph of circuit with final min 
         # objective
-        graph_file_name = "circuit_with_min_obj"
-        plot_graph(circuit_min[-1][0], 
-                    folder_path + "/" + graph_file_name)
+        graph_file_name = "circuit_with_min_obj.svg"
+        plot_graph(
+            folder_path + "/" + graph_file_name,
+            circuit_min[-1][0]
+        )
 
         if get_unique:
             # unique objectives and circuits for all
             # objectives and all_circuits (all gens),
             # for determining population model CI
             unique_obj, unique_indices = np.unique(all_obj,
-                                                    return_index=True)
+                                            return_index=True)
             unique_circuits = all_circuits[unique_indices]
 
             print(len(unique_circuits))
@@ -317,7 +321,7 @@ def multi_obj_GA(
                 inhib = "Inhibitors"
         types.append(inhib)
 
-    obj_df = pd.DataFrame(obj*-1, columns=["ON_rel", "FI_rel"])
+    obj_df = pd.DataFrame(obj, columns=["ON_rel", "FI_rel"])
     obj_df["type"] = types
 
     # reshape all_obj to be 2 column array and
@@ -326,9 +330,6 @@ def multi_obj_GA(
         all_obj).reshape(num_circuits*(1 + problem.n_gen), 2)
     all_circuits = np.asarray(all_circuits).reshape(
         num_circuits*(1 + problem.n_gen), 1)
-    
-    # print final objectives
-    # print("final objectivces: ", obj)
 
     # save results as .pkl files
     file_name = "final_objectives_df_with_type.pkl"
@@ -349,132 +350,104 @@ def multi_obj_GA(
     file_name = "hypervolumes.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(hypervolumes, fid)
-    print(hypervolumes)
-    # objectives within both CIs for objs on
-    # pareto front
+
+    graph_file_name = "final_population_pareto_front.svg"
+    plot_pareto_front(
+        folder_path + "/" + graph_file_name,
+        obj_df,
+        problem.obj_labels
+    )
+
     if problem.pop:
-        S_all = nds.do(all_obj, len(all_obj))
-        sorted_all_obj = all_obj[S_all, :]*-1
-        sorted_all_circuits = all_circuits[S_all]
-        i = 0
-        index_obj_within_CI = []
-        for row1 in sorted_all_obj:
-            for row2 in obj:
-                if ((row1[0] >= row2[0] - problem.CI[0]) & 
-                    (row1[1] >= row2[1] - problem.CI[1])):
-                    # print(row1, row2)
-                    index_obj_within_CI.append(i)
-                    # print(i)
-                    break
-            i += 1
-        final_objs_within_CI = sorted_all_obj[index_obj_within_CI]
-        final_circuits_within_CI = sorted_all_circuits[index_obj_within_CI]
+        # S_all = nds.do(all_obj, len(all_obj))
+        # sorted_all_obj = all_obj[S_all, :]
+        # sorted_all_circuits = all_circuits[S_all]
 
-
-        edges_circuits_within_CI = []
-        for circuit in final_circuits_within_CI:
+        circuit_edge_lists = []
+        for circuit in all_circuits:
             circuit_edges = circuit[0].edge_list
             for key, val in circuit[0].dose.items():
-                circuit_edges.append((key, val))
-            edges_circuits_within_CI.append(circuit_edges)
-        unique_edges_set = set(map(frozenset, edges_circuits_within_CI))
+                circuit_edges.append((key, str(val)))
+            circuit_edge_lists.append(circuit_edges)
 
-        types_CI = []
-        for topo in final_circuits_within_CI:
+        combo_edges_lists = []
+        for edges in circuit_edge_lists:
+            edge_combos = list([edge[0] + edge[1] for
+                edge in edges])
+            combo_edges_lists.append(edge_combos)
+
+        unique_edge_combo = []
+        index_list = []
+        seen = set()
+        for i, combo_list in enumerate(
+            combo_edges_lists):
+            combo_set = frozenset(combo_list)
+            if combo_set not in seen:
+                seen.add(combo_set)
+                index_list.append(i)
+                unique_edge_combo.append(combo_list)
+
+        unique_obj = all_obj[index_list]
+        unique_circuits = all_circuits[index_list]
+
+        unique_types = []
+        for topo in unique_circuits:
             inhib = "Activators"
             for part in topo[0].part_list:
                 if part[0] == "I":
                     inhib = "Inhibitors"
-            types_CI.append(inhib)
+            unique_types.append(inhib)
 
-        types.extend(types_CI)
-        obj_within_CI = np.vstack((obj*-1, final_objs_within_CI))
-        obj_within_CI_df = pd.DataFrame(obj_within_CI, columns=["ON_rel", "FI_rel"])
-        obj_within_CI_df["type"] = types
+        unique_obj_df = pd.DataFrame(unique_obj, columns=["ON_rel", "FI_rel"])
+        unique_obj_df["type"] = unique_types
 
-        # save final objs, circuits within confidence
-        # interval (CI), and unique_edges_list (not
-        # order by obj function)
-        file_name = "all_obj_within_CI_df_with_type.pkl"
-        obj_within_CI_df.to_pickle(folder_path + "/" + file_name)
-
-        file_name = "final_objs_within_CI.pkl"
+        file_name = "unique_objectives_df.pkl"
         with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(final_objs_within_CI, fid)
+            pickle.dump(unique_obj_df, fid)
 
-        file_name = "final_circuits_within_CI.pkl"
+        file_name = "unique_circuits.pkl"
         with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(final_circuits_within_CI, fid)
+            pickle.dump(unique_circuits, fid)
 
-        file_name = "unique_edges_set.pkl"
-        with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(unique_edges_set, fid)
-
-        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-        sns.scatterplot(data=obj_within_CI_df, x= obj_within_CI_df["ON_rel"],
-                        y= obj_within_CI_df["FI_rel"], hue='type', 
-                        palette="colorblind", ax=ax)
-        plt.title("Signal Conditioner Population CI Pareto Front")
-        plt.ylabel("FI_rel")
-        plt.xlabel("ON_rel")
-        plt.savefig("population_CI_pareto_front.svg", bbox_inches="tight")
-
-        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-        sns.scatterplot(data=obj_df, x= obj_df["ON_rel"],
-                        y= obj_df["FI_rel"], hue='type', 
-                        palette="colorblind", ax=ax)
-        plt.title("Signal Conditioner Population Pareto Front")
-        plt.ylabel("FI_rel")
-        plt.xlabel("ON_rel")
-        plt.savefig("population_pareto_front.svg", bbox_inches="tight")
-
+        # scatter plot of all obj values for all unique
+        # circuits in GA run
+        graph_file_name = "unique_obj_scatter_plot.svg"
+        plot_pareto_front(
+            folder_path + "/" + graph_file_name,
+            unique_obj_df,
+            problem.obj_labels
+        )
 
     # for single cell model, plot pareto front:
     else:
-        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-        sns.scatterplot(data=obj_df, x= obj_df["ON_rel"],
-                        y= obj_df["FI_rel"], hue='type', 
-                        palette="colorblind", ax=ax)
-        plt.title("Signal Conditioner Pareto Front")
-        plt.ylabel("FI_rel")
-        plt.xlabel("ON_rel")
-        plt.savefig("pareto_front.svg", bbox_inches="tight")
+        if get_unique:
+            # unique objectives and circuits for all
+            # objectives and all_circuits (all gens),
+            # for determining population model CI
+            unique_obj, unique_indices = np.unique(all_obj,
+                                            axis=0,
+                                            return_index=True)
+            unique_circuits = all_circuits[unique_indices]
 
+            print(len(unique_circuits))
 
-    if get_unique:
-        # unique objectives and circuits for all
-        # objectives and all_circuits (all gens),
-        # for determining population model CI
-        unique_obj, unique_indices = np.unique(all_obj,
-                                        axis=0,
-                                        return_index=True)
-        unique_circuits = all_circuits[unique_indices]
+            file_name = "all_unique_obj.pkl"
+            with open(folder_path + "/" + file_name, "wb") as fid:
+                pickle.dump(unique_obj, fid)
 
-        print(len(unique_circuits))
-
-        file_name = "all_unique_obj.pkl"
-        with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(unique_obj, fid)
-
-        file_name = "all_unique_circuits.pkl"
-        with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(unique_circuits, fid)
+            file_name = "all_unique_circuits.pkl"
+            with open(folder_path + "/" + file_name, "wb") as fid:
+                pickle.dump(unique_circuits, fid)
 
     if plot:
         for i, circuit in enumerate(population):
             graph_file_name = ("pareto_front_circuit_" 
                                + str(i))
-            plot_graph(circuit[0],
-                    folder_path + "/" + graph_file_name)
+            plot_graph(
+                folder_path + "/" + graph_file_name,
+                circuit[0]
+            )
                    
-
-def plot_graph(topology, file_name):
-    plt.figure()
-    plt.tight_layout()
-    nx.draw_networkx(topology.graph, arrows=True, arrowsize=15, 
-                     node_size=600, node_shape='s')
-    plt.savefig(file_name+".svg")
-
 
 def first_seen(progression):
 

@@ -28,7 +28,10 @@ class PulseGenerator:
             pop: bool=False,
             CI: list=None,
             Z_mat: np.ndarray=Z_20,
-            num_processes: int=None, 
+            num_processes: int=None,
+            obj_labels: list=["peak_rel",
+                "prominence_rel"
+            ]
             ) -> None:
         
         self.promo_node = promo_node
@@ -45,6 +48,7 @@ class PulseGenerator:
         self.pop = pop
         self.CI = CI
         self.num_processes = num_processes
+        self.obj_labels = obj_labels
         self.system_eqs = system_equations_pop
         
         if inhibitor:
