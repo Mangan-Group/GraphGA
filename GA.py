@@ -10,7 +10,7 @@ from itertools import combinations, permutations, product
 
 
 # Randomly generate a path from a part n to the reporter
-def get_out_path(n, part_list):
+def get_out_path(n, part_list, circuit_tf_list):
     # Build a list of potential parts and declare path
     out_list = [k for k in part_list if k != n]
     out_path = [n]
@@ -21,14 +21,32 @@ def get_out_path(n, part_list):
         # random selection of number of connections from
         # number of possible parts to connect to (1 fewer
         # than total length)
-        num_connect = np.random.randint(len(out_list))
+        num_connect = np.random.randint(len(out_list)+1)
         # add random parts to out_path of length num_connect
         out_path.extend(np.random.choice(out_list, num_connect, replace=False))
+        
+    need_z_reg = []
+    if n[0] == "I":
+        for i in out_path:
+            if i[0] == "Z":
+                need_z_reg.append(i)
+
+    # if part is inhibitor and regulates tf, tf needs
+    # to be regulated by another tf
+    # choose a random tf in circuit to regulaate the
+    # inhibitor regulated tf
+    z_added_edges = []
+    for i in need_z_reg:
+        z_reg = np.random.choice(circuit_tf_list)
+        z_added_edges.append((z_reg, i))
+
     # add reporter
     out_path.append('Rep')
 
     # Create edges using out_path
     edges = [(i, j) for i, j in zip(out_path[:-1], out_path[1:])]
+    # add necessary tf edges to edges
+    edges.append(z_added_edges)
 
     return edges
 
@@ -49,7 +67,7 @@ def get_in_path(n, promo_node, circuit_tf_list):
             # random selection of number of connections from
             # number of possible parts be connected to (1 fewer
             # than total length)
-            num_connect = np.random.randint(len(circuit_tf_list))
+            num_connect = np.random.randint(len(circuit_tf_list)+1)
             # add random parts to in_path of length num_connect
             # not using inhibitors because direct connection must 
             # be a tf or promoter
@@ -104,7 +122,7 @@ def get_edges(promo_node, part_list):
                 if edge not in edge_list:
                     edge_list.append(edge)
 
-            out_edges = get_out_path(n, part_list)
+            out_edges = get_out_path(n, part_list, circuit_tf_list)
 
             # Add from out_edges to edge_list if not
             # already in edge_list
@@ -129,7 +147,7 @@ def get_edges(promo_node, part_list):
             if edge not in edge_list:
                 edge_list.append(edge)
 
-        out_edges_z = get_out_path(z, part_list)
+        out_edges_z = get_out_path(z, part_list, circuit_tf_list)
 
         # Add from out_edges_z to edge_list if not 
         # already in edge_list
@@ -258,11 +276,18 @@ def validate(g):
         (len([k for k in g.graph.predecessors('Rep') if k[0] == 'Z']) == 0)):
         g.graph.add_edges_from(get_in_path('Rep', None, circuit_tf_list))
 
+    # if tf is regulated by inhibitor, must also
+    # be regulated by tf
+    for z in circuit_tf_list:
+        if (len(g.in_dict[z]["I"]) != 0) & (len(g.in_dict[z]["Z"]) == 0):
+            z_reg = np.random.choice(circuit_tf_list)
+            g.graph.add_edges_from([(z_reg, z)])
+
     for n in g.part_list:
         # Ensure all parts are in the circuit graph
         if n not in g.graph.nodes:
             g.graph.add_edges_from(get_in_path(n, g.promo_node, circuit_tf_list))
-            g.graph.add_edges_from(get_out_path(n, g.part_list))
+            g.graph.add_edges_from(get_out_path(n, g.part_list, circuit_tf_list))
 
         else:
             # Check for paths from promoter to the part of the circuit
@@ -284,7 +309,7 @@ def validate(g):
 
             # Add path from every part to the reporter
             if len(list(nx.all_simple_paths(g.graph, n, 'Rep'))) == 0:
-                g.graph.add_edges_from(get_out_path(n, g.part_list))
+                g.graph.add_edges_from(get_out_path(n, g.part_list, circuit_tf_list))
 
     # All edges in list must be in the circuit graph
     # after making above updates to graph only
@@ -673,9 +698,12 @@ def add_node(g, circuit_tf_list, min_dose=10,
     # if using inhibitors, node_avail is all parts not in circuit
     else:
         node_avail = [k for k in parts.keys() if k not in g.part_list]
-    #choose random node from list
+    # choose random node from list
     new_node = np.random.choice(node_avail)
     new_node_type = new_node[0]
+    # if new node is TF, add to circuit_tf_list
+    if new_node_type == 'Z':
+        circuit_tf_list.append(new_node)
     # add random dose within interval for new node
     g.dose.update({new_node: get_dose(min_dose,
                                       max_dose, dose_interval, 1)[0]})
@@ -717,7 +745,7 @@ def add_node(g, circuit_tf_list, min_dose=10,
             # if same type Z is not in part list,
             # Add new edges from new_node_out to new_edges by 
             # iterating through the list
-            new_node_out = get_out_path(new_node, g.part_list)
+            new_node_out = get_out_path(new_node, g.part_list, circuit_tf_list)
             for edge in new_node_out:
                 if edge not in new_edges:
                     new_edges.append(edge)
@@ -739,7 +767,7 @@ def add_node(g, circuit_tf_list, min_dose=10,
                     new_edges.pop(i)
 
             # get out edges for new node
-            new_node_out = get_out_path(new_node, g.part_list)
+            new_node_out = get_out_path(new_node, g.part_list, circuit_tf_list)
 
             # Add new edges from new_node_out to 
             # new_edges by iterating through the list
@@ -763,7 +791,7 @@ def add_node(g, circuit_tf_list, min_dose=10,
             # if same type I is not in part list,
             # Add new edges from new_node_out to new_edges by 
             # iterating through the list
-            new_node_out = get_out_path(new_node, g.part_list)
+            new_node_out = get_out_path(new_node, g.part_list, circuit_tf_list)
             for edge in new_node_out:
                 if edge not in new_edges:
                     new_edges.append(edge)

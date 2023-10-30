@@ -16,6 +16,7 @@ from itertools import product, combinations, permutations
 # from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 # from rankcrowding import RankAndCrowding
 from plot_search_results import *
+from GA import sampling, check_valid
 
 
 # from load_files_pop import (
@@ -26,15 +27,15 @@ from plot_search_results import *
 #     inhibitor_list
 # )
 # # print(tf_list + inhibitor_list + ['Rep'])
-edge_list = [('P1', 'Z1'), ('P1', 'I6'), ('I6', 'Z2'), ('Z1', 'Z2'), ('Z1', 'Rep')]
-dose_list = {'Z2': 25, 'Z1': 75, 'I6': 75}
-promo_node = 'P1'
-topology = Topo(
-    edge_list,
-    dose_list, 
-    promo_node
-)
-print(topology.in_dict["Z2"]["Z"][0])
+# edge_list = [('P1', 'Z1'), ('P1', 'I6'), ('I6', 'Z2'), ('Z1', 'Z2'), ('Z1', 'Rep')]
+# dose_list = {'Z2': 25, 'Z1': 75, 'I6': 75}
+# promo_node = 'P1'
+# topology = Topo(
+#     edge_list,
+#     dose_list, 
+#     promo_node
+# )
+# print(topology.in_dict["Z2"]["Z"][0])
 # edge_list = [('P1', 'Z1'), ('Z1', 'Z1'), ('Z1', 'Rep')]
 # dose_list = {'Z1': 75}
 # promo_node = 'P1'
@@ -308,3 +309,28 @@ print(topology.in_dict["Z2"]["Z"][0])
 #         seen.add(tuple_s)
 #         idx_list.append(idx)
 #         tuple_list2.append(tuple_)
+
+np.random.seed(0)
+num_dict = {1: 0, 2: 100}
+circuits = sampling("P1", num_dict, 75, 75, 5, True)
+for circuit in circuits[-13:]:
+    print(circuit[0].edge_list)
+    circuit_tf_list = []
+    part_list = circuit[0].part_list
+    for k in part_list:
+        if k[0] == 'Z':
+            circuit_tf_list.append(k)
+    # print(circuit[0].in_dict)
+    # v = check_valid(circuit[0].graph, "P1", circuit[0].part_list)
+    for z in circuit_tf_list:
+        # print(type(circuit[0].in_dict[z]["I"]))
+        # print(circuit[0].in_dict)
+        if (len(circuit[0].in_dict[z]["I"]) != 0) & (len(circuit[0].in_dict[z]["Z"]) == 0):
+            z_reg = np.random.choice(circuit_tf_list)
+            circuit[0].graph.add_edges_from([(z_reg, z)])
+            # print(circuit[0].graph.edges)
+    if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
+        print(circuit[0].edge_list)
+        circuit[0].update(list(circuit[0].graph.edges))
+    print("updated edges: ", circuit[0].edge_list)
+
