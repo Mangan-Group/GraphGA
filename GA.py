@@ -46,7 +46,7 @@ def get_out_path(n, part_list, circuit_tf_list):
     # Create edges using out_path
     edges = [(i, j) for i, j in zip(out_path[:-1], out_path[1:])]
     # add necessary tf edges to edges
-    edges.append(z_added_edges)
+    edges.extend(z_added_edges)
 
     return edges
 
@@ -279,7 +279,9 @@ def validate(g):
     # if tf is regulated by inhibitor, must also
     # be regulated by tf
     for z in circuit_tf_list:
-        if (len(g.in_dict[z]["I"]) != 0) & (len(g.in_dict[z]["Z"]) == 0):
+        predecessor_types = [k[0] for k in g.graph.predecessors(z)]
+        print(predecessor_types)
+        if ("I" in predecessor_types) & ("Z" not in predecessor_types):
             z_reg = np.random.choice(circuit_tf_list)
             g.graph.add_edges_from([(z_reg, z)])
 
@@ -360,6 +362,14 @@ def check_valid(g, promo_node, part_list):
     if (('Rep' not in g.nodes) |
         (len([k for k in g.predecessors('Rep') if k[0] == 'Z']) == 0)):
         return 0
+    
+    # if tf is regulated by inhibitor, must also
+    # be regulated by tf
+    for z in circuit_tf_list:
+        predecessor_types = [k[0] for k in g.predecessors(z)]
+        print(predecessor_types)
+        if ("I" in predecessor_types) & ("Z" not in predecessor_types):
+            return 0
 
     # All parts must be nodes in the circuit graph
     for n in part_list:

@@ -270,23 +270,23 @@ def run_combinitorial_pop_samples(
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
     "promo_node":"P1",
-    "dose_specs": [5, 75, 5],
+    "dose_specs": [75, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": True,
-    "num_dict": {1: 46, 2: 122},
-    "n_gen": 50,
-    "probability_crossover": 0.32,
-    "probability_mutation": 0.57,
-    "mutate_dose": True,
-    "pop": True,
+    "DsRed_inhibitor": False,
+    "num_dict": {1: 26, 2: 26},
+    "n_gen": 2,
+    "probability_crossover": 0.55,
+    "probability_mutation": 1.0,
+    "mutate_dose": False,
+    "pop": False,
     "CI": None,
     "num_processes": 1,
     "get_unique": False,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_cond_pop_DsRED_inhibitor_seed_"
+    "folder_name": "Amplifier_single_cell_seed_0"
 }
 
 
@@ -296,13 +296,12 @@ settings = {
 # print(f"Execution time is {result / n} seconds")
 
 
-
 for seed in range(0, 1):
     np.random.seed(seed)
     settings["seed"] = seed
-    settings["folder_name"] = "Signal_cond_pop_DsRED_inhibitor_seed_" + str(seed)
+    settings["folder_name"] = "Amplifier_single_cell_test_seed_" + str(seed)
 
-    run(SignalConditioner, settings)
+    run(Amplifier, settings)
     print("seed "+str(seed)+" complete")
 
 # run_combinitorial_pop_samples(SignalConditioner, settings,

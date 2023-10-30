@@ -313,6 +313,27 @@ from GA import sampling, check_valid
 np.random.seed(0)
 num_dict = {1: 0, 2: 100}
 circuits = sampling("P1", num_dict, 75, 75, 5, True)
+# for circuit in circuits[-13:]:
+#     print(circuit[0].edge_list)
+#     circuit_tf_list = []
+#     part_list = circuit[0].part_list
+#     for k in part_list:
+#         if k[0] == 'Z':
+#             circuit_tf_list.append(k)
+#     # print(circuit[0].in_dict)
+#     # v = check_valid(circuit[0].graph, "P1", circuit[0].part_list)
+#     for z in circuit_tf_list:
+#         # print(type(circuit[0].in_dict[z]["I"]))
+#         # print(circuit[0].in_dict)
+#         if (len(circuit[0].in_dict[z]["I"]) != 0) & (len(circuit[0].in_dict[z]["Z"]) == 0):
+#             z_reg = np.random.choice(circuit_tf_list)
+#             circuit[0].graph.add_edges_from([(z_reg, z)])
+#             # print(circuit[0].graph.edges)
+#     if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
+#         print(circuit[0].edge_list)
+#         circuit[0].update(list(circuit[0].graph.edges))
+#     print("updated edges: ", circuit[0].edge_list)
+
 for circuit in circuits[-13:]:
     print(circuit[0].edge_list)
     circuit_tf_list = []
@@ -320,17 +341,14 @@ for circuit in circuits[-13:]:
     for k in part_list:
         if k[0] == 'Z':
             circuit_tf_list.append(k)
-    # print(circuit[0].in_dict)
-    # v = check_valid(circuit[0].graph, "P1", circuit[0].part_list)
+            
     for z in circuit_tf_list:
-        # print(type(circuit[0].in_dict[z]["I"]))
-        # print(circuit[0].in_dict)
-        if (len(circuit[0].in_dict[z]["I"]) != 0) & (len(circuit[0].in_dict[z]["Z"]) == 0):
+        predecessor_types = [k[0] for k in circuit[0].graph.predecessors(z)]
+        print(predecessor_types)
+        if ("I" in predecessor_types) & ("Z" not in predecessor_types):
+            print("no Z reg")
             z_reg = np.random.choice(circuit_tf_list)
             circuit[0].graph.add_edges_from([(z_reg, z)])
-            # print(circuit[0].graph.edges)
     if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
-        print(circuit[0].edge_list)
         circuit[0].update(list(circuit[0].graph.edges))
     print("updated edges: ", circuit[0].edge_list)
-
