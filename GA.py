@@ -924,6 +924,7 @@ def mutate_edge(g, inhibitor=False):
                 # associated edges
                 g.edge_list.append(edge_avail[ind])
                 g.update(g.edge_list)
+                validate(g)
             else:
                 num_parts = len(g.part_list)
                 # available edges to remove are in circuit

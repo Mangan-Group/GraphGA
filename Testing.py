@@ -354,16 +354,19 @@ from GA import sampling, check_valid
 #     print("updated edges: ", circuit[0].edge_list)
 
 out_path = ["I1", "I3", "Z2"]
-circuit_tf_list = ["Z2"]
-need_z_reg = []
-for i, j in zip(out_path[:-1], out_path[1:]):    
-    print(i, j)
-    if i[0] == "I":
-        need_z_reg.append(j)
-print(need_z_reg)
+# circuit_tf_list = ["Z2"]
+# need_z_reg = []
+# for i, j in zip(out_path[:-1], out_path[1:]):    
+#     print(i, j)
+#     if i[0] == "I":
+#         need_z_reg.append(j)
+# print(need_z_reg)
 
-z_added_edges = []
-for i in need_z_reg:
-    z_reg = np.random.choice(circuit_tf_list)
-    z_added_edges.append((z_reg, i))
-print(z_added_edges)
+# z_added_edges = []
+# for i in need_z_reg:
+#     z_reg = np.random.choice(circuit_tf_list)
+#     z_added_edges.append((z_reg, i))
+# print(z_added_edges)
+types_ = [k[0] for k in out_path]
+if ("I" in types_) & ("Z" not in types_):
+    print("no z")

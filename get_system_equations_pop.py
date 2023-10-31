@@ -51,11 +51,6 @@ def system_equations_DsRed_pop(x, t, state, Z_list, topology):
                 num += parts[k][1] * parts[k][2] * x[2 * topology.var_dict[k] + 1]
                 denom += parts[k][2] * x[2 * topology.var_dict[k] + 1]
         else:
-            print(n)
-            print(topology.edge_list)
-            print(list(topology.graph.predecessors(n)))
-            print(list(topology.graph.successors(n)))
-            print(topology.in_dict[n]['Z'])
             zfa = topology.in_dict[n]['Z'][0]
             zfi = topology.in_dict[n]['I'][0]
             b.extend([parts[zfa][0], parts['Z' + zfi[1:]][0]])
