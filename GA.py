@@ -16,25 +16,24 @@ def get_out_path(n, part_list, circuit_tf_list):
     out_path = [n]
 
     # Add a random circuit part to the path
-    # if no other parts in circuit, add reporter to path
+    # if no other parts in circuit, just add reporter 
+    # to path
     if len(out_list) > 0:
         # random selection of number of connections from
-        # number of possible parts to connect to (1 fewer
-        # than total length)
+        # number of possible parts to connect to
         num_connect = np.random.randint(len(out_list)+1)
         # add random parts to out_path of length num_connect
         out_path.extend(np.random.choice(out_list, num_connect, replace=False))
         
+    # if inhibitor regulates an inhibitor or tf, the 
+    # regulated part needs to be regulated by a tf
     need_z_reg = []
-    if n[0] == "I":
-        for i in out_path:
-            if i[0] == "Z":
-                need_z_reg.append(i)
+    for i, j in zip(out_path[:-1], out_path[1:]):    
+        if i[0] == "I":
+            need_z_reg.append(j)
 
-    # if part is inhibitor and regulates tf, tf needs
-    # to be regulated by another tf
-    # choose a random tf in circuit to regulaate the
-    # inhibitor regulated tf
+    # choose a random tf in circuit to regulate the
+    # inhibitor regulated part
     z_added_edges = []
     for i in need_z_reg:
         z_reg = np.random.choice(circuit_tf_list)
@@ -65,8 +64,7 @@ def get_in_path(n, promo_node, circuit_tf_list):
         if in_node != promo_node:
             in_path = [promo_node]
             # random selection of number of connections from
-            # number of possible parts be connected to (1 fewer
-            # than total length)
+            # number of possible parts be connected to
             num_connect = np.random.randint(len(circuit_tf_list)+1)
             # add random parts to in_path of length num_connect
             # not using inhibitors because direct connection must 
@@ -88,7 +86,6 @@ def get_in_path(n, promo_node, circuit_tf_list):
             edges.append((in_node, n))
 
     return edges
-
 
 
 def get_edges(promo_node, part_list):
@@ -276,15 +273,6 @@ def validate(g):
         (len([k for k in g.graph.predecessors('Rep') if k[0] == 'Z']) == 0)):
         g.graph.add_edges_from(get_in_path('Rep', None, circuit_tf_list))
 
-    # if tf is regulated by inhibitor, must also
-    # be regulated by tf
-    for z in circuit_tf_list:
-        predecessor_types = [k[0] for k in g.graph.predecessors(z)]
-        print(predecessor_types)
-        if ("I" in predecessor_types) & ("Z" not in predecessor_types):
-            z_reg = np.random.choice(circuit_tf_list)
-            g.graph.add_edges_from([(z_reg, z)])
-
     for n in g.part_list:
         # Ensure all parts are in the circuit graph
         if n not in g.graph.nodes:
@@ -312,6 +300,13 @@ def validate(g):
             # Add path from every part to the reporter
             if len(list(nx.all_simple_paths(g.graph, n, 'Rep'))) == 0:
                 g.graph.add_edges_from(get_out_path(n, g.part_list, circuit_tf_list))
+
+            # if part is regulated by inhibitor, must also
+            # be regulated by tf
+            predecessor_types = [k[0] for k in g.graph.predecessors(n)]
+            if ("I" in predecessor_types) & ("Z" not in predecessor_types):
+                z_reg = np.random.choice(circuit_tf_list)
+                g.graph.add_edges_from([(z_reg, n)])
 
     # All edges in list must be in the circuit graph
     # after making above updates to graph only
@@ -362,14 +357,6 @@ def check_valid(g, promo_node, part_list):
     if (('Rep' not in g.nodes) |
         (len([k for k in g.predecessors('Rep') if k[0] == 'Z']) == 0)):
         return 0
-    
-    # if tf is regulated by inhibitor, must also
-    # be regulated by tf
-    for z in circuit_tf_list:
-        predecessor_types = [k[0] for k in g.predecessors(z)]
-        print(predecessor_types)
-        if ("I" in predecessor_types) & ("Z" not in predecessor_types):
-            return 0
 
     # All parts must be nodes in the circuit graph
     for n in part_list:
@@ -385,6 +372,12 @@ def check_valid(g, promo_node, part_list):
                     (('Z' not in viable_type) and ('P' not in viable_type))):
                     return 0
             if len(list(nx.all_simple_paths(g, n, 'Rep'))) == 0:
+                return 0
+            
+            # if part is regulated by inhibitor, must also
+            # be regulated by tf
+            predecessor_types = [k[0] for k in g.predecessors(n)]
+            if ("I" in predecessor_types) & ("Z" not in predecessor_types):
                 return 0
 
     for z, i in same_list:

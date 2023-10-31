@@ -126,7 +126,8 @@ def single_obj_GA(
     
     # print in which gen the min obj first appeared
     # print(first_seen(obj_min))
-    # print(circuit_min[-1][0].dose)
+    print(circuit_min[-1][0].dose)
+    print(circuit_min[-1][0].edge_list)
 
     # reshape all_obj and all_circuits to be 
     # 1 column arrays
@@ -145,6 +146,8 @@ def single_obj_GA(
         pickle.dump(all_circuits, fid)
     
     if problem.pop:
+        # get edge lists for each circuit sampled in GA
+        # and add dose as an "edge"
         circuit_edge_lists = []
         for circuit in all_circuits:
             circuit_edges = circuit[0].edge_list
@@ -152,10 +155,11 @@ def single_obj_GA(
                 circuit_edges.append((key, str(val)))
             circuit_edge_lists.append(circuit_edges)
 
+
         combo_edges_lists = []
         for edges in circuit_edge_lists:
-            edge_combos = list([edge[0] + edge[1] for
-                edge in edges])
+            edge_combos = [edge[0] + edge[1] for
+                edge in edges]
             combo_edges_lists.append(edge_combos)
 
         unique_edge_combo = []
@@ -372,8 +376,8 @@ def multi_obj_GA(
 
         combo_edges_lists = []
         for edges in circuit_edge_lists:
-            edge_combos = list([edge[0] + edge[1] for
-                edge in edges])
+            edge_combos = [edge[0] + edge[1] for
+                edge in edges]
             combo_edges_lists.append(edge_combos)
 
         unique_edge_combo = []

@@ -257,9 +257,9 @@ from GA import sampling, check_valid
 # with open(path1, "rb") as fid:
 #     all_circuits = pickle.load(fid)
 
-# path2 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/outdated/Amp_seed_pop_const_dose/2023-10-23_Amplifier_pop_const_dose_seed_0/all_objectives.pkl"
-# with open(path2, "rb") as fid:
-#     all_obj = pickle.load(fid)
+# # path2 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/outdated/Amp_seed_pop_const_dose/2023-10-23_Amplifier_pop_const_dose_seed_0/all_objectives.pkl"
+# # with open(path2, "rb") as fid:
+# #     all_obj = pickle.load(fid)
 # circuit_edge_lists = []
 # for circuit in all_circuits:
 #     circuit_edges = circuit[0].edge_list
@@ -267,12 +267,12 @@ from GA import sampling, check_valid
 #         circuit_edges.append((key, str(val)))
 #     circuit_edge_lists.append(circuit_edges)
 #     print("finished circuit " + str(len(circuit_edge_lists)))
-# # print(circuit_edge_lists[-1])
+# print(circuit_edge_lists[-1])
 # combo_edges_lists = []
 # for edges in circuit_edge_lists:
 #     edge_combos = list([edge[0] + edge[1] for edge in edges])
 #     combo_edges_lists.append(edge_combos)
-# # print(len(combo_edges_lists))
+# print(type(combo_edges_lists))
 
 # unique_edge_combo = []
 # index_list = []
@@ -310,10 +310,10 @@ from GA import sampling, check_valid
 #         idx_list.append(idx)
 #         tuple_list2.append(tuple_)
 
-np.random.seed(0)
-num_dict = {1: 0, 2: 100}
-circuits = sampling("P1", num_dict, 75, 75, 5, True)
-# for circuit in circuits[-13:]:
+# np.random.seed(0)
+# num_dict = {1: 0, 2: 10}
+# circuits = sampling("P1", num_dict, 75, 75, 5, True)
+# for circuit in circuits:
 #     print(circuit[0].edge_list)
 #     circuit_tf_list = []
 #     part_list = circuit[0].part_list
@@ -334,21 +334,36 @@ circuits = sampling("P1", num_dict, 75, 75, 5, True)
 #         circuit[0].update(list(circuit[0].graph.edges))
 #     print("updated edges: ", circuit[0].edge_list)
 
-for circuit in circuits[-13:]:
-    print(circuit[0].edge_list)
-    circuit_tf_list = []
-    part_list = circuit[0].part_list
-    for k in part_list:
-        if k[0] == 'Z':
-            circuit_tf_list.append(k)
+# for circuit in circuits[-13:]:
+#     print(circuit[0].edge_list)
+#     circuit_tf_list = []
+#     part_list = circuit[0].part_list
+#     for k in part_list:
+#         if k[0] == 'Z':
+#             circuit_tf_list.append(k)
             
-    for z in circuit_tf_list:
-        predecessor_types = [k[0] for k in circuit[0].graph.predecessors(z)]
-        print(predecessor_types)
-        if ("I" in predecessor_types) & ("Z" not in predecessor_types):
-            print("no Z reg")
-            z_reg = np.random.choice(circuit_tf_list)
-            circuit[0].graph.add_edges_from([(z_reg, z)])
-    if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
-        circuit[0].update(list(circuit[0].graph.edges))
-    print("updated edges: ", circuit[0].edge_list)
+#     for z in circuit_tf_list:
+#         predecessor_types = [k[0] for k in circuit[0].graph.predecessors(z)]
+#         print(predecessor_types)
+#         if ("I" in predecessor_types) & ("Z" not in predecessor_types):
+#             print("no Z reg")
+#             z_reg = np.random.choice(circuit_tf_list)
+#             circuit[0].graph.add_edges_from([(z_reg, z)])
+#     if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
+#         circuit[0].update(list(circuit[0].graph.edges))
+#     print("updated edges: ", circuit[0].edge_list)
+
+out_path = ["I1", "I3", "Z2"]
+circuit_tf_list = ["Z2"]
+need_z_reg = []
+for i, j in zip(out_path[:-1], out_path[1:]):    
+    print(i, j)
+    if i[0] == "I":
+        need_z_reg.append(j)
+print(need_z_reg)
+
+z_added_edges = []
+for i in need_z_reg:
+    z_reg = np.random.choice(circuit_tf_list)
+    z_added_edges.append((z_reg, i))
+print(z_added_edges)
