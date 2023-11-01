@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
+import pandas as pd
 from multiprocessing import Pool
 from get_system_equations_pop import (
     system_equations_pop,
@@ -59,6 +60,8 @@ class Amplifier:
             self.Z = Z_mat
             # set simulate function for population using multiprocessing
             self.simulate = self.simulate_pop
+            # add df to store results from each cell in population
+            self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state for each cell"])
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -101,6 +104,9 @@ class Amplifier:
         #         self.simulate_cell,
         #         zipped_args,
         #     )
+        self.all_cells.loc[len(self.all_cells.index)] = [
+            topology, [pop_rep_on]
+        ]
         rep_on_mean = np.mean(pop_rep_on)
         return rep_on_mean
 

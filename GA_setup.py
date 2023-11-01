@@ -146,6 +146,10 @@ def single_obj_GA(
         pickle.dump(all_circuits, fid)
     
     if problem.pop:
+        # save all_cell results df (see problem class)
+        file_name = "All_circuits_all_cell_results.pkl"
+        problem.all_cells.to_pickle(folder_path + "/" + file_name)
+
         # get edge lists for each circuit sampled in GA
         # and add dose as an "edge"
         circuit_edge_lists = []
@@ -325,8 +329,8 @@ def multi_obj_GA(
                 inhib = "Inhibitors"
         types.append(inhib)
 
-    obj_df = pd.DataFrame(obj, columns=["ON_rel", "FI_rel"])
-    obj_df["type"] = types
+    obj_df = pd.DataFrame(obj, columns=problem.obj_labels)
+    # obj_df["type"] = types
 
     # reshape all_obj to be 2 column array and
     # all_circuits to be to be 1 column array
@@ -359,10 +363,15 @@ def multi_obj_GA(
     plot_pareto_front(
         folder_path + "/" + graph_file_name,
         obj_df,
-        problem.obj_labels
+        problem.obj_labels,
+        types=False
     )
 
     if problem.pop:
+        # save all_cell results df (see problem class)
+        file_name = "All_circuits_all_cell_results.pkl"
+        problem.all_cells.to_pickle(folder_path + "/" + file_name)
+
         # S_all = nds.do(all_obj, len(all_obj))
         # sorted_all_obj = all_obj[S_all, :]
         # sorted_all_circuits = all_circuits[S_all]
@@ -394,16 +403,16 @@ def multi_obj_GA(
         unique_obj = all_obj[index_list]
         unique_circuits = all_circuits[index_list]
 
-        unique_types = []
-        for topo in unique_circuits:
-            inhib = "Activators"
-            for part in topo[0].part_list:
-                if part[0] == "I":
-                    inhib = "Inhibitors"
-            unique_types.append(inhib)
+        # unique_types = []
+        # for topo in unique_circuits:
+        #     inhib = "Activators"
+        #     for part in topo[0].part_list:
+        #         if part[0] == "I":
+        #             inhib = "Inhibitors"
+        #     unique_types.append(inhib)
 
-        unique_obj_df = pd.DataFrame(unique_obj, columns=["ON_rel", "FI_rel"])
-        unique_obj_df["type"] = unique_types
+        unique_obj_df = pd.DataFrame(unique_obj, columns=problem.obj_labels)
+        # unique_obj_df["type"] = unique_types
 
         file_name = "unique_objectives_df.pkl"
         with open(folder_path + "/" + file_name, "wb") as fid:
@@ -419,7 +428,8 @@ def multi_obj_GA(
         plot_pareto_front(
             folder_path + "/" + graph_file_name,
             unique_obj_df,
-            problem.obj_labels
+            problem.obj_labels,
+            types=False
         )
 
     # for single cell model, plot pareto front:

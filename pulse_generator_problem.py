@@ -2,6 +2,7 @@ import numpy as np
 from scipy.integrate import odeint
 from scipy.signal import find_peaks, peak_prominences
 from multiprocessing import Pool
+import pandas as pd
 from get_system_equations_pop import (
     system_equations_pop,
     system_equations_DsRed_pop
@@ -62,6 +63,8 @@ class PulseGenerator:
             self.Z = Z_mat
             # set simulate function for population using multiprocessing
             self.simulate = self.simulate_pop
+            # add df to store results from each cell in population
+            self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state time series for each cell"])
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -99,6 +102,11 @@ class PulseGenerator:
                 zipped_args[cell][1],
                 zipped_args[cell][2])
             rep_on_ts_all.append(rep_on_ts)
+
+        self.all_cells.loc[len(self.all_cells.index)] = [
+            topology, [rep_on_ts_all]
+        ]
+
         rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
         # with Pool(self.num_processes) as pool:
         #     results = pool.starmap(

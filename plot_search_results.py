@@ -73,19 +73,28 @@ def plot_hypervolume(
 def plot_pareto_front(
         figure_path: str, 
         obj_df: pd.DataFrame,
-        obj_labels: list
+        obj_labels: list,
+        types: bool
 ):
         if obj_df[obj_labels[0]].to_list()[0] < 0:
             obj_df[obj_labels[0]] = obj_df[
                 obj_labels[0]]*-1
             obj_df[obj_labels[1]] = obj_df[
                 obj_labels[1]]*-1
-        
-        palette = ["gray", "black"]
-        fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-        sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
-                        y= obj_df[obj_labels[1]], hue='type', 
-                        palette=palette, ax=ax)
+            
+        if types:
+            palette = ["gray", "black"]
+            fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+            sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
+                            y= obj_df[obj_labels[1]], hue='type', 
+                            palette=palette, ax=ax)
+            
+        else:
+            fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+            sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
+                            y= obj_df[obj_labels[1]], 
+                            color="black", ax=ax)
+
         plt.xlabel(obj_labels[0])
         plt.ylabel(obj_labels[1])
         # plt.show()

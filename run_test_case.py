@@ -167,7 +167,7 @@ def run_combinitorial_pop_samples(
         settings: dict,
         Z_mat_list: list,
 ):
-    topo_path = settings["single_cell_results_path"]
+    topo_path = settings["results_path"]
     folder_path = make_main_directory(settings)
     
     problem = testcase(
@@ -210,16 +210,16 @@ def run_combinitorial_pop_samples(
         Z_mat_sampling_df = Z_mat_sampling_df.transpose()
         print(Z_mat_sampling_df)
 
-        file_name = "Z_mat_sampling_all_GA_circuits.pkl"
+        file_name = "Z_mat_sampling_high_obj_circuits.pkl"
         Z_mat_sampling_df.to_pickle(folder_path + "/" + file_name)
 
-        ON_rel_range = Z_mat_sampling_df["objectives_range"].tolist()
-        ON_rel_range_mean = round(np.mean(ON_rel_range), 4)
-        fig_text = "mean = " + str(ON_rel_range_mean)
-        fig_name = "ON_rel_range_distribution.svg"
-        fig_path = folder_path + "/" + fig_name
-        plot_obj_distribution(fig_path, ON_rel_range, 
-                        "ON_rel range", fig_text)
+        # ON_rel_range = Z_mat_sampling_df["objectives_range"].tolist()
+        # ON_rel_range_mean = round(np.mean(ON_rel_range), 4)
+        # fig_text = "mean = " + str(ON_rel_range_mean)
+        # fig_name = "ON_rel_range_distribution.svg"
+        # fig_path = folder_path + "/" + fig_name
+        # plot_obj_distribution(fig_path, ON_rel_range, 
+        #                 "ON_rel range", fig_text)
 
     else:
         for i, topology in enumerate(topologies[:1000]):
@@ -279,14 +279,14 @@ settings = {
     "probability_crossover": 0.32,
     "probability_mutation": 0.57,
     "mutate_dose": True,
-    "pop": False,
+    "pop": True,
     "CI": None,
     "num_processes": 1,
     "get_unique": False,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_cond_single_cell_DsRED_inhibitor_seed_0"
+    "folder_name": "Pulse_pop_DsRED_inhibitor_seed_"
 }
 
 
@@ -296,13 +296,13 @@ settings = {
 # print(f"Execution time is {result / n} seconds")
 
 
-for seed in range(0, 1):
-    np.random.seed(seed)
-    settings["seed"] = seed
-    settings["folder_name"] = "Signal_cond_single_cell_DsRED_inhibitor_seed_" + str(seed)
+# for seed in range(0, 1):
+#     np.random.seed(seed)
+#     settings["seed"] = seed
+#     settings["folder_name"] = "Pulse_pop_DsRED_inhibitor_seed_" + str(seed)
 
-    run(SignalConditioner, settings)
-    print("seed "+str(seed)+" complete")
+#     run(PulseGenerator, settings)
+#     print("seed "+str(seed)+" complete")
 
 # run_combinitorial_pop_samples(SignalConditioner, settings,
 #                               Z_mat_list)

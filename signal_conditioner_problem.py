@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
+import pandas as pd
 from multiprocessing import Pool
 from get_system_equations_pop import (
     system_equations_pop,
@@ -59,6 +60,8 @@ class SignalConditioner:
             self.Z = Z_mat
             # set simulate function for population using multiprocessing
             self.simulate = self.simulate_pop
+            # add df to store results from each cell in population
+            self.all_cells = pd.DataFrame(columns=["Topology", "Rep OFF state for each cell", "Rep ON state for each cell"])
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -111,6 +114,9 @@ class SignalConditioner:
         #         zipped_args,
         #     )
         # pop_rep_off, pop_rep_on = zip(*results)
+        self.all_cells.loc[len(self.all_cells.index)] = [
+            topology, [pop_rep_off], [pop_rep_on]
+        ]
         rep_off_mean = np.mean(pop_rep_off)
         rep_on_mean = np.mean(pop_rep_on)
         return rep_off_mean, rep_on_mean
