@@ -8,13 +8,15 @@ import seaborn as sns
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from pymoo.indicators.hv import HV
 from rankcrowding import RankAndCrowding
+from pulse_generator_problem import PulseGenerator
 from GA import (
     crossover,
     mutate 
 )
 from diversity_metrics import (
     geno_diversity,
-    pheno_diversity
+    pheno_diversity,
+    first_seen
 )
 from plot_search_results import(
     plot_graph,
@@ -125,7 +127,8 @@ def single_obj_GA(
         print("generation "+ str(gen) + " complete")
     
     # print in which gen the min obj first appeared
-    # print(first_seen(obj_min))
+    print(first_seen(obj_min))
+    # print doses and edge list for opt circuit
     print(circuit_min[-1][0].dose)
     print(circuit_min[-1][0].edge_list)
 
@@ -215,8 +218,7 @@ def single_obj_GA(
 
         if get_unique:
             # unique objectives and circuits for all
-            # objectives and all_circuits (all gens),
-            # for determining population model CI
+            # objectives and all_circuits (all gens)
             unique_obj, unique_indices = np.unique(all_obj,
                                             return_index=True)
             unique_circuits = all_circuits[unique_indices]
@@ -319,18 +321,24 @@ def multi_obj_GA(
 
     fronts = NonDominatedSorting().do(obj)
 
-    # create a list based on whether the circuit 
-    # has an inhibitor
-    types = []
-    for topo in population:
-        inhib = "Activators"
-        for part in topo[0].part_list:
-            if part[0] == "I":
-                inhib = "Inhibitors"
-        types.append(inhib)
-
     obj_df = pd.DataFrame(obj, columns=problem.obj_labels)
-    # obj_df["type"] = types
+
+    # don't get types for pulse (all use inhibitors)
+    if not isinstance(problem, PulseGenerator):
+        # create a list based on whether the circuit 
+        # has an inhibitor
+        types = []
+        for topo in population:
+            inhib = "Activators"
+            for part in topo[0].part_list:
+                if part[0] == "I":
+                    inhib = "Inhibitors"
+            types.append(inhib)
+
+        obj_df["type"] = types
+        types_ = True
+    else:
+        types_ = False
 
     # reshape all_obj to be 2 column array and
     # all_circuits to be to be 1 column array
@@ -340,7 +348,7 @@ def multi_obj_GA(
         num_circuits*(1 + problem.n_gen), 1)
 
     # save results as .pkl files
-    file_name = "final_objectives_df_with_type.pkl"
+    file_name = "final_objectives_df.pkl"
     obj_df.to_pickle(folder_path + "/" + file_name)
  
     file_name = "final_population.pkl"
@@ -364,7 +372,7 @@ def multi_obj_GA(
         folder_path + "/" + graph_file_name,
         obj_df,
         problem.obj_labels,
-        types=False
+        types=types_
     )
 
     if problem.pop:
@@ -432,8 +440,9 @@ def multi_obj_GA(
             types=False
         )
 
-    # for single cell model, plot pareto front:
     else:
+        # get unique circuits and obj for all 
+        # generations of GA
         if get_unique:
             # unique objectives and circuits for all
             # objectives and all_circuits (all gens),
@@ -453,6 +462,7 @@ def multi_obj_GA(
             with open(folder_path + "/" + file_name, "wb") as fid:
                 pickle.dump(unique_circuits, fid)
 
+    # plot all circuits along pareto front
     if plot:
         for i, circuit in enumerate(population):
             graph_file_name = ("pareto_front_circuit_" 
@@ -462,23 +472,3 @@ def multi_obj_GA(
                 circuit[0]
             )
                    
-
-def first_seen(progression):
-
-    looking = True
-    gen_num = 0
-
-    # for each value in reversed list
-    # of minimum objective function for
-    # each generation
-    for gen in reversed(progression):
-        # if the value does not equal the
-        # final value in reversed list
-        # return length of progression
-        # (number of generations) - gen_num
-        # (number of generations to end)
-        if progression[-1] != gen:
-            return len(progression) - gen_num
-        gen_num += 1
-
-    return 0

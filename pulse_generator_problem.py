@@ -30,7 +30,7 @@ class PulseGenerator:
             CI: list=None,
             Z_mat: np.ndarray=Z_20,
             num_processes: int=None,
-            obj_labels: list=["peak_rel",
+            obj_labels: list=["t_pulse (hr)",
                 "prominence_rel"
             ]
             ) -> None:
@@ -75,7 +75,7 @@ class PulseGenerator:
     def simulate_cell(
         self,
         topology: object,
-        max_time: int =42,
+        max_time: int =126,
         Z_row: np.ndarray = np.ones(5)
     ):
 
@@ -86,18 +86,18 @@ class PulseGenerator:
             t, 
             args=('on', Z_row, topology,)
         )[:, -1]
-        return rep_on_ts
+        return t, rep_on_ts
 
     def simulate_pop(
         self, 
         topology: object, 
-        max_time: int =42
+        max_time: int =126
     ):
         rep_on_ts_all = []
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
         for cell in range(0, nc):
-            rep_on_ts = self.simulate_cell(                
+            t, rep_on_ts = self.simulate_cell(                
                 zipped_args[cell][0],
                 zipped_args[cell][1],
                 zipped_args[cell][2])
@@ -116,7 +116,7 @@ class PulseGenerator:
 
         # rep_on_ts_means = [np.mean(k) for k in zip(*results)]
         # rep_on_ts_all = results
-        return rep_on_ts_means #, rep_on_ts_all
+        return t, rep_on_ts_means #, rep_on_ts_all
 
     def calc_rep_rel(self, topology, rep_on_ts):
         reference_on = self.ref[topology.promo_node]['on']
@@ -137,6 +137,21 @@ class PulseGenerator:
         else:
             prominence_rel = prominence_rep_list[0]
         return prominence_rel
+    
+    @staticmethod
+    def calc_t_pulse(
+        t, rep_on_ts_rel, peak_rel, prominence_rel
+    ):
+
+        if prominence_rel != 0:
+            idx_peak_rel = rep_on_ts_rel.index(peak_rel)
+            t_pulse = t[idx_peak_rel]
+        
+        else:
+            t_pulse = 0
+        
+        return t_pulse
+
 
     # def calc_num_pulses(self, topology, rep_on_ts_all):
     #     count = 0
@@ -156,10 +171,15 @@ class PulseGenerator:
         self,
         topology: object
     ):
-        rep_on_ts = self.simulate(topology)
+        t, rep_on_ts = self.simulate(topology)
         rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
         # want peak_rel >= 0.25
         peak_rel = self.calc_peak_rel(rep_on_ts_rel)
         # want prominence_rel >= 0.2
         prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
-        return [-peak_rel, -prominence_rel]
+
+        t_pulse = self.calc_t_pulse(
+            t, rep_on_ts_rel, peak_rel, prominence_rel)
+
+        # return [-peak_rel, -prominence_rel]
+        return [t_pulse, -prominence_rel]

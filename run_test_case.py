@@ -269,24 +269,25 @@ def run_combinitorial_pop_samples(
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
+    "test_case": "Amplifier",
     "promo_node":"P1",
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
     "DsRed_inhibitor": True,
     "num_dict": {1: 46, 2: 122},
-    "n_gen": 50,
-    "probability_crossover": 0.32,
-    "probability_mutation": 0.57,
+    "n_gen": 1,
+    "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
+    "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
-    "pop": True,
+    "pop": False,
     "CI": None,
     "num_processes": 1,
     "get_unique": False,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Pulse_pop_DsRED_inhibitor_seed_"
+    "folder_name": "test_run_amp"
 }
 
 
@@ -295,14 +296,22 @@ settings = {
 # result = timeit.timeit(stmt=run_amp_pop_GA, globals=globals(), number=n)
 # print(f"Execution time is {result / n} seconds")
 
+if settings["test_case"] == "Amplifier":
+    test_case = Amplifier
+elif settings["test_case"] == "Signal Conditioner":
+    test_case = SignalConditioner
+elif settings["test_case"] == "Pulse Generator":
+    test_case = PulseGenerator
+else:
+    raise Exception("Error: test case not defined")
 
-# for seed in range(0, 1):
-#     np.random.seed(seed)
-#     settings["seed"] = seed
-#     settings["folder_name"] = "Pulse_pop_DsRED_inhibitor_seed_" + str(seed)
+for seed in range(0, 1):
+    np.random.seed(seed)
+    settings["seed"] = seed
+    settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
 
-#     run(PulseGenerator, settings)
-#     print("seed "+str(seed)+" complete")
+    run(test_case, settings)
+    print("seed "+str(seed)+" complete")
 
 # run_combinitorial_pop_samples(SignalConditioner, settings,
 #                               Z_mat_list)

@@ -1,6 +1,6 @@
 import numpy as np
 from load_files_pop import (
-    promo, parts, parts_order
+    promo, parts
 )
 
 def system_equations_pop(x, t, state, Z_list, topology):

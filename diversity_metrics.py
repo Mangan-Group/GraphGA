@@ -26,3 +26,23 @@ def grouping(F, delta=0.5):
         n[i] = np.argwhere(F[i] >= bins).flatten()[-1]
     return n, bins
 
+def first_seen(progression):
+
+    looking = True
+    gen_num = 0
+
+    # for each value in reversed list
+    # of minimum objective function for
+    # each generation
+    for gen in reversed(progression):
+        # if the value does not equal the
+        # final value in reversed list
+        # return length of progression
+        # (number of generations) - gen_num
+        # (number of generations to end)
+        if progression[-1] != gen:
+            return len(progression) - gen_num
+        gen_num += 1
+
+    return 0
+

@@ -53,16 +53,14 @@ def plot_metric(
 
 def plot_hypervolume(
         figure_path: str,
+        n_gens: int,
         hypervolumes_list: np.ndarray,
-        gens_to_plot: int,
         y_lower_lim: float=None
 ):
-    generations = np.arange(50)[-gens_to_plot:]
-    hvs_to_plot = hypervolumes_list[-gens_to_plot:]
+    generations = np.arange(n_gens)
 
     fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-    for hvs in hypervolumes_list:
-        ax.plot(generations, hvs)
+    ax.plot(generations, hypervolumes_list)
     ax.set_xlabel("Generation")
     ax.set_ylabel("Hypervolume")
     if y_lower_lim:
@@ -76,11 +74,13 @@ def plot_pareto_front(
         obj_labels: list,
         types: bool
 ):
-        if obj_df[obj_labels[0]].to_list()[0] < 0:
+        if np.any(np.array(obj_df[obj_labels[0]].to_list()) < 0):
             obj_df[obj_labels[0]] = obj_df[
                 obj_labels[0]]*-1
+        if np.any(np.array(obj_df[obj_labels[1]].to_list()) < 0):
             obj_df[obj_labels[1]] = obj_df[
                 obj_labels[1]]*-1
+            
             
         if types:
             palette = ["gray", "black"]
@@ -149,67 +149,6 @@ def plot_1D_obj_scatter(
 #     # plt.show()
 #     plt.savefig(figure_path, bbox_inches="tight")
 
-# Amplifier single cell GA with constant dose, Z_mat sampling
-# with population model
-# path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
-#         "2023-10-20_Amplifier_Z_matrix_samples_obj/" + 
-#         "Z_mat_sampling_all_GA_circuits.pkl")
-# amp_const_dose = pd.read_pickle(path)
-
-# ON_rel_range = amp_const_dose["objectives_range"].tolist()
-# ON_rel_range_mean = round(np.mean(ON_rel_range), 4)
-# fig_text = "mean = " + str(ON_rel_range_mean)
-# fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
-#         "2023-10-20_Amplifier_Z_matrix_samples_obj/" + 
-#         "ON_rel_range_distribution.svg")
-# plot_obj_distribution(fig_path, ON_rel_range, 
-#                       "ON_rel range", fig_text)
-
-# Amplifier single cell GA with varied dose, Z_mat sampling
-# with population model
-# path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
-#         "2023-10-20_Amplifier_Z_matrix_samples_obj_vary_dose/" + 
-#         "Z_mat_sampling_all_GA_circuits.pkl")
-# amp_varied_dose = pd.read_pickle(path)
-
-# ON_rel_range_varied_dose = amp_varied_dose["objectives_range"].tolist()
-# ON_rel_range_vd_mean = round(np.mean(ON_rel_range_varied_dose), 4)
-# fig_text_vd = "mean = " + str(ON_rel_range_vd_mean)
-# fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" + 
-#         "2023-10-20_Amplifier_Z_matrix_samples_obj_vary_dose/" + 
-#         "ON_rel_range_distribution.svg")
-# plot_obj_distribution(fig_path, ON_rel_range_varied_dose,
-#                       "ON_rel range", fig_text_vd)
-
-# Signal Conditioner single cell GA with DsRED inhibitor, Z_mat sampling
-# with population model
-# path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-#         "2023-10-24_SignalConditioner_DsRED_Z_matrix_samples_obj/" +
-#         "Z_mat_sampling_all_GA_circuits.pkl")
-# SC_varied_dose = pd.read_pickle(path)
-# FI_rel_range = SC_varied_dose["objectives[1]_range"].tolist()
-# FI_rel_range_mean = round(np.mean(FI_rel_range), 4)
-# fig_text = "mean = " + str(FI_rel_range_mean)
-# fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-#             "2023-10-24_SignalConditioner_DsRED_Z_matrix_samples_obj/" +
-#             "FI_rel_range_distribution.svg")
-# plot_obj_distribution(fig_path, FI_rel_range, 
-#                       "FI_rel range", fig_text)
-
-# Signal Conditioner single cell GA with inhibitor, Z_mat sampling
-# with population model
-# path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-#         "2023-10-24_SignalConditioner_Z_matrix_samples_obj/" +
-#         "Z_mat_sampling_all_GA_circuits.pkl")
-# SC_varied_dose = pd.read_pickle(path)
-# FI_rel_range = SC_varied_dose["objectives[1]_range"].tolist()
-# FI_rel_range_mean = round(np.mean(FI_rel_range), 4)
-# fig_text = "mean = " + str(FI_rel_range_mean)
-# fig_path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-#             "2023-10-24_SignalConditioner_Z_matrix_samples_obj/" +
-#             "FI_rel_range_distribution.svg")
-# plot_obj_distribution(fig_path, FI_rel_range, 
-#                       "FI_rel range", fig_text) 
 
 # Signal Conditioner single cell GA hypervolumes for all seeds
 # hv_list = []
@@ -223,5 +162,102 @@ def plot_1D_obj_scatter(
 
 # print(hv_list)
 
+#############################################################
+### Signal Conditioner Population Model ###
+#############################################################
+
+######## SC pop GA hypervolumes with DsRED inhibitor, 50 gens ########
+# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-10-31_Signal_Cond_pop_DsRED_inhibitor_seed_0/"
+# hv_fname = "hypervolumes.pkl"
+# with open(results_path + hv_fname, "rb") as fid:
+#     hv = pickle.load(fid)
+# print(hv)
+# hv_plot_fname = "hypervolume_progression_full.svg"
+# plot_hypervolume(results_path + hv_plot_fname, 50, hv)
+
+######## SC pop GA hypervolumes/pareto with DsRED inhibitor, 60 gens ########
+# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/"
+# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-12-01_Signal_Cond_pop_DsRED_inhibitor_ngen70_seed_0/"
+# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-12-02_Signal_Cond_pop_DsRED_inhibitor_ngen100_seed_0/"
+# hv_fname = "hypervolumes.pkl"
+# # final_obj_fname = "final_objectives_df_with_type.pkl"
+
+# with open(results_path + hv_fname, "rb") as fid:
+#     hv = pickle.load(fid)
+# print(hv)
+# hv_plot_fname = "hypervolume_progression.svg"
+# plot_hypervolume(results_path+hv_plot_fname, 100, hv)
+# obj_df = pd.read_pickle(results_path + final_obj_fname)
+# graph_file_name = "final_population_pareto_front.svg"
+# plot_pareto_front(
+#         results_path + graph_file_name,
+#         obj_df,
+#         ["ON_rel", "FI_rel"],
+#         types=False
+#     )
+
+
 # plot_hypervolumes(hv_list, "signal_conditioner", 40, 47.3, "/Users/kdreyer/Documents/Github/GraphGA/GA_results SC_seed_single_cell_DsRED_inhibitor/")
     
+
+### Pulse hypervolumes ###
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+
+# # prob_c = 0.32, prob_m = 0.57
+# path_pulse1 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-10-31_Pulse_pop_DsRED_inhibitor_seed_0/hypervolumes.pkl"
+# with open(path_pulse1, "rb") as fid:
+#     hvs1 = pickle.load(fid)
+# # print(hvs1)
+# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-10-31_Pulse_pop_DsRED_inhibitor_seed_0/hypervolume_progression.svg",
+# #                  [hvs1], 50)
+
+# # prob_c = 0.5, prob_m = 0.57
+# path_pulse2 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_5_seed_0/hypervolumes.pkl"
+# with open(path_pulse2, "rb") as fid:
+#     hvs2 = pickle.load(fid)
+# # print(hvs2)
+# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_5_seed_0/hypervolume_progression.svg",
+# #                  [hvs2], 50)
+
+# # prob_c = 0.75, prob_m = 0.57
+# path_pulse3 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_75_seed_0/hypervolumes.pkl"
+# with open(path_pulse3, "rb") as fid:
+#     hvs3 = pickle.load(fid)
+# # print(hvs3)
+# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_75_seed_0/hypervolume_progression.svg",
+# #                  [hvs3], 50)
+
+# # prob_c = 0.32, prob_m = 0.75
+# path_pulse4 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m0_75_seed_0/hypervolumes.pkl"
+# with open(path_pulse4, "rb") as fid:
+#     hvs4 = pickle.load(fid)
+# # print(hvs4)
+# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m0_75_seed_0/hypervolume_progression.svg",
+# #                  [hvs4], 50)
+
+# # prob_c = 0.32, prob_m = 1.0
+# path_pulse5 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m1_seed_0/hypervolumes.pkl"
+# with open(path_pulse5, "rb") as fid:
+#     hvs5 = pickle.load(fid)
+# # print(hvs5)
+# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m1_seed_0/hypervolume_progression.svg",
+# #                  [hvs5], 50)
+
+# # prob_c = 0.5, prob_m = 0.75
+# path_pulse6 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-08_Pulse_pop_DsRED_inhibitor_c0_5_m0_75_seed_0/hypervolumes.pkl"
+# with open(path_pulse6, "rb") as fid:
+#     hvs6 = pickle.load(fid)
+# # print(hvs5)
+# plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-08_Pulse_pop_DsRED_inhibitor_c0_5_m0_75_seed_0/hypervolume_progression.svg",
+#                  [hvs6], 50)
+
+
+#plot amplifier single cell 1D objective scatter plot
+# amp_all_obj_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2023-10-31_Amplifier_single_cell_seed_0/all_objectives.pkl"
+
+# with open(amp_all_obj_path, "rb") as fid:
+#     amp_all_obj = pickle.load(fid)
+
+# amp_unique_obj = np.unique(amp_all_obj)
+
+# plot_1D_obj_scatter("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2023-10-31_Amplifier_single_cell_seed_0/unique_obj_scatter.svg", amp_unique_obj, "ON_rel")
