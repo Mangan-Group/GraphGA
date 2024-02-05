@@ -5,6 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from multiprocessing import Pool
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from pymoo.indicators.hv import HV
 from rankcrowding import RankAndCrowding
@@ -90,8 +91,20 @@ def single_obj_GA(
         # simulate topology and calculate obj
         # function for each circuit in children
         # and append to obj array
-        obj_children = np.asarray(
-            [problem.func(g[0]) for g in children])
+        if problem.pop:
+            child_topologies = [g[0] for g in children]
+            with Pool(problem.num_processes) as pool:
+                obj_list = pool.imap(problem.func, child_topologies)
+
+                pool.close()
+                pool.join()
+            obj_list = list(obj_list)
+            obj_children = np.asarray(obj_list)
+            
+        else:
+            obj_children = np.asarray(
+                [problem.func(g[0]) for g in children])
+            
         obj = np.append(obj, obj_children)
 
         # append obj of children and children
@@ -127,10 +140,10 @@ def single_obj_GA(
         print("generation "+ str(gen) + " complete")
     
     # print in which gen the min obj first appeared
-    print(first_seen(obj_min))
+    # print(first_seen(obj_min))
     # print doses and edge list for opt circuit
-    print(circuit_min[-1][0].dose)
-    print(circuit_min[-1][0].edge_list)
+    # print(circuit_min[-1][0].dose)
+    # print(circuit_min[-1][0].edge_list)
 
     # reshape all_obj and all_circuits to be 
     # 1 column arrays
@@ -292,10 +305,22 @@ def multi_obj_GA(
         # function for each circuit in children
         # and append to all_obj list and obj
         # array
-        obj_children = [problem.func(g[0]) for g in children]
-        all_obj.append(obj_children)
-        obj_children = np.asarray(obj_children)
+        if problem.pop:
+            child_topologies = [g[0] for g in children]
+            with Pool(problem.num_processes) as pool:
+                obj_list = pool.imap(problem.func, child_topologies)
 
+                pool.close()
+                pool.join()
+            obj_list = list(obj_list)
+            obj_children = np.asarray(obj_list)
+            
+        else:
+            obj_children = np.asarray(
+                [problem.func(g[0]) for g in children])
+                
+        all_obj.append(obj_children)
+        
         # append children to all circuits
         all_circuits.append(children)
 

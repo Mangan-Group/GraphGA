@@ -2,6 +2,7 @@ import timeit
 import numpy as np
 import pickle
 import pandas as pd
+from multiprocessing import Pool
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
@@ -15,8 +16,6 @@ from GA_setup import (
 from plot_search_results import plot_obj_distribution
 from load_Z_mat_samples import Z_mat_list
 
-# seed = settings["seed"]
-# np.random.seed(seed)
 
 def run(
         testcase: object,
@@ -65,9 +64,19 @@ def run(
     
     # calculate objective for each circuit 
     # in initial population
-    obj = np.asarray(
-        [problem.func(g[0]) for g in population])
-    
+    if settings["pop"]:
+        topologies = [g[0] for g in population]
+        with Pool(settings["num_processes"]) as pool:
+            obj_list = pool.imap(problem.func, topologies)
+
+            pool.close()
+            pool.join()
+        obj_list = list(obj_list)
+        obj = np.asarray(obj_list)
+    else:
+        obj = np.asarray(
+            [problem.func(g[0]) for g in population])
+    # print(obj)
     # run multi-objective GA if multiple objectives
     # (determined by type of first first objective 
     # in array- will be array if more than one)
@@ -269,49 +278,50 @@ def run_combinitorial_pop_samples(
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
-    "test_case": "Amplifier",
+    "test_case": "SignalConditioner",
     "promo_node":"P1",
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
     "DsRed_inhibitor": True,
     "num_dict": {1: 46, 2: 122},
-    "n_gen": 1,
+    "n_gen": 3,
     "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
     "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
-    "pop": False,
+    "pop": True,
     "CI": None,
-    "num_processes": 1,
+    "num_processes": 8,
     "get_unique": False,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "test_run_amp"
+    "folder_name": "test_run_sc"
 }
 
+if __name__ == "__main__":
+    # np.random.seed(0)
+    # run_sc_pop_GA = '''run(SignalConditioner, settings)'''
+    # n = 5
+    # result = timeit.timeit(stmt=run_sc_pop_GA, globals=globals(), number=n)
+    # print(f"Execution time is {result / n} seconds")
 
-# run_amp_pop_GA = '''run_combinitorial(Amplifier, settings, topo_path_2)'''
-# n = 1
-# result = timeit.timeit(stmt=run_amp_pop_GA, globals=globals(), number=n)
-# print(f"Execution time is {result / n} seconds")
+    if settings["test_case"] == "Amplifier":
+        test_case = Amplifier
+    elif settings["test_case"] == "Signal Conditioner":
+        test_case = SignalConditioner
+    elif settings["test_case"] == "Pulse Generator":
+        test_case = PulseGenerator
+    else:
+        raise Exception("Error: test case not defined")
 
-if settings["test_case"] == "Amplifier":
-    test_case = Amplifier
-elif settings["test_case"] == "Signal Conditioner":
-    test_case = SignalConditioner
-elif settings["test_case"] == "Pulse Generator":
-    test_case = PulseGenerator
-else:
-    raise Exception("Error: test case not defined")
+    for seed in range(0, 1):
+        np.random.seed(seed)
+        settings["seed"] = seed
+        settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
 
-for seed in range(0, 1):
-    np.random.seed(seed)
-    settings["seed"] = seed
-    settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
-
-    run(test_case, settings)
-    print("seed "+str(seed)+" complete")
+        run(test_case, settings)
+        print("seed "+str(seed)+" complete")
 
 # run_combinitorial_pop_samples(SignalConditioner, settings,
 #                               Z_mat_list)

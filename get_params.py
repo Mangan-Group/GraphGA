@@ -5,11 +5,14 @@ promo = {}
 
 promo['P1'] = {}
 promo['P2'] = {}
+promo["P_exp"] = {}
 
 promo['P1']['off'] = 0.42
 promo['P1']['on'] = 0.93
 promo['P2']['off'] = 0.93
 promo['P2']['on'] = 3.5
+promo["P_exp"]["off"] = 0.66
+promo["P_exp"]["on"] = 3.2
 promo['k_txn'] = 8.
 
 # with open('promo.pkl', 'wb') as fid:

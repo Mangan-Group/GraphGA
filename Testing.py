@@ -4,6 +4,7 @@ Created on Wed Aug 31 14:16:07 2022
 
 @author: Katie_Dreyer
 """
+import os
 import numpy as np
 import networkx as nx
 import time
@@ -17,6 +18,7 @@ from itertools import product, combinations, permutations
 # from rankcrowding import RankAndCrowding
 from plot_search_results import *
 from GA import sampling, check_valid
+from amplifier_problem import Amplifier
 
 
 # from load_files_pop import (
@@ -353,20 +355,53 @@ from GA import sampling, check_valid
 #         circuit[0].update(list(circuit[0].graph.edges))
 #     print("updated edges: ", circuit[0].edge_list)
 
-out_path = ["I1", "I3", "Z2"]
-# circuit_tf_list = ["Z2"]
-# need_z_reg = []
-# for i, j in zip(out_path[:-1], out_path[1:]):    
-#     print(i, j)
-#     if i[0] == "I":
-#         need_z_reg.append(j)
-# print(need_z_reg)
 
-# z_added_edges = []
-# for i in need_z_reg:
-#     z_reg = np.random.choice(circuit_tf_list)
-#     z_added_edges.append((z_reg, i))
-# print(z_added_edges)
-types_ = [k[0] for k in out_path]
-if ("I" in types_) & ("Z" not in types_):
-    print("no z")
+repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
+amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
+amp_results = pd.read_pickle(repo_path+amp_results_path)
+amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
+amp_obj = amp_obj.flatten()
+# print(amp_obj)
+amp = Amplifier("P_exp", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+
+### Circuit 1 from experiments
+# print(np.where(np.logical_and(amp_obj>69.982, amp_obj<69.98215)))
+# print(amp_obj[[1874, 1940, 1951, 1965, 2027, 2074, 2108, 2112, 2165, 2175, 2226,
+#        2236, 2253, 2260, 2278, 2300, 2311, 2324, 2331, 2342, 2497, 2516,
+#        2573]])
+# amp_results[1874][0].plot_graph()
+# circuit_1 = amp_results[1874][0]
+# # print(circuit_1.dose)
+# circuit_1_exp = Topo([('P_exp', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep'), ('Z6', 'Z9')], {'Z6': 75, 'Z9': 75}, "P_exp")
+# ON_rel_neg = amp.func(circuit_1_exp)
+# print(ON_rel_neg)
+
+### Circuit 2 from experiments
+# print(np.where(np.logical_and(amp_obj>69.97675, amp_obj<69.9768)))
+# print(amp_obj[[1692, 1712, 1889, 2009, 2038, 2350, 2543, 2621, 2624, 2647]])
+# amp_results[1692][0].plot_graph()
+# circuit_2 = amp_results[1692][0]
+# print(circuit_2.edge_list)
+# circuit_2_exp = Topo([('P_exp', 'Z2'), ('Z2', 'Z2'), ('Z2', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep')], {'Z6': 75, 'Z2': 75}, "P_exp")
+# ON_rel_neg = amp.func(circuit_2_exp)
+# print(ON_rel_neg)
+
+### Circuit 3 from experiments
+# print(np.where(np.logical_and(amp_obj>39.8308, amp_obj<39.83095)))
+# # print(amp_obj[1251])
+# # amp_results[1251][0].plot_graph()
+# circuit_3 = amp_results[1251][0]
+# # print(circuit_3.edge_list)
+# circuit_3_exp = Topo([('P_exp', 'Z2'), ('Z2', 'Z2'), ('Z2', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Rep')], {'Z2': 75, 'Z9': 75}, "P_exp")
+# ON_rel_neg = amp.func(circuit_3_exp)
+# print(ON_rel_neg)
+
+### Circuit 4 from experiments
+# print(np.where(np.logical_and(amp_obj>39.8018, amp_obj<39.802)))
+# print(amp_results[22][0].plot_graph())
+# circuit_4 = amp_results[22][0]
+# circuit_4_exp = Topo([('P_exp', 'Z9'), ('Z9', 'Rep'), ('Z9', 'Z9')], {'Z9': 75}, "P_exp")
+# # print(circuit_4.dose)
+# ON_rel_neg = amp.func(circuit_4_exp)
+# print(ON_rel_neg)
