@@ -29,7 +29,8 @@ class SignalConditioner:
             CI: list=None,
             Z_mat: np.ndarray=Z_20,
             num_processes: int=None,
-            obj_labels: list=["ON_rel", "FI_rel"] 
+            obj_labels: list=["ON_rel", "FI_rel"],
+            max_time: int=42
             ) -> None:
         
         self.promo_node = promo_node
@@ -47,6 +48,7 @@ class SignalConditioner:
         self.CI = CI
         self.num_processes = num_processes
         self.obj_labels = obj_labels
+        self.max_time = max_time
         self.system_eqs = system_equations_pop
         
         if inhibitor:
@@ -72,10 +74,10 @@ class SignalConditioner:
     def simulate_cell(
         self,
         topology: object,
-        max_time: int =42,
         Z_row: np.ndarray = np.ones(5)
     ):
 
+        max_time = self.max_time
         t = np.arange(0, max_time + 1, 1)
         rep_off = odeint(
             self.system_eqs,
@@ -94,18 +96,16 @@ class SignalConditioner:
     def simulate_pop(
         self, 
         topology: object, 
-        max_time: int =42
     ):
-
         pop_rep_off = []
         pop_rep_on = []
         nc = len(self.Z)
-        zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
+        zipped_args = list(zip([topology]*nc, self.Z))
         for cell in range(0, nc):
             rep_off, rep_on = self.simulate_cell(
                 zipped_args[cell][0],
                 zipped_args[cell][1],
-                zipped_args[cell][2])
+            )
             pop_rep_off.append(rep_off)
             pop_rep_on.append(rep_on)
         # with Pool(self.num_processes) as pool:

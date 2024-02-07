@@ -19,7 +19,8 @@ from itertools import product, combinations, permutations
 from plot_search_results import *
 from GA import sampling, check_valid
 from amplifier_problem import Amplifier
-
+from signal_conditioner_problem import SignalConditioner
+from pymoo.indicators.hv import HV
 
 # from load_files_pop import (
 #     Z_20,  
@@ -294,76 +295,19 @@ from amplifier_problem import Amplifier
 # print(len(np.argwhere(unique_obj_pos >= 67.5)))
 
 
-##################################################################
-### outdated converting to tuples first (not necessary)###
-# tuple_combo = []
-# for tuple_ in tuple_list:
-#     tuple_new = tuple([sub_tuple[0] + sub_tuple[1] for sub_tuple in tuple_])
-#     tuple_combo.append(tuple_new)
-
-# tuple_list2 = []
-# idx_list = []
-# seen = set()
-# for idx, tuple_ in enumerate(tuple_combo):
-#     tuple_s = frozenset(tuple_)
-#     # tuple_
-#     if tuple_s not in seen:
-#         seen.add(tuple_s)
-#         idx_list.append(idx)
-#         tuple_list2.append(tuple_)
-
-# np.random.seed(0)
-# num_dict = {1: 0, 2: 10}
-# circuits = sampling("P1", num_dict, 75, 75, 5, True)
-# for circuit in circuits:
-#     print(circuit[0].edge_list)
-#     circuit_tf_list = []
-#     part_list = circuit[0].part_list
-#     for k in part_list:
-#         if k[0] == 'Z':
-#             circuit_tf_list.append(k)
-#     # print(circuit[0].in_dict)
-#     # v = check_valid(circuit[0].graph, "P1", circuit[0].part_list)
-#     for z in circuit_tf_list:
-#         # print(type(circuit[0].in_dict[z]["I"]))
-#         # print(circuit[0].in_dict)
-#         if (len(circuit[0].in_dict[z]["I"]) != 0) & (len(circuit[0].in_dict[z]["Z"]) == 0):
-#             z_reg = np.random.choice(circuit_tf_list)
-#             circuit[0].graph.add_edges_from([(z_reg, z)])
-#             # print(circuit[0].graph.edges)
-#     if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
-#         print(circuit[0].edge_list)
-#         circuit[0].update(list(circuit[0].graph.edges))
-#     print("updated edges: ", circuit[0].edge_list)
-
-# for circuit in circuits[-13:]:
-#     print(circuit[0].edge_list)
-#     circuit_tf_list = []
-#     part_list = circuit[0].part_list
-#     for k in part_list:
-#         if k[0] == 'Z':
-#             circuit_tf_list.append(k)
-            
-#     for z in circuit_tf_list:
-#         predecessor_types = [k[0] for k in circuit[0].graph.predecessors(z)]
-#         print(predecessor_types)
-#         if ("I" in predecessor_types) & ("Z" not in predecessor_types):
-#             print("no Z reg")
-#             z_reg = np.random.choice(circuit_tf_list)
-#             circuit[0].graph.add_edges_from([(z_reg, z)])
-#     if set(circuit[0].graph.edges) != set(circuit[0].edge_list):
-#         circuit[0].update(list(circuit[0].graph.edges))
-#     print("updated edges: ", circuit[0].edge_list)
 
 
-repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
-amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
-amp_results = pd.read_pickle(repo_path+amp_results_path)
-amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
-amp_obj = amp_obj.flatten()
+#################################################################
+########### Amplifier experimental circuit new predictions ######
+#################################################################
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
+# amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
+# amp_results = pd.read_pickle(repo_path+amp_results_path)
+# amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
+# amp_obj = amp_obj.flatten()
 # print(amp_obj)
-amp = Amplifier("P_exp", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+# amp = Amplifier("P_exp", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
 
 ### Circuit 1 from experiments
 # print(np.where(np.logical_and(amp_obj>69.982, amp_obj<69.98215)))
@@ -372,8 +316,8 @@ amp = Amplifier("P_exp", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0
 #        2573]])
 # amp_results[1874][0].plot_graph()
 # circuit_1 = amp_results[1874][0]
-# # print(circuit_1.dose)
-# circuit_1_exp = Topo([('P_exp', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep'), ('Z6', 'Z9')], {'Z6': 75, 'Z9': 75}, "P_exp")
+# print(circuit_1.dose)
+# circuit_1_exp = Topo([('P_exp_amp', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep'), ('Z6', 'Z9')], {'Z6': 75, 'Z9': 75}, "P_exp_amp")
 # ON_rel_neg = amp.func(circuit_1_exp)
 # print(ON_rel_neg)
 
@@ -383,25 +327,87 @@ amp = Amplifier("P_exp", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0
 # amp_results[1692][0].plot_graph()
 # circuit_2 = amp_results[1692][0]
 # print(circuit_2.edge_list)
-# circuit_2_exp = Topo([('P_exp', 'Z2'), ('Z2', 'Z2'), ('Z2', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep')], {'Z6': 75, 'Z2': 75}, "P_exp")
+# circuit_2_exp = Topo([('P_exp_amp', 'Z2'), ('Z2', 'Z2'), ('Z2', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep')], {'Z6': 75, 'Z2': 75}, "P_exp_amp")
 # ON_rel_neg = amp.func(circuit_2_exp)
 # print(ON_rel_neg)
 
 ### Circuit 3 from experiments
 # print(np.where(np.logical_and(amp_obj>39.8308, amp_obj<39.83095)))
-# # print(amp_obj[1251])
-# # amp_results[1251][0].plot_graph()
+# print(amp_obj[1251])
+# amp_results[1251][0].plot_graph()
 # circuit_3 = amp_results[1251][0]
-# # print(circuit_3.edge_list)
-# circuit_3_exp = Topo([('P_exp', 'Z2'), ('Z2', 'Z2'), ('Z2', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Rep')], {'Z2': 75, 'Z9': 75}, "P_exp")
+# print(circuit_3.edge_list)
+# circuit_3_exp = Topo([('P_exp_amp', 'Z2'), ('Z2', 'Z2'), ('Z2', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Rep')], {'Z2': 75, 'Z9': 75}, "P_exp_amp")
 # ON_rel_neg = amp.func(circuit_3_exp)
 # print(ON_rel_neg)
 
 ### Circuit 4 from experiments
 # print(np.where(np.logical_and(amp_obj>39.8018, amp_obj<39.802)))
+# print(amp_obj[22])
 # print(amp_results[22][0].plot_graph())
 # circuit_4 = amp_results[22][0]
-# circuit_4_exp = Topo([('P_exp', 'Z9'), ('Z9', 'Rep'), ('Z9', 'Z9')], {'Z9': 75}, "P_exp")
-# # print(circuit_4.dose)
+# circuit_4_exp = Topo([('P_exp_amp', 'Z9'), ('Z9', 'Rep'), ('Z9', 'Z9')], {'Z9': 75}, "P_exp_amp")
+# print(circuit_4.dose)
 # ON_rel_neg = amp.func(circuit_4_exp)
 # print(ON_rel_neg)
+
+
+#############################################################################
+########### Signal Conditioner experimental circuit new predictions #########
+#############################################################################
+repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+sc_results_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_population.pkl"
+sc_obj_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df_with_type.pkl"
+sc_results = pd.read_pickle(repo_path+sc_results_path)
+sc_obj = pd.read_pickle(repo_path+sc_obj_path)[["ON_rel", "FI_rel"]]*-1
+# print(sc_obj[sc_obj["FI_rel"] > 2].drop_duplicates().sort_values(by="FI_rel", ascending=False))
+
+sc = SignalConditioner("P_exp_sc", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+
+### Circuit 1 from experiments
+# sc_results[1][0].plot_graph()
+# circuit_1 = sc_results[1][0]
+# print(circuit_1.edge_list)
+circuit_1_exp = Topo([('P_exp_sc', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('P_exp_sc', 'I1'), ('I1', 'Rep')], {'Z12': 60, 'I1': 60}, "P_exp_sc")
+objs_neg, FI_sc, rep = sc.func(circuit_1_exp)
+print(objs_neg, FI_sc, rep)
+
+### Circuit 2 from experiments
+# sc_results[7][0].plot_graph()
+# circuit_2 = sc_results[7][0]
+# print(circuit_2.dose)
+# circuit_2_exp = Topo([('P_exp_sc', 'Z12'), ('P_exp_sc', 'I11'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'Z12': 55, 'I11': 75}, "P_exp_sc")
+# objs_neg, FI_sc = sc.func(circuit_2_exp)
+# print(objs_neg, FI_sc)
+
+### Circuit 3 from experiments
+# sc_results[12][0].plot_graph()
+# circuit_3 = sc_results[12][0]
+# print(circuit_3.dose)
+# circuit_3_exp = Topo([('P_exp_sc', 'Z9'), ('P_exp_sc', 'I11'), ('Z9', 'Rep'), ('Z9', 'I11'), ('I11', 'Rep')], {'Z9': 75, 'I11': 35}, "P_exp_sc")
+# objs_neg, FI_sc = sc.func(circuit_3_exp)
+# print(objs_neg, FI_sc)
+
+### Circuit 4 from experiments
+# sc_results[24][0].plot_graph()
+# circuit_4 = sc_results[24][0]
+# print(circuit_4.edge_list)
+# circuit_4_exp = Topo([('P_exp_sc', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('I1', 'Rep')], {'Z12': 55, 'I1': 5}, "P_exp_sc")
+# objs_neg, FI_sc = sc.func(circuit_4_exp)
+# print(objs_neg, FI_sc)
+
+### Circuit 5 from experiments
+# sc_results[21][0].plot_graph()
+# circuit_5 = sc_results[21][0]
+# print(circuit_5.edge_list, circuit_5.dose)
+# circuit_5_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I15'), ('I15', 'Rep')], {'Z12': 55, 'I15': 20}, "P_exp_sc")
+# objs_neg, FI_sc = sc.func(circuit_5_exp)
+# print(objs_neg, FI_sc)
+
+### Circuit 6 from experiments
+# sc_results[11][0].plot_graph()
+# circuit_6 = sc_results[11][0]
+# print(circuit_6.edge_list, circuit_6.dose)
+# circuit_6_exp = Topo([('P_exp_sc', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'I11': 5, "Z12": 50}, "P_exp_sc")
+# objs_neg, FI_sc = sc.func(circuit_6_exp)
+# print(objs_neg, FI_sc)

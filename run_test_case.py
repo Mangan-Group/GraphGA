@@ -27,19 +27,21 @@ def run(
     folder_path = make_main_directory(settings)
 
     problem = testcase(
-        settings["promo_node"],
-        settings["dose_specs"],
-        settings["max_part"],
-        settings["inhibitor"],
-        settings["DsRed_inhibitor"],
-        settings["num_dict"],
-        settings["n_gen"],
-        settings["probability_crossover"],
-        settings["probability_mutation"],
-        settings["mutate_dose"],
-        settings["pop"],
-        settings["CI"],
+        promo_node=settings["promo_node"],
+        dose_specs=settings["dose_specs"],
+        max_part=settings["max_part"],
+        inhibitor=settings["inhibitor"],
+        DsRed_inhibitor=settings["DsRed_inhibitor"],
+        num_dict=settings["num_dict"],
+        n_gen=settings["n_gen"],
+        probability_crossover=settings["probability_crossover"],
+        probability_mutation=settings["probability_mutation"],
+        mutate_dose=settings["mutate_dose"],
+        pop=settings["pop"],
+        CI=settings["CI"],
         num_processes=settings["num_processes"],
+        obj_labels=settings["obj_labels"],
+        max_time=settings["max_time"]
     )
     
     population = sampling(
@@ -278,25 +280,27 @@ def run_combinitorial_pop_samples(
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
-    "test_case": "SignalConditioner",
+    "test_case": "PulseGenerator",
     "promo_node":"P1",
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
     "DsRed_inhibitor": True,
     "num_dict": {1: 46, 2: 122},
-    "n_gen": 3,
+    "n_gen": 50,
     "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
     "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
     "pop": True,
     "CI": None,
     "num_processes": 8,
+    "obj_labels": ["t_pulse", "peak_rel", "prominence_rel"],
+    "max_time": 126,
     "get_unique": False,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "test_run_sc"
+    "folder_name": "Pulse_pop_DsRED_inhibitor_3obj_126h"
 }
 
 if __name__ == "__main__":
@@ -308,9 +312,9 @@ if __name__ == "__main__":
 
     if settings["test_case"] == "Amplifier":
         test_case = Amplifier
-    elif settings["test_case"] == "Signal Conditioner":
+    elif settings["test_case"] == "SignalConditioner":
         test_case = SignalConditioner
-    elif settings["test_case"] == "Pulse Generator":
+    elif settings["test_case"] == "PulseGenerator":
         test_case = PulseGenerator
     else:
         raise Exception("Error: test case not defined")

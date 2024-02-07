@@ -81,7 +81,6 @@ def plot_pareto_front(
             obj_df[obj_labels[1]] = obj_df[
                 obj_labels[1]]*-1
             
-            
         if types:
             palette = ["gray", "black"]
             fig, ax = plt.subplots(1, 1, figsize= (4, 4))
@@ -99,6 +98,37 @@ def plot_pareto_front(
         plt.ylabel(obj_labels[1])
         # plt.show()
         plt.savefig(figure_path, bbox_inches="tight")
+
+def plot_pareto_front3D(
+        figure_path: str, 
+        obj_df: pd.DataFrame,
+        obj_labels: list,
+        types: bool
+):
+    if np.any(np.array(obj_df[obj_labels[0]].to_list()) < 0):
+        obj_df[obj_labels[0]] = obj_df[
+            obj_labels[0]]*-1
+    if np.any(np.array(obj_df[obj_labels[1]].to_list()) < 0):
+        obj_df[obj_labels[1]] = obj_df[
+            obj_labels[1]]*-1
+    if np.any(np.array(obj_df[obj_labels[2]].to_list()) < 0):
+        obj_df[obj_labels[2]] = obj_df[
+            obj_labels[2]]*-1
+            
+    print(obj_df.tail(n=50))
+    fig = plt.figure(figsize= (4, 4))
+    ax = fig.add_subplot(projection='3d')
+
+    ax.scatter(
+        xs=obj_df[obj_labels[0]], ys=obj_df[obj_labels[1]],
+        zs=obj_df[obj_labels[2]], color="k", 
+    )
+    ax.view_init(elev=10, azim=-115)
+    ax.set_xlabel(obj_labels[0])
+    ax.set_ylabel(obj_labels[1])
+    ax.set_zlabel(obj_labels[2])
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
 
 def plot_1D_obj_scatter(
         figure_path: str,
@@ -120,34 +150,7 @@ def plot_1D_obj_scatter(
     if y_lower_lim:
         ax.set_ylim(lower = y_lower_lim)
     # plt.show()
-    plt.savefig(figure_path, bbox_inches="tight")
-
-# def plot_2D_obj_scatter(
-#         figure_path: str,
-#         obj_vals: np.ndarray,
-#         obj_labels: list,
-#         y_lower_lim: int=None
-# ):
-#     if obj_df[obj_labels[0]].to_list()[0] < 0:
-#         obj_df[obj_labels[0]] = obj_df[
-#         obj_labels[0]]*-1
-#     obj_df[obj_labels[1]] = obj_df[
-#         obj_labels[1]]*-1
-#     # if obj_vals.flatten()[0] < 0:
-#     #     obj_vals = obj_vals*-1
-#     # x_vals = [1]*len(obj_vals)
-#     # jittered_x = x_vals + 0.1*np.random.rand(
-#     #     len(x_vals))
-#     # fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-#     # ax.plot(jittered_x, obj_vals, linestyle="None",
-#     #          marker="o", color="gray")
-#     # ax.set_xticklabels([])
-#     # ax.set_xticks([])
-#     # ax.set_ylabel(obj_labels)
-#     if y_lower_lim:
-#         ax.set_ylim(lower = y_lower_lim)
-#     # plt.show()
-#     plt.savefig(figure_path, bbox_inches="tight")
+    # plt.savefig(figure_path, bbox_inches="tight")
 
 
 # Signal Conditioner single cell GA hypervolumes for all seeds
@@ -261,3 +264,13 @@ def plot_1D_obj_scatter(
 # amp_unique_obj = np.unique(amp_all_obj)
 
 # plot_1D_obj_scatter("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2023-10-31_Amplifier_single_cell_seed_0/unique_obj_scatter.svg", amp_unique_obj, "ON_rel")
+
+# obj_df = pd.DataFrame(data=[[1, 2, 3], [4, 5, 6], [7, 8, 9]], columns=["obj1", "obj2", "obj3"])
+# # print(obj_df)
+
+# plot_pareto_front3D("/Users/kdreyer/Desktop/3d_pareto.svg", obj_df, ["obj1", "obj2", "obj3"], False)
+    
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# path_final_obj = "2024-02-05_Pulse_3obj_42h_seed_0/final_objectives_df.pkl"
+# df_obj = pd.read_pickle(repo_path + path_final_obj)
+# plot_pareto_front3D(repo_path+"2024-02-05_Pulse_3obj_42h_seed_0/final_popluation_pareto_front2.svg", df_obj, ["t_pulse", "peak_rel", "prominence_rel"], False)

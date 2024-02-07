@@ -29,7 +29,8 @@ class Amplifier:
             CI: float=None,
             Z_mat: np.ndarray=Z_20,
             num_processes: int=None,
-            obj_label: str="ON_rel" 
+            obj_label: str="ON_rel",
+            max_time: int=42
             ) -> None:
         
         self.promo_node = promo_node
@@ -47,6 +48,7 @@ class Amplifier:
         self.CI = CI
         self.num_processes = num_processes
         self.obj_label = obj_label
+        self.max_time = max_time
         self.system_eqs = system_equations_pop
         
         if inhibitor:
@@ -72,10 +74,10 @@ class Amplifier:
     def simulate_cell(
         self,
         topology: object,
-        max_time: int =42,
         Z_row: np.ndarray =np.ones(5)
     ):
 
+        max_time = self.max_time
         t = np.arange(0, max_time + 1, 1)
         rep_on = odeint(
             self.system_eqs,
@@ -88,16 +90,16 @@ class Amplifier:
     def simulate_pop(
         self, 
         topology: object, 
-        max_time: int =42
+        # max_time: int =42
     ):
         pop_rep_on = []
         nc = len(self.Z)
-        zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
+        zipped_args = list(zip([topology]*nc, self.Z))
         for cell in range(0, nc):
             rep_on = self.simulate_cell(
                 zipped_args[cell][0],
-                zipped_args[cell][1],
-                zipped_args[cell][2])
+                zipped_args[cell][1]
+            )
             pop_rep_on.append(rep_on)
         # with Pool(self.num_processes) as pool:
         #     pop_rep_on = pool.starmap(

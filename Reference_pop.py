@@ -17,7 +17,7 @@ def reference(y,t,k_end, Z):
 
 def simulate_reference(Z, filename):
     Ref = dict()
-    for k in list(promo.keys())[:3]:
+    for k in list(promo.keys())[:4]:
         ref_off = []
         ref_on = []
         for i in range(0, len(Z)):

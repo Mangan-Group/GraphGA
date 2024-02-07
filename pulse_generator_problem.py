@@ -32,7 +32,8 @@ class PulseGenerator:
             num_processes: int=None,
             obj_labels: list=["t_pulse (hr)",
                 "prominence_rel"
-            ]
+            ],
+            max_time: float=42
             ) -> None:
         
         self.promo_node = promo_node
@@ -50,6 +51,7 @@ class PulseGenerator:
         self.CI = CI
         self.num_processes = num_processes
         self.obj_labels = obj_labels
+        self.max_time = max_time
         self.system_eqs = system_equations_pop
         
         if inhibitor:
@@ -72,13 +74,20 @@ class PulseGenerator:
             # set simulate function for single cell
             self.simulate = self.simulate_cell
 
+        if len(self.obj_labels) == 3:
+            self.func = self.func_3obj
+        elif "t_pulse" in '\t'.join(self.obj_labels):
+            self.func = self.func_t_pulse
+        elif "peak_rel" in '\t'.join(self.obj_labels):
+            self.func = self.func_peak_rel
+
     def simulate_cell(
         self,
         topology: object,
-        max_time: int =126,
+        # max_time: int =self.max_time,
         Z_row: np.ndarray = np.ones(5)
     ):
-
+        max_time = self.max_time
         t = np.arange(0, max_time + 1, 1)
         rep_on_ts = odeint(
             self.system_eqs,
@@ -91,16 +100,17 @@ class PulseGenerator:
     def simulate_pop(
         self, 
         topology: object, 
-        max_time: int =126
+        # max_time: int =42
     ):
+        max_time = self.max_time
         rep_on_ts_all = []
         nc = len(self.Z)
-        zipped_args = list(zip([topology]*nc, [max_time]*nc, self.Z))
+        zipped_args = list(zip([topology]*nc, self.Z))
         for cell in range(0, nc):
             t, rep_on_ts = self.simulate_cell(                
                 zipped_args[cell][0],
-                zipped_args[cell][1],
-                zipped_args[cell][2])
+                zipped_args[cell][1]
+            )
             rep_on_ts_all.append(rep_on_ts)
 
         self.all_cells.loc[len(self.all_cells.index)] = [
@@ -167,7 +177,20 @@ class PulseGenerator:
     #             count += 1
     #     return count, pulse_cell_ts
 
-    def func(
+    def func_peak_rel(
+        self,
+        topology: object
+    ):
+        _, rep_on_ts = self.simulate(topology)
+        rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        # want peak_rel >= 0.25
+        peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        # want prominence_rel >= 0.2
+        prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+
+        return [-peak_rel, -prominence_rel]
+
+    def func_t_pulse(
         self,
         topology: object
     ):
@@ -183,3 +206,20 @@ class PulseGenerator:
 
         # return [-peak_rel, -prominence_rel]
         return [t_pulse, -prominence_rel]
+    
+    def func_3obj(
+        self,
+        topology: object
+    ):
+        t, rep_on_ts = self.simulate(topology)
+        rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        # want peak_rel >= 0.25
+        peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        # want prominence_rel >= 0.2
+        prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+
+        t_pulse = self.calc_t_pulse(
+            t, rep_on_ts_rel, peak_rel, prominence_rel
+        )
+
+        return [t_pulse, -peak_rel, -prominence_rel]

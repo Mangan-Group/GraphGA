@@ -5,18 +5,21 @@ promo = {}
 
 promo['P1'] = {}
 promo['P2'] = {}
-promo["P_exp"] = {}
+promo["P_exp_amp"] = {}
+promo["P_exp_sc"] = {}
 
 promo['P1']['off'] = 0.42
 promo['P1']['on'] = 0.93
 promo['P2']['off'] = 0.93
 promo['P2']['on'] = 3.5
-promo["P_exp"]["off"] = 0.66
-promo["P_exp"]["on"] = 3.2
+promo["P_exp_amp"]["off"] = 0.66
+promo["P_exp_amp"]["on"] = 3.2
+promo["P_exp_sc"]["off"] = 0.45
+promo["P_exp_sc"]["on"] = 2.0
 promo['k_txn'] = 8.
 
-# with open('promo.pkl', 'wb') as fid:
-#     pickle.dump(promo, fid)
+with open('promo.pkl', 'wb') as fid:
+    pickle.dump(promo, fid)
 
 parts = {}
 parts['Z1'] = np.array([0.08, 33., 0.036])
