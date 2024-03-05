@@ -652,44 +652,45 @@ def mutate_node_type(g, min_dose=10, max_dose=75, dose_interval=5):
                 node_avail.append(item)
 
     # randomly choose new node from node_avail
-    new_node = np.random.choice(node_avail)
-    # Z or I with same number stored to make sure 
-    # it has same out edges as new_node if in
-    # circuit
-    same = same_type + new_node[1:]
-    # add new node with same dose as old node and 
-    # remove old node/dose from doses
-    g.dose.update({new_node: g.dose[old_node]})
-    g.dose.pop(old_node)
-    # in each edge, replace old node with new node
-    # if in edge and maintain other edges
-    new_edges = switch_node(g, old_node, new_node)
-    # remove old node and associated edges from
-    # graph
-    g.graph.remove_node(old_node)
-    # update topo and associated attributes
-    g.update(new_edges)
-    # if Z or I with same number as new node is
-    # in circuit, get out edges from that node
-    # and new node
-    if same in g.part_list:
-        same_out = list(g.graph.out_edges(same))
-        new_node_out = list(g.graph.out_edges(new_node))
-        if same_type == 'Z':
-            # if same_type is tf, use its out edges for
-            # new node and remove others
-            new_node_out_new = [(new_node, k[1]) for k in same_out]
-            g.graph.remove_edges_from(new_node_out)
-            g.graph.add_edges_from(new_node_out_new)
-        else:
-            # if same_type is inhibitor, use out edges 
-            # from new node and remove ones from
-            # same_type
-            same_out_new = [(same, k[1]) for k in new_node_out]
-            g.graph.remove_edges_from(same_out)
-            g.graph.add_edges_from(same_out_new)
-        # update topo and associated edges
-        g.update(list(g.graph.edges))
+    if len(node_avail) > 0:
+        new_node = np.random.choice(node_avail)
+        # Z or I with same number stored to make sure 
+        # it has same out edges as new_node if in
+        # circuit
+        same = same_type + new_node[1:]
+        # add new node with same dose as old node and 
+        # remove old node/dose from doses
+        g.dose.update({new_node: g.dose[old_node]})
+        g.dose.pop(old_node)
+        # in each edge, replace old node with new node
+        # if in edge and maintain other edges
+        new_edges = switch_node(g, old_node, new_node)
+        # remove old node and associated edges from
+        # graph
+        g.graph.remove_node(old_node)
+        # update topo and associated attributes
+        g.update(new_edges)
+        # if Z or I with same number as new node is
+        # in circuit, get out edges from that node
+        # and new node
+        if same in g.part_list:
+            same_out = list(g.graph.out_edges(same))
+            new_node_out = list(g.graph.out_edges(new_node))
+            if same_type == 'Z':
+                # if same_type is tf, use its out edges for
+                # new node and remove others
+                new_node_out_new = [(new_node, k[1]) for k in same_out]
+                g.graph.remove_edges_from(new_node_out)
+                g.graph.add_edges_from(new_node_out_new)
+            else:
+                # if same_type is inhibitor, use out edges 
+                # from new node and remove ones from
+                # same_type
+                same_out_new = [(same, k[1]) for k in new_node_out]
+                g.graph.remove_edges_from(same_out)
+                g.graph.add_edges_from(same_out_new)
+            # update topo and associated edges
+            g.update(list(g.graph.edges))
 
 # add a node to the circuit 
 def add_node(g, circuit_tf_list, min_dose=10, 

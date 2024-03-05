@@ -132,55 +132,57 @@ def plot_1D_obj_scatter_for_ci(
 ##################################################################################################################
 ##################################################################################################################
 # import amplifier vary dose results
-path_amp_vary_obj = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_objectives.pkl"
-path_amp_vary_circuits = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_circuits.pkl"
-with open(path_amp_vary_obj, "rb") as fid:
-    unique_obj = pickle.load(fid)
+# path_amp_vary_obj = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_objectives.pkl"
+# path_amp_vary_circuits = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_circuits.pkl"
+# with open(path_amp_vary_obj, "rb") as fid:
+#     unique_obj = pickle.load(fid)
 
-with open(path_amp_vary_circuits, "rb") as fid:
-    unique_circuits = pickle.load(fid)
+# with open(path_amp_vary_circuits, "rb") as fid:
+#     unique_circuits = pickle.load(fid)
 
-unique_obj = unique_obj*-1
-unique_obj = unique_obj.flatten()
+# unique_obj = unique_obj*-1
+# # unique_obj = unique_obj.flatten()
 
-unique_circuits = unique_circuits.flatten()
+# # unique_circuits = unique_circuits.flatten()
 
-unique_obj_ascending_idx = unique_obj.argsort()
-unique_obj_descending_idx = unique_obj_ascending_idx[::-1]
-unique_obj = unique_obj[unique_obj_descending_idx]
+# # unique_obj_ascending_idx = unique_obj.argsort()
+# # unique_obj_descending_idx = unique_obj_ascending_idx[::-1]
+# # unique_obj = unique_obj[unique_obj_descending_idx]
 
-unique_circuits = unique_circuits[unique_obj_descending_idx]
-# print(unique_obj[:40])
+# # unique_circuits = unique_circuits[unique_obj_descending_idx]
+# # # print(unique_obj[:40])
 
-index_unique_obj_high = np.argwhere((unique_obj >= 40.1) & (unique_obj <= 40.2))
-# print(index_unique_obj_high)
-unique_obj_high = unique_obj[index_unique_obj_high.flatten()]
-unique_circuits_high = unique_circuits[index_unique_obj_high.flatten()]
+# index_unique_obj_high = np.argwhere((unique_obj[:, 0] >=68)).flatten()
+# # print(index_unique_obj_high)
+# # print(index_unique_obj_high)
+# unique_obj_high = unique_obj[index_unique_obj_high]
+# # print(len(unique_obj_high))
+# unique_circuits_high = unique_circuits[index_unique_obj_high]
 # print(unique_circuits_high)
-unique_circuits_high = np.asarray(unique_circuits_high).reshape(len(unique_circuits_high), 1)
-for i, obj in enumerate(unique_obj_high):
-    # p1 -> Z2 auto -> Z6 auto -> rep (idx 19), 75ng each
-    print("circuit: ", str(i))
-    print("edges, doses: ", unique_circuits_high[i][0].edge_list)
-    print("obj:", obj)
-    unique_circuits_high[i][0].plot_graph()
+# unique_circuits_high = np.asarray(unique_circuits_high).reshape(len(unique_circuits_high), 1)
+# for i, obj in enumerate(unique_obj_high):
+#     # p1 -> Z2 auto -> Z6 auto -> rep (idx 19), 75ng each
+#     print("circuit: ", str(i))
+#     print("edges, doses: ", unique_circuits_high[i][0].edge_list)
+#     print("obj:", obj)
+#     unique_circuits_high[i][0].plot_graph()
 
 # print("edges, doses: ", unique_circuits_high[19][0].edge_list)
 # print("obj:", unique_obj_high[19])
 # unique_circuits_high[19][0].plot_graph()
 
 
-unique_obj = unique_obj.tolist()
-unique_obj_high = unique_obj_high.tolist()
-# print(len(unique_obj_high))
-# print(unique_obj_high)
-all_obj = [unique_obj, unique_obj_high]
+# unique_obj = unique_obj.tolist()
+# unique_obj_high = unique_obj_high.tolist()
+# # print(len(unique_obj_high))
+# # print(unique_obj_high)
+# all_obj = [unique_obj, unique_obj_high]
 # print(len(all_obj[1]))
 
 # path_before_ci = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/high_obj_scatter_68.svg"
 # plot_1D_obj_scatter_for_ci(" ", all_obj, "ON_rel", y_lower_lim=39)
 
-# folder_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/"
+folder_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/"
 # file_name = "high_unique_objs_68.pkl"
 # with open(folder_path+file_name, "rb") as fid:
 #     high_obj = pickle.load(fid)
@@ -221,7 +223,9 @@ all_obj = [unique_obj, unique_obj_high]
 # z_mat_sampling_file_name = "2023-11-01_Amplifier_pop_vary_dose_sampling_high_circuits_68/Z_mat_sampling_high_obj_circuits.pkl"
 # with open(folder_path+z_mat_sampling_file_name, "rb") as fid:
 #     z_mat_sampling = pickle.load(fid)
+# print(z_mat_sampling)
 
+# print(z_mat_sampling["objectives_range"].max)
 # ON_rel_ranges = z_mat_sampling["objectives_range"].tolist()
 # # print(ON_rel_ranges)
 # fig_path = folder_path+"2023-11-01_Amplifier_pop_vary_dose_sampling_high_circuits_68/high_obj_scatter_ci.svg"

@@ -30,7 +30,8 @@ class SignalConditioner:
             Z_mat: np.ndarray=Z_20,
             num_processes: int=None,
             obj_labels: list=["ON_rel", "FI_rel"],
-            max_time: int=42
+            max_time: int=42,
+            single_cell_tracking: bool=True
             ) -> None:
         
         self.promo_node = promo_node
@@ -60,10 +61,14 @@ class SignalConditioner:
             self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
             self.Z = Z_mat
-            # set simulate function for population using multiprocessing
-            self.simulate = self.simulate_pop
-            # add df to store results from each cell in population
-            self.all_cells = pd.DataFrame(columns=["Topology", "Rep OFF state for each cell", "Rep ON state for each cell"])
+            # set simulate function for population based on whether to track single cell
+            # outputs
+            if single_cell_tracking:
+                self.simulate = self.simulate_pop_single_cell_tracking
+                # add df to store results from each cell in population
+                self.all_cells = pd.DataFrame(columns=["Topology", "Rep OFF state for each cell", "Rep ON state for each cell"])
+            else:
+                self.simulate = self.simulate_pop
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -93,6 +98,29 @@ class SignalConditioner:
         )[-1, -1]
         return rep_off, rep_on
 
+    def simulate_pop_single_cell_tracking(
+        self, 
+        topology: object, 
+    ):
+        pop_rep_off = []
+        pop_rep_on = []
+        nc = len(self.Z)
+        zipped_args = list(zip([topology]*nc, self.Z))
+        for cell in range(0, nc):
+            rep_off, rep_on = self.simulate_cell(
+                zipped_args[cell][0],
+                zipped_args[cell][1],
+            )
+            pop_rep_off.append(rep_off)
+            pop_rep_on.append(rep_on)
+
+        self.all_cells.loc[len(self.all_cells.index)] = [
+            topology, [pop_rep_off], [pop_rep_on]
+        ]
+        rep_off_mean = np.mean(pop_rep_off)
+        rep_on_mean = np.mean(pop_rep_on)
+        return rep_off_mean, rep_on_mean
+    
     def simulate_pop(
         self, 
         topology: object, 
@@ -108,15 +136,7 @@ class SignalConditioner:
             )
             pop_rep_off.append(rep_off)
             pop_rep_on.append(rep_on)
-        # with Pool(self.num_processes) as pool:
-        #     results = pool.starmap(
-        #         self.simulate_cell,
-        #         zipped_args,
-        #     )
-        # pop_rep_off, pop_rep_on = zip(*results)
-        self.all_cells.loc[len(self.all_cells.index)] = [
-            topology, [pop_rep_off], [pop_rep_on]
-        ]
+
         rep_off_mean = np.mean(pop_rep_off)
         rep_on_mean = np.mean(pop_rep_on)
         return rep_off_mean, rep_on_mean

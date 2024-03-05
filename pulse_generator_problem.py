@@ -33,7 +33,8 @@ class PulseGenerator:
             obj_labels: list=["t_pulse (hr)",
                 "prominence_rel"
             ],
-            max_time: float=42
+            max_time: float=42,
+            single_cell_tracking: bool=True
             ) -> None:
         
         self.promo_node = promo_node
@@ -63,10 +64,14 @@ class PulseGenerator:
             self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
             self.Z = Z_mat
-            # set simulate function for population using multiprocessing
-            self.simulate = self.simulate_pop
-            # add df to store results from each cell in population
-            self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state time series for each cell"])
+            # set simulate function for population based on whether to track single cell
+            # outputs
+            if single_cell_tracking:
+                self.simulate = self.simulate_pop_single_cell_tracking
+                # add df to store results from each cell in population
+                self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state time series for each cell"])
+            else:
+                self.simulate = self.simulate_pop
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -97,12 +102,10 @@ class PulseGenerator:
         )[:, -1]
         return t, rep_on_ts
 
-    def simulate_pop(
+    def simulate_pop_single_cell_tracking(
         self, 
         topology: object, 
-        # max_time: int =42
     ):
-        max_time = self.max_time
         rep_on_ts_all = []
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, self.Z))
@@ -118,15 +121,25 @@ class PulseGenerator:
         ]
 
         rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
-        # with Pool(self.num_processes) as pool:
-        #     results = pool.starmap(
-        #         self.simulate_cell,
-        #         zipped_args,
-        #     )
 
-        # rep_on_ts_means = [np.mean(k) for k in zip(*results)]
-        # rep_on_ts_all = results
-        return t, rep_on_ts_means #, rep_on_ts_all
+        return t, rep_on_ts_means
+    
+    def simulate_pop(
+        self, 
+        topology: object, 
+    ):
+        rep_on_ts_all = []
+        nc = len(self.Z)
+        zipped_args = list(zip([topology]*nc, self.Z))
+        for cell in range(0, nc):
+            t, rep_on_ts = self.simulate_cell(                
+                zipped_args[cell][0],
+                zipped_args[cell][1]
+            )
+            rep_on_ts_all.append(rep_on_ts)
+
+        rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
+        return t, rep_on_ts_means
 
     def calc_rep_rel(self, topology, rep_on_ts):
         reference_on = self.ref[topology.promo_node]['on']

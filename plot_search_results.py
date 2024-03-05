@@ -3,9 +3,13 @@ import networkx as nx
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import seaborn as sns
+from scipy.interpolate import interp2d
+from math import ceil, floor
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
+sky_blue = [i/255 for i in [86, 180, 233]]
 
 def plot_graph(
         figure_path: str,
@@ -19,7 +23,7 @@ def plot_graph(
         node_size=600,
         node_shape='s'
     )
-    plt.savefig(figure_path, )
+    plt.savefig(figure_path)
 
 def plot_obj_distribution(
         figure_path: str,
@@ -89,13 +93,15 @@ def plot_pareto_front(
                             palette=palette, ax=ax)
             
         else:
-            fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+            fig, ax = plt.subplots(1, 1, figsize= (2.25, 2.25))
             sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
                             y= obj_df[obj_labels[1]], 
-                            color="black", ax=ax)
+                            color="black", ax=ax, s=8)
 
         plt.xlabel(obj_labels[0])
         plt.ylabel(obj_labels[1])
+        # plt.xticks([0, 20, 40, 60])
+        # plt.yticks([0, 1, 2, 3])
         # plt.show()
         plt.savefig(figure_path, bbox_inches="tight")
 
@@ -133,7 +139,7 @@ def plot_pareto_front3D(
 def plot_1D_obj_scatter(
         figure_path: str,
         obj_vals: np.ndarray,
-        obj_label: str,
+        obj_labels: list,
         y_lower_lim: int=None
 ):
     if obj_vals.flatten()[0] < 0:
@@ -141,136 +147,180 @@ def plot_1D_obj_scatter(
     x_vals = [1]*len(obj_vals)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
     ax.plot(jittered_x, obj_vals, linestyle="None",
-             marker="o", color="gray")
+             marker="o", markersize=1, color="gray")
     ax.set_xticklabels([])
     ax.set_xticks([])
-    ax.set_ylabel(obj_label)
+    ax.set_ylabel(obj_labels[0])
     if y_lower_lim:
         ax.set_ylim(lower = y_lower_lim)
     # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
+
+def plot_1D_obj_confidence_interval(
+        results_path: str,
+        figure_path: str,
+        CI_metric_max: float,
+        obj_labels: list,
+        y_lim: int=False
+):
+    unique_objectives = pd.read_pickle(results_path+"unique_objectives.pkl")
+    unique_objectives = unique_objectives.flatten()*-1
+    max_objective = max(unique_objectives)
+
+    x_vals = [1]*len(unique_objectives)
+    jittered_x = x_vals + 0.1*np.random.rand(
+        len(x_vals))
+    lower_bound = [max_objective-CI_metric_max]*len(unique_objectives)
+    upper_bound = [max_objective]*len(unique_objectives)
+    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    ax.plot(jittered_x, unique_objectives, linestyle="None",
+             marker="o", markersize=1, color="black", zorder=1) #markersize=1
+    jittered_x.sort()
+    ax.fill_between(jittered_x, lower_bound, upper_bound, alpha=0.4, color=sky_blue, zorder=2)
+    ax.set_xticklabels([])
+    ax.set_xticks([])
+    ax.set_ylabel(obj_labels[0])
+    if y_lim:
+        # if CI_metric_max <= 0.5:
+        #     y_lim = [floor(max_objective)-0.5, ceil(max_objective)]
+        # else:
+        y_lim = [floor(max_objective)-CI_metric_max, ceil(max_objective)]
+        ax.set_ylim(y_lim)
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
+
+def plot_2D_obj_confidence_interval(
+        objectives: pd.DataFrame,
+        results_path: str,
+        figure_path: str,
+        CI_metric_maxes: list,
+        obj_labels: list,
+):
+    all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")*-1
+    
+    obj1_CI = CI_metric_maxes[0]
+    obj2_CI = CI_metric_maxes[1]
+
+    # upper_obj1 = np.array([i+obj1_CI_list[0] for i in (objectives[obj_labels[0]]*-1)])
+    upper_obj1 = np.array(objectives[obj_labels[0]]*-1)
+    sorted_upper_idx = np.argsort(upper_obj1)
+    sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
+    lower_obj1 = np.array([i-obj1_CI[0] for i in (objectives[obj_labels[0]]*-1)])
+    sorted_lower_idx = np.argsort(lower_obj1)
+    sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
+
+    # upper_obj2 = np.array([i+obj2_CI_list[0] for i in (objectives[obj_labels[1]]*-1)])
+    upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
+    sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
+    lower_obj2 = np.array([i-obj2_CI[0] for i in (objectives[obj_labels[1]]*-1)])
+    sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
+
+    xfill = np.sort(np.concatenate([upper_obj1, lower_obj1]))
+    y1fill = np.interp(xfill, sorted_upper_obj1, sorted_upper_obj2)
+    y2fill = np.interp(xfill, sorted_lower_obj1, sorted_lower_obj2)
+
+    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    ax.fill_between(xfill, y1fill, y2fill, alpha=0.4, color=sky_blue, zorder=2)
+    ax.plot(all_objectives[:, 0], all_objectives[:, 1], linestyle="none", 
+            marker="o", markersize=1, color="black", zorder=1)
+
+    ax.set_label(obj_labels[0])
+    ax.set_ylabel(obj_labels[1])
+    ax.set_ylim(bottom=0)
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
+
+def plot_3D_obj_confidence_interval(
+        objectives: pd.DataFrame,
+        results_path: str,
+        figure_path: str,
+        CI_metric_maxes: list,
+        obj_labels: list,
+):
+    all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")
+    
+    obj1_CI = CI_metric_maxes[0]
+    obj2_CI = CI_metric_maxes[1]
+    obj3_CI = CI_metric_maxes[2]
+
+    upper_obj1 = np.array(objectives[obj_labels[0]])
+    sorted_upper_idx = np.argsort(upper_obj1)
+    sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
+    lower_obj1 = np.array([i-obj1_CI for i in (objectives[obj_labels[0]])])
+    sorted_lower_idx = np.argsort(lower_obj1)
+    sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
+
+    upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
+    sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
+    lower_obj2 = np.array([i-obj2_CI for i in (objectives[obj_labels[1]]*-1)])
+    sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
+
+    upper_obj3 = np.array(objectives[obj_labels[2]]*-1)
+    sorted_upper_obj3 = upper_obj3[sorted_upper_idx]
+    lower_obj3 = np.array([i-obj3_CI for i in (objectives[obj_labels[2]]*-1)])
+    sorted_lower_obj3 = lower_obj3[sorted_lower_idx]
+
+    # obj1_obj1_upper, obj2_obj2_upper = np.meshgrid(sorted_upper_obj1, sorted_upper_obj2)
+    # obj3_obj3_upper = np.array(sorted_upper_obj3*len(sorted_upper_obj3)).reshape(len(sorted_upper_obj3), len(sorted_upper_obj3))
+    # obj_3_upper_interpolation = interp2d(obj1_obj1_upper, obj2_obj2_upper, obj3_obj3_upper)
+    all_obj1_vals = np.sort(np.concatenate([upper_obj1, lower_obj1]))
+    all_obj2_vals = np.sort(np.concatenate([upper_obj2, lower_obj2]))
+
+    obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
+    obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, obj3_obj3_upper)
+    obj_3_upper_interpolation = obj_3_upper_function(all_obj1_vals, all_obj2_vals)[0, :]
+
+    obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
+    obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, obj3_obj3_lower)
+    obj_3_lower_interpolation = obj_3_lower_function(all_obj1_vals, all_obj2_vals)[0, :]
+
+    upper_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_upper_interpolation)]
+    lower_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_lower_interpolation)]
+    all_vertices = [upper_vertices]+[lower_vertices]
+    print(all_vertices)
+    fig = plt.figure(figsize= (2.25, 2))
+    ax = fig.add_subplot(projection='3d', computed_zorder=False)
+    ax.scatter(
+        xs=all_objectives[:, 0], ys=all_objectives[:, 1]*-1,
+        zs=all_objectives[:, 2]*-1, color="black", zorder=1#marker="o", markersize=1,
+        # color="black", zorder=1
+    )
+    ax.add_collection3d(Poly3DCollection(all_vertices, alpha=0.4, facecolors=sky_blue, zorder=2))
+    ax.view_init(elev=10, azim=-115)
+    ax.set_xlabel(obj_labels[0])
+    ax.set_ylabel(obj_labels[1])
+    ax.set_zlabel(obj_labels[2])
+    plt.show()
     # plt.savefig(figure_path, bbox_inches="tight")
 
 
-# Signal Conditioner single cell GA hypervolumes for all seeds
-# hv_list = []
-# for seed in range(0, 20):
-#     path = ("/Users/kdreyer/Documents/Github/GraphGA/GA_results/" +
-#             "SC_seed_single_cell_DsRED_inhibitor/2023-10-24_Signal_cond_single_cell_DsRED_inhibitor_seed_" +
-#             str(seed) + "/hypervolumes.pkl")
-#     with open(path, "rb") as fid:
-#         hv = pickle.load(fid)
-#     hv_list.append(hv[-40:])
-
-# print(hv_list)
-
-#############################################################
-### Signal Conditioner Population Model ###
-#############################################################
-
-######## SC pop GA hypervolumes with DsRED inhibitor, 50 gens ########
-# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-10-31_Signal_Cond_pop_DsRED_inhibitor_seed_0/"
-# hv_fname = "hypervolumes.pkl"
-# with open(results_path + hv_fname, "rb") as fid:
-#     hv = pickle.load(fid)
-# print(hv)
-# hv_plot_fname = "hypervolume_progression_full.svg"
-# plot_hypervolume(results_path + hv_plot_fname, 50, hv)
-
-######## SC pop GA hypervolumes/pareto with DsRED inhibitor, 60 gens ########
-# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/"
-# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-12-01_Signal_Cond_pop_DsRED_inhibitor_ngen70_seed_0/"
-# results_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-12-02_Signal_Cond_pop_DsRED_inhibitor_ngen100_seed_0/"
-# hv_fname = "hypervolumes.pkl"
-# # final_obj_fname = "final_objectives_df_with_type.pkl"
-
-# with open(results_path + hv_fname, "rb") as fid:
-#     hv = pickle.load(fid)
-# print(hv)
-# hv_plot_fname = "hypervolume_progression.svg"
-# plot_hypervolume(results_path+hv_plot_fname, 100, hv)
-# obj_df = pd.read_pickle(results_path + final_obj_fname)
-# graph_file_name = "final_population_pareto_front.svg"
-# plot_pareto_front(
-#         results_path + graph_file_name,
-#         obj_df,
-#         ["ON_rel", "FI_rel"],
-#         types=False
-#     )
-
-
-# plot_hypervolumes(hv_list, "signal_conditioner", 40, 47.3, "/Users/kdreyer/Documents/Github/GraphGA/GA_results SC_seed_single_cell_DsRED_inhibitor/")
-    
-
-### Pulse hypervolumes ###
-# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-
-# # prob_c = 0.32, prob_m = 0.57
-# path_pulse1 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-10-31_Pulse_pop_DsRED_inhibitor_seed_0/hypervolumes.pkl"
-# with open(path_pulse1, "rb") as fid:
-#     hvs1 = pickle.load(fid)
-# # print(hvs1)
-# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-10-31_Pulse_pop_DsRED_inhibitor_seed_0/hypervolume_progression.svg",
-# #                  [hvs1], 50)
-
-# # prob_c = 0.5, prob_m = 0.57
-# path_pulse2 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_5_seed_0/hypervolumes.pkl"
-# with open(path_pulse2, "rb") as fid:
-#     hvs2 = pickle.load(fid)
-# # print(hvs2)
-# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_5_seed_0/hypervolume_progression.svg",
-# #                  [hvs2], 50)
-
-# # prob_c = 0.75, prob_m = 0.57
-# path_pulse3 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_75_seed_0/hypervolumes.pkl"
-# with open(path_pulse3, "rb") as fid:
-#     hvs3 = pickle.load(fid)
-# # print(hvs3)
-# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_c0_75_seed_0/hypervolume_progression.svg",
-# #                  [hvs3], 50)
-
-# # prob_c = 0.32, prob_m = 0.75
-# path_pulse4 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m0_75_seed_0/hypervolumes.pkl"
-# with open(path_pulse4, "rb") as fid:
-#     hvs4 = pickle.load(fid)
-# # print(hvs4)
-# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m0_75_seed_0/hypervolume_progression.svg",
-# #                  [hvs4], 50)
-
-# # prob_c = 0.32, prob_m = 1.0
-# path_pulse5 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m1_seed_0/hypervolumes.pkl"
-# with open(path_pulse5, "rb") as fid:
-#     hvs5 = pickle.load(fid)
-# # print(hvs5)
-# # plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-07_Pulse_pop_DsRED_inhibitor_m1_seed_0/hypervolume_progression.svg",
-# #                  [hvs5], 50)
-
-# # prob_c = 0.5, prob_m = 0.75
-# path_pulse6 = repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-08_Pulse_pop_DsRED_inhibitor_c0_5_m0_75_seed_0/hypervolumes.pkl"
-# with open(path_pulse6, "rb") as fid:
-#     hvs6 = pickle.load(fid)
-# # print(hvs5)
-# plot_hypervolume(repo_path + "Pulse_seed_pop_DsRED_inhibitor/2023-11-08_Pulse_pop_DsRED_inhibitor_c0_5_m0_75_seed_0/hypervolume_progression.svg",
-#                  [hvs6], 50)
-
-
 #plot amplifier single cell 1D objective scatter plot
-# amp_all_obj_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2023-10-31_Amplifier_single_cell_seed_0/all_objectives.pkl"
+# amp_all_obj_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
 
 # with open(amp_all_obj_path, "rb") as fid:
 #     amp_all_obj = pickle.load(fid)
 
 # amp_unique_obj = np.unique(amp_all_obj)
 
-# plot_1D_obj_scatter("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2023-10-31_Amplifier_single_cell_seed_0/unique_obj_scatter.svg", amp_unique_obj, "ON_rel")
+# plot_1D_obj_scatter("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/obj_scatter_plot_small.svg", amp_all_obj, "ON_rel")
 
-# obj_df = pd.DataFrame(data=[[1, 2, 3], [4, 5, 6], [7, 8, 9]], columns=["obj1", "obj2", "obj3"])
-# # print(obj_df)
+# sc_obj_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df_with_type.pkl"
+# sc_pareto = pd.read_pickle(sc_obj_path)
+# print(sc_pareto)
+# plot_pareto_front("/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_population_pareto_front_small.svg", sc_pareto, ["ON_rel", "FI_rel"], False)
+# sc_pareto = sc_pareto[["ON_rel", "FI_rel"]]
+# print(sc_pareto)
 
-# plot_pareto_front3D("/Users/kdreyer/Desktop/3d_pareto.svg", obj_df, ["obj1", "obj2", "obj3"], False)
-    
-# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# path_final_obj = "2024-02-05_Pulse_3obj_42h_seed_0/final_objectives_df.pkl"
-# df_obj = pd.read_pickle(repo_path + path_final_obj)
-# plot_pareto_front3D(repo_path+"2024-02-05_Pulse_3obj_42h_seed_0/final_popluation_pareto_front2.svg", df_obj, ["t_pulse", "peak_rel", "prominence_rel"], False)
+sc_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/"
+unique_obj_df = pd.read_pickle(sc_path + "unique_objectives_df.pkl")*-1
+graph_file_name = "unique_obj_scatter_plot.svg"
+# plot_pareto_front(
+#     sc_path + "/" + graph_file_name,
+#     unique_obj_df,
+#     ["ON_rel", "FI_rel"],
+#     types=False
+# )
+# print(unique_obj_df[(unique_obj_df["FI_rel"] > 2.5) & (unique_obj_df["FI_rel"] <= 3.0)])
+# print(unique_obj_df)

@@ -29,8 +29,9 @@ class Amplifier:
             CI: float=None,
             Z_mat: np.ndarray=Z_20,
             num_processes: int=None,
-            obj_label: str="ON_rel",
-            max_time: int=42
+            obj_labels: list=["ON_rel"],
+            max_time: int=42,
+            single_cell_tracking: bool=True
             ) -> None:
         
         self.promo_node = promo_node
@@ -47,7 +48,7 @@ class Amplifier:
         self.pop = pop
         self.CI = CI
         self.num_processes = num_processes
-        self.obj_label = obj_label
+        self.obj_labels = obj_labels
         self.max_time = max_time
         self.system_eqs = system_equations_pop
         
@@ -60,10 +61,14 @@ class Amplifier:
             self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
             self.Z = Z_mat
-            # set simulate function for population using multiprocessing
-            self.simulate = self.simulate_pop
-            # add df to store results from each cell in population
-            self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state for each cell"])
+            # set simulate function for population based on whether to track single cell
+            # outputs
+            if single_cell_tracking:
+                self.simulate = self.simulate_pop_single_cell_tracking
+                # add df to store results from each cell in population
+                self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state for each cell"])
+            else:
+                self.simulate = self.simulate_pop
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -87,10 +92,9 @@ class Amplifier:
         )[-1, -1]
         return rep_on
 
-    def simulate_pop(
+    def simulate_pop_single_cell_tracking(
         self, 
         topology: object, 
-        # max_time: int =42
     ):
         pop_rep_on = []
         nc = len(self.Z)
@@ -101,14 +105,27 @@ class Amplifier:
                 zipped_args[cell][1]
             )
             pop_rep_on.append(rep_on)
-        # with Pool(self.num_processes) as pool:
-        #     pop_rep_on = pool.starmap(
-        #         self.simulate_cell,
-        #         zipped_args,
-        #     )
+
         self.all_cells.loc[len(self.all_cells.index)] = [
             topology, [pop_rep_on]
         ]
+        rep_on_mean = np.mean(pop_rep_on)
+        return rep_on_mean
+    
+    def simulate_pop(
+        self, 
+        topology: object, 
+    ):
+        pop_rep_on = []
+        nc = len(self.Z)
+        zipped_args = list(zip([topology]*nc, self.Z))
+        for cell in range(0, nc):
+            rep_on = self.simulate_cell(
+                zipped_args[cell][0],
+                zipped_args[cell][1]
+            )
+            pop_rep_on.append(rep_on)
+
         rep_on_mean = np.mean(pop_rep_on)
         return rep_on_mean
 

@@ -10,17 +10,26 @@ import networkx as nx
 import time
 import pickle
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 import pandas as pd
 import seaborn as sns
 from define_circuit import Topo
-from itertools import product, combinations, permutations
+from itertools import product, combinations, permutations, chain
 # from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 # from rankcrowding import RankAndCrowding
 from plot_search_results import *
 from GA import sampling, check_valid
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
+from pulse_generator_problem import PulseGenerator
 from pymoo.indicators.hv import HV
+from plot_search_results import plot_graph
+from math import exp
+from scipy.interpolate import interp2d
+
+plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
+sky_blue = [i/255 for i in [86, 180, 233]]
 
 # from load_files_pop import (
 #     Z_20,  
@@ -294,21 +303,53 @@ from pymoo.indicators.hv import HV
 # unique_obj_pos = unique_obj*-1
 # print(len(np.argwhere(unique_obj_pos >= 67.5)))
 
-
+ 
 
 
 #################################################################
 ########### Amplifier experimental circuit new predictions ######
 #################################################################
 # repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
+# # amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
+# amp_unique_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_objectives.pkl"
+# # amp_unique_circuits_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_circuits.pkl"
 # amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
-# amp_results = pd.read_pickle(repo_path+amp_results_path)
+# # amp_results = pd.read_pickle(repo_path+amp_results_path)
 # amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
 # amp_obj = amp_obj.flatten()
+# print(max(amp_obj))
+# amp_unique_obj = pd.read_pickle(repo_path+amp_unique_obj_path)
+# amp_unique_obj = amp_unique_obj.flatten()*-1
+# print(max(amp_unique_obj))
+# amp_obj = amp_obj.flatten()
 # print(amp_obj)
-# amp = Amplifier("P_exp", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+# pulse = PulseGenerator("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+# circuit = Topo([('P1', 'Z6'), ('Z6', 'Rep')], {'Z6': 75}, "P1")
+# # print(circuit.dose)
+# pulse.simulate(circuit)
+# amp_unique_obj = pd.read_pickle(repo_path+amp_unique_obj_path).flatten()*-1
+# amp_unique_circuits = pd.read_pickle(repo_path+amp_unique_circuits_path)
+# amp_unique_obj_high = np.where(amp_unique_obj > 69.5)[0]
+# unique_circuits_high = amp_unique_circuits[amp_unique_obj_high]
+# unique_obj_high = amp_unique_obj[amp_unique_obj_high]
+# print(unique_obj_high[31])
+# print(unique_circuits_high)
+# edges_no_ZF6 = []
+# edges_no_ZF6_idx = []
+# for i, circuit in enumerate(unique_circuits_high):
+#     edge_list = circuit[0].edge_list
+#     edge_list_flattened = list(chain.from_iterable(edge_list))
+#     if "Z6" not in edge_list_flattened:
+#         edges_no_ZF6.append(edge_list)
+#         edges_no_ZF6_idx.append(i)
+# print(edges_no_ZF6)
+# for i, circuit in enumerate(unique_circuits_high):
+#     edge_list = circuit[0].edge_list
+#     edge_list_flattened = list(chain.from_iterable(edge_list))
+#     if len(edge_list_flattened) == 10:
+#         print(edge_list, i)
 
+# print(len(amp_unique_obj_high[0]))
 ### Circuit 1 from experiments
 # print(np.where(np.logical_and(amp_obj>69.982, amp_obj<69.98215)))
 # print(amp_obj[[1874, 1940, 1951, 1965, 2027, 2074, 2108, 2112, 2165, 2175, 2226,
@@ -318,6 +359,10 @@ from pymoo.indicators.hv import HV
 # circuit_1 = amp_results[1874][0]
 # print(circuit_1.dose)
 # circuit_1_exp = Topo([('P_exp_amp', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Rep'), ('Z6', 'Z9')], {'Z6': 75, 'Z9': 75}, "P_exp_amp")
+# edge_list = circuit_1_exp.edge_list
+# flattened_edges = list(chain.from_iterable(circuit_1_exp.edge_list))
+# if "Z6" in flattened_edges:
+#     print(edge_list)
 # ON_rel_neg = amp.func(circuit_1_exp)
 # print(ON_rel_neg)
 
@@ -357,25 +402,77 @@ from pymoo.indicators.hv import HV
 #############################################################################
 repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 sc_results_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_population.pkl"
-sc_obj_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df_with_type.pkl"
-sc_results = pd.read_pickle(repo_path+sc_results_path)
+sc_obj_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df.pkl"
+sc_all_obj_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/all_objectives.pkl"
+sc_all_circuits_path = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/all_circuits.pkl"
+sc_all_obj = pd.read_pickle(repo_path+sc_all_obj_path)*-1
+sc_pareto_obj = pd.read_pickle(repo_path+sc_obj_path)
+# print(sc_all_obj)
+# print(sc_pareto_obj)
+# unique_sc_pareto_obj = (
+#     sc_pareto_obj.drop_duplicates()
+
+# print(unique_sc_pareto_obj.index.tolist())
+# sc_pareto_circuits = pd.read_pickle(repo_path+sc_results_path)
+# unique_sc_pareto_circuits = sc_pareto_circuits[unique_sc_pareto_obj.index]
+# print(unique_sc_pareto_circuits, len(unique_sc_pareto_circuits))
+# sc_all_circuits = pd.read_pickle(repo_path+sc_all_circuits_path)
+# unique_all_obj, unique_all_obj_idx = np.unique(sc_all_obj, return_index=True, axis=0)
+# unique_all_circuits = sc_all_circuits[unique_all_obj_idx]
+# high_obj = unique_all_obj[np.where(unique_all_obj[:, 1] > 1.0)] 
+# print(high_obj[49])
+# high_circuits = unique_all_circuits[np.where(unique_all_obj[:, 1] > 1.0)]
+# for i, circuit in enumerate(high_circuits):
+#     # print(circuit[0].part_list)
+#     if ("Z1" in circuit[0].part_list) and ("I1" in circuit[0].part_list):
+#         print(i, circuit[0].edge_list)
+#         print(circuit[0].dose)
+#     elif ("Z1" in circuit[0].part_list) and ("I2" in circuit[0].part_list):
+#         print(i, circuit[0].edge_list)
+#         print(circuit[0].dose)
+#     elif ("Z2" in circuit[0].part_list) and ("I2" in circuit[0].part_list):
+#         print(i, circuit[0].edge_list)
+#         print(circuit[0].dose)
+#     elif ("Z2" in circuit[0].part_list) and ("I1" in circuit[0].part_list):
+#         print(i, circuit[0].edge_list)
+#         print(circuit[0].dose)
+#     if circuit[0].part_list[0][1:] == circuit[0].part_list[1][1:]:
+#         print(i, circuit[0].edge_list)
+#         print(circuit[0].dose)
+
+sc_results = pd.read_pickle(repo_path+sc_all_circuits_path)
+print(len(sc_results))
 sc_obj = pd.read_pickle(repo_path+sc_obj_path)[["ON_rel", "FI_rel"]]*-1
 # print(sc_obj[sc_obj["FI_rel"] > 2].drop_duplicates().sort_values(by="FI_rel", ascending=False))
 
-sc = SignalConditioner("P_exp_sc", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
-
+sc = SignalConditioner("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+not_equal = []
+for i, circuit in enumerate(sc_results[:1000]):
+    in_dict_list = list(circuit[0].in_dict.keys())
+    in_dict_list.remove("Rep") 
+    dose_dict_list = list(circuit[0].dose.keys())
+    dose_dict_list.remove("Rep")
+    # print(in_dict_list)
+    if in_dict_list != dose_dict_list:
+        not_equal.append(circuit)
+        print(i)
+print(len(not_equal))
+        # print("not equal")
 ### Circuit 1 from experiments
 # sc_results[1][0].plot_graph()
 # circuit_1 = sc_results[1][0]
-# print(circuit_1.edge_list)
-circuit_1_exp = Topo([('P_exp_sc', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('P_exp_sc', 'I1'), ('I1', 'Rep')], {'Z12': 60, 'I1': 60}, "P_exp_sc")
-objs_neg, FI_sc, rep = sc.func(circuit_1_exp)
-print(objs_neg, FI_sc, rep)
+# print(circuit_1.in_dict, circuit_1.dose)
+# circuit_1_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('P1', 'I1'), ('I1', 'Rep')], {'Z12': 60, 'I1': 60}, "P1")
+# print(circuit_1_exp.part_list)
+# if ("Z12" in circuit_1_exp.part_list) and ("I1" in circuit_1_exp.part_list):
+#     print(circuit_1_exp.edge_list)
+# objs_neg, FI_sc = sc.func(circuit_1_exp)
+# print(objs_neg, FI_sc)
 
 ### Circuit 2 from experiments
 # sc_results[7][0].plot_graph()
-# circuit_2 = sc_results[7][0]
-# print(circuit_2.dose)
+circuit_2 = sc_results[7][0]
+print(circuit_2.dose, circuit_2.in_dict)
 # circuit_2_exp = Topo([('P_exp_sc', 'Z12'), ('P_exp_sc', 'I11'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'Z12': 55, 'I11': 75}, "P_exp_sc")
 # objs_neg, FI_sc = sc.func(circuit_2_exp)
 # print(objs_neg, FI_sc)
@@ -383,10 +480,10 @@ print(objs_neg, FI_sc, rep)
 ### Circuit 3 from experiments
 # sc_results[12][0].plot_graph()
 # circuit_3 = sc_results[12][0]
-# print(circuit_3.dose)
-# circuit_3_exp = Topo([('P_exp_sc', 'Z9'), ('P_exp_sc', 'I11'), ('Z9', 'Rep'), ('Z9', 'I11'), ('I11', 'Rep')], {'Z9': 75, 'I11': 35}, "P_exp_sc")
-# objs_neg, FI_sc = sc.func(circuit_3_exp)
-# print(objs_neg, FI_sc)
+# # print(circuit_3.dose, circuit_3.in_dict)
+# circuit_3_exp = Topo([('P1', 'Z9'), ('P1', 'I11'), ('Z9', 'Rep'), ('Z9', 'I11'), ('I11', 'Rep')], {'I11': 35, 'Z9': 75}, "P1")
+# objs_neg = sc.func(circuit_3_exp)
+# print(objs_neg)
 
 ### Circuit 4 from experiments
 # sc_results[24][0].plot_graph()
@@ -411,3 +508,99 @@ print(objs_neg, FI_sc, rep)
 # circuit_6_exp = Topo([('P_exp_sc', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'I11': 5, "Z12": 50}, "P_exp_sc")
 # objs_neg, FI_sc = sc.func(circuit_6_exp)
 # print(objs_neg, FI_sc)
+
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# sc_results_path = "2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/final_population.pkl"
+# sc_obj_path = "2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/final_objectives_df.pkl"
+# sc_all_obj_path = "2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/all_objectives.pkl"
+# sc_all_circuits_path = "2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/all_circuits.pkl"
+# sc_all_obj = pd.read_pickle(repo_path+sc_all_obj_path)*-1
+# # print(sc_all_obj)
+# sc_pareto_obj = pd.read_pickle(repo_path+sc_obj_path)
+# sc_pareto_circuits = pd.read_pickle(repo_path+sc_results_path)
+# sc_pareto_obj = sc_pareto_obj.drop_duplicates()
+# # print(sc_pareto_obj)
+# sc_pareto_obj["ON_rel"] = sc_pareto_obj["ON_rel"]*-1
+# sc_pareto_obj["FI_rel"] = sc_pareto_obj["FI_rel"]*-1
+# sc_pareto_obj_high = sc_pareto_obj[sc_pareto_obj["FI_rel"] > 1.3]
+# print(sc_pareto_obj_high)
+# for i, circuit in enumerate(sc_pareto_circuits[sc_pareto_obj_high.index.tolist()]):
+#     print(circuit[0].edge_list, circuit[0].dose)
+#     plot_graph(repo_path +"2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/topology_" + str(i) + ".svg", circuit[0])
+# sc_all_circuits = pd.read_pickle(repo_path+sc_all_circuits_path)
+# unique_all_obj, unique_all_obj_idx = np.unique(sc_all_obj, return_index=True, axis=0)
+# unique_all_circuits = sc_all_circuits[unique_all_obj_idx]
+# high_obj = unique_all_obj[np.where(unique_all_obj[:, 1] > 1.9)]
+# # print(high_obj[np.argsort(high_obj[:, -1])])
+# high_circuits = unique_all_circuits[np.where(unique_all_obj[:, 1] > 1.9)]
+# circuit_idx = []
+# for i, circuit in enumerate(high_circuits):
+#     # if len(circuit[0].edge_list) == 4:
+#     #     circuit_idx.append(i)
+#     print(circuit[0].edge_list)
+#     print(circuit[0].dose)
+# print(high_obj)
+
+
+
+
+
+#### test plotting for CI with pareto front ####
+# fig, ax = plt.subplots(1, 3, figsize=(12, 4))
+# # x = [1, 1.5, 2, 3, 4, 5]
+# # y = [exp(-i) for i in x]
+# ON_rel_err = [2.0]*len(sc_pareto_obj["ON_rel"].tolist())
+# FI_rel_err = [0.25]*len(sc_pareto_obj["FI_rel"].tolist())
+# # upper_ON_rel = np.array([i+ON_rel_err[0] for i in (sc_pareto_obj["ON_rel"]*-1)])
+# upper_ON_rel = np.array(sc_pareto_obj["ON_rel"]*-1)
+# sorted_upper_idx = np.argsort(upper_ON_rel)
+# sorted_upper_ON_rel = upper_ON_rel[sorted_upper_idx]
+# # print(sorted_upper_ON_rel)
+# lower_ON_rel = np.array([i-ON_rel_err[0] for i in (sc_pareto_obj["ON_rel"]*-1)])
+# sorted_lower_idx = np.argsort(lower_ON_rel)
+# sorted_lower_ON_rel = lower_ON_rel[sorted_lower_idx]
+# # upper_FI_rel = np.array([i+FI_rel_err[0] for i in (sc_pareto_obj["FI_rel"]*-1)])
+# upper_FI_rel = np.array(sc_pareto_obj["FI_rel"]*-1)
+# sorted_upper_FI_rel = upper_FI_rel[sorted_upper_idx]
+# lower_FI_rel = np.array([i-FI_rel_err[0] for i in (sc_pareto_obj["FI_rel"]*-1)])
+# sorted_lower_FI_rel = lower_FI_rel[sorted_lower_idx]
+# # print(sorted_lower_FI_rel)
+# xfill = np.sort(np.concatenate([upper_ON_rel, lower_ON_rel]))
+# y1fill = np.interp(xfill, sorted_upper_ON_rel, sorted_upper_FI_rel)
+# y2fill = np.interp(xfill, sorted_lower_ON_rel, sorted_lower_FI_rel)
+# # print(y2fill)
+# ax[0].errorbar(sc_pareto_obj["ON_rel"]*-1, sc_pareto_obj["FI_rel"]*-1, xerr=ON_rel_err,
+#                yerr=FI_rel_err, linestyle="None", marker="o", capsize=4)
+# ax[1].fill_between(xfill, y1fill, y2fill, alpha=0.3)
+# ax[1].plot(sc_pareto_obj["ON_rel"]*-1, sc_pareto_obj["FI_rel"]*-1, linestyle="None", marker="o")
+# ax[1].plot(lower_ON_rel, lower_FI_rel, linestyle="None", marker="o")
+# ax[1].plot(upper_ON_rel, upper_FI_rel, linestyle="None", marker="o")
+# ax[2].plot(sc_all_obj[:, 0], sc_all_obj[:, 1], linestyle="None", marker="o", markersize=4)
+# ax[2].fill_between(xfill, y1fill, y2fill, alpha=0.3)
+
+# plt.show()
+
+# all_vertices = [[[-31.0, -6.53452205539751, 0.0], [-29.0, -6.483134823574519, 0.0], [-28.0, -5.9889566791622055, 0.0], [-27.0, -5.9554042087325865, 0.0], [-26.0, -5.6419117140686605, 0.0], [-25.0, -5.4046441221955455, 0.0], [-24.0, -5.15955583568886, 0.0], [-23.0, -4.904103702363367, 0.0], [-21.0, -4.3487887373756, 0.0], [-19.0, -4.186657512107043, 0.0], [-17.0, -3.253241160149568, 0.0], [-13.0, -1.4178456939579807, 0.0], [0.0, -0.8621307599677381, 0.0], [1.0, 0.04792253338347758, 0.019736509901236654], [2.0, 0.09930976520646771, 0.03947301980247331], [3.0, 0.5934879096187822, 0.08691635738331432], [4.0, 0.6270403800484003, 0.3954655909939231], [5.0, 0.9405328747123269, 0.4277589480926045], [6.0, 1.1778004665854414, 0.7262357246427164], [6.0, 1.4228887530921275, 0.7262357246427164], [7.0, 1.6783408864176201, 0.9517388696511238], [8.0, 2.2336558514053877, 1.1847211015661638], [10.0, 2.3957870766739435, 1.4254010544752462], [12.0, 3.3292034286314194, 1.9376563950272714], [14.0, 3.63168294042376, 2.0606017603094613], [18.0, 5.164598894823007, 2.6219693891107267], [32.0, 5.720313828813249, 4.089996151753775], [34.0, 10.214127529204747, 4.142305897492051], [37.0, 90.74101026536327, 4.220770516099464], [65.0, 97.32345485414426, 1.4813962181584142]], [[-31.0, -6.53452205539751, -1.210437574896098], [-29.0, -6.483134823574519, -1.1709645550936247], [-28.0, -5.9889566791622055, -1.1235212175127838], [-27.0, -5.9554042087325865, -0.814971983902175], [-26.0, -5.6419117140686605, -0.7826786268034935], [-25.0, -5.4046441221955455, -0.4842018502533817], [-24.0, -5.15955583568886, -0.2586987052449743], [-23.0, -4.904103702363367, -0.02571647332993421], [-21.0, -4.3487887373756, 0.2149634795791482], [-19.0, -4.186657512107043, 0.7272188201311733], [-17.0, -3.253241160149568, 0.8501641854133632], [-13.0, -1.4178456939579807, 1.4115318142146287], [0.0, -0.8621307599677381, 2.7746995223831736], [1.0, 0.04792253338347758, 2.879558576857677], [2.0, 0.09930976520646771, 2.905713449726815], [3.0, 0.5934879096187822, 2.931868322595953], [4.0, 0.6270403800484003, 2.958023195465091], [5.0, 0.9405328747123269, 2.9841780683342285], [6.0, 1.1778004665854414, 3.0103329412033664], [6.0, 1.4228887530921275, 3.0103329412033664], [7.0, 1.6783408864176201, 2.9124981448483287], [8.0, 2.2336558514053877, 2.814663348493291], [10.0, 2.3957870766739435, 2.618993755783216], [12.0, 3.3292034286314194, 2.4233241630731412], [14.0, 3.63168294042376, 2.227654570363066], [18.0, 5.164598894823007, 1.8363153849429164], [32.0, 5.720313828813249, 0.4666282359723911], [34.0, 10.214127529204747, 0.2709586432623161], [37.0, 90.74101026536327, 0.2709586432623161], [65.0, 97.32345485414426, 0.2709586432623161]]]
+# all_vertices = [[[-31.0, -6.53452205539751, 0.0], [-29.0, -6.483134823574519, 0.0],
+#                 [-28.0, -5.9889566791622055, 0.0], [-27.0, -5.9554042087325865, 0.0]],
+#                 [[-31.0, -6.53452205539751, -1.210437574896098], [-29.0, -6.483134823574519, -1.1709645550936247],
+#                 [-28.0, -5.9889566791622055, -1.1235212175127838], [-27.0, -5.9554042087325865, -0.814971983902175]]]
+# x1, y1, z1 = list(zip(*all_vertices[0]))
+# x2, y2, z2 = list(zip(*all_vertices[1]))
+
+# fig = plt.figure(figsize= (2.25, 2))
+# ax = fig.add_subplot(projection='3d')
+# ax.scatter(xs=x1, ys=y1, zs=z1, color="k")
+# ax.scatter(xs=x2, ys=y2, zs=z2, color="k")
+# ax.add_collection3d(Poly3DCollection(all_vertices, facecolors=sky_blue))
+# ax.view_init(elev=10, azim=-115)
+# plt.show()
+
+# dose = {'I1': 5, 'Z2': 55, 'Rep': 1}
+# print(list(dose.keys()))
+
+# in_dict = {'I1': {'P': [], 'Z': ['Z2'], 'I': []}, 'Z2': {'P': ['P1'], 'Z': ['Z2'], 'I': ['I1']}, 'Rep': {'P': [], 'Z': ['Z2'], 'I': ['I1']}}
+# print(list(in_dict.keys()))
+
+# if list(in_dict.keys()) != list(dose.keys()):
+#     print("not equal")

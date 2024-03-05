@@ -211,7 +211,7 @@ def single_obj_GA(
         plot_1D_obj_scatter(
             folder_path + "/" + graph_file_name,
             unique_obj, 
-            problem.obj_label,
+            problem.obj_labels,
         )
 
     else:
