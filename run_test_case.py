@@ -20,7 +20,6 @@ from load_Z_mat_samples import Z_mat_list
 def run(
         testcase: object,
         settings: dict,
-        metrics: bool =False
     ):
     '''Run the genetic algorithm for a given test case'''
 
@@ -38,7 +37,6 @@ def run(
         probability_mutation=settings["probability_mutation"],
         mutate_dose=settings["mutate_dose"],
         pop=settings["pop"],
-        CI=settings["CI"],
         num_processes=settings["num_processes"],
         obj_labels=settings["obj_labels"],
         max_time=settings["max_time"]
@@ -91,7 +89,6 @@ def run(
             population,
             num_circuits,
             obj,
-            settings["get_unique"],
             settings["plot"]
         )
         # print("final objectives: ", obj)
@@ -105,8 +102,6 @@ def run(
             population,
             num_circuits,
             obj,
-            settings["get_unique"],
-            metrics
         )
 
 
@@ -117,22 +112,20 @@ settings = {
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": True,
+    "DsRed_inhibitor": False,
     "num_dict": {1: 46, 2: 122},
-    "n_gen": 5,
+    "n_gen": 50,
     "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
     "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
     "pop": True,
-    "CI": None,
     "num_processes": 8,
     "obj_labels": ["ON_rel", "FI_rel"],
     "max_time": 42,
-    "get_unique": False,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "SC_debugging"
+    "folder_name": "Signal_Cond_pop_inhibitor_ZF1_ZF2_new_dose_terms"
 }
 
 if __name__ == "__main__":

@@ -49,7 +49,7 @@ def plot_metric(
 ):
     generations = np.arange(len(metric_list))
 
-    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+    fig, ax = plt.subplots(1, 1, figsize= (2.5, 2.5))
     ax.plot(generations, metric_list)
     ax.set_xlabel("generation")
     ax.set_ylabel(label)
@@ -121,7 +121,7 @@ def plot_pareto_front3D(
         obj_df[obj_labels[2]] = obj_df[
             obj_labels[2]]*-1
             
-    print(obj_df.tail(n=50))
+    # print(obj_df.tail(n=50))
     fig = plt.figure(figsize= (4, 4))
     ax = fig.add_subplot(projection='3d')
 
@@ -313,9 +313,9 @@ def plot_3D_obj_confidence_interval(
 # sc_pareto = sc_pareto[["ON_rel", "FI_rel"]]
 # print(sc_pareto)
 
-sc_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/"
-unique_obj_df = pd.read_pickle(sc_path + "unique_objectives_df.pkl")*-1
-graph_file_name = "unique_obj_scatter_plot.svg"
+# sc_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/"
+# unique_obj_df = pd.read_pickle(sc_path + "unique_objectives_df.pkl")*-1
+# graph_file_name = "unique_obj_scatter_plot.svg"
 # plot_pareto_front(
 #     sc_path + "/" + graph_file_name,
 #     unique_obj_df,

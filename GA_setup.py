@@ -22,6 +22,7 @@ from diversity_metrics import (
 )
 from plot_search_results import(
     plot_graph,
+    plot_metric,
     plot_1D_obj_scatter,
     plot_pareto_front,
     plot_pareto_front3D,
@@ -35,8 +36,7 @@ def single_obj_GA(
         population: np.ndarray,
         num_circuits: int, 
         obj: np.ndarray,
-        get_unique: bool=False,
-        metrics: bool =False
+        get_unique: bool=False
 ):
     
     # create list to store min obj function, 
@@ -59,16 +59,15 @@ def single_obj_GA(
     circuit_min = []
     circuit_min.append(population[ind_min])
 
-    geno = None
-    pheno = None
-    # if storing metrics, create lists for those
-    # metrics and store initial population value
-    if metrics:
-        geno = np.zeros(problem.n_gen+1)
-        geno[0] = geno_diversity(population)
 
-        pheno = np.zeros_like(geno)
-        pheno[0] = pheno_diversity(obj)
+    # create arrays for genotype and phenotype
+    # metrics and store initial population value
+    geno = np.zeros(problem.n_gen+1)
+    geno[0] = geno_diversity(population)
+
+    pheno = np.zeros_like(geno)
+    pheno[0] = pheno_diversity(obj)
+
     with alive_bar(problem.n_gen) as bar:
         for gen in range(problem.n_gen):
             # perform crossover to generate new
@@ -135,9 +134,8 @@ def single_obj_GA(
             circuit_min.append(population[ind_min])
 
             # calculate metrics for population
-            if metrics:
-                geno[gen+1] = geno_diversity(population)
-                pheno[gen+1] = pheno_diversity(obj)
+            geno[gen+1] = geno_diversity(population)
+            pheno[gen+1] = pheno_diversity(obj)
 
             # print("generation "+ str(gen) + " complete")
             bar()
@@ -163,6 +161,28 @@ def single_obj_GA(
     file_name = "all_circuits.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(all_circuits, fid)
+
+    file_name = "genotype.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(geno, fid)
+
+    file_name = "phenotype.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(pheno, fid)
+
+    graph_file_name = "genotype_progression.svg"
+    plot_metric(
+        folder_path + "/" + graph_file_name,
+        geno, 
+        "genotype",
+    )
+
+    graph_file_name = "phenotype_progression.svg"
+    plot_metric(
+        folder_path + "/" + graph_file_name,
+        pheno, 
+        "phenotype",
+    )
     
     if problem.pop:
         # save all_cell results df (see problem class)

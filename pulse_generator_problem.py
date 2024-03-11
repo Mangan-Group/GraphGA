@@ -169,6 +169,8 @@ class PulseGenerator:
         if prominence_rel != 0:
             idx_peak_rel = rep_on_ts_rel.index(peak_rel)
             t_pulse = t[idx_peak_rel]
+            # if t_pulse >= 42:
+            #     t_pulse = 0
         
         else:
             t_pulse = 0

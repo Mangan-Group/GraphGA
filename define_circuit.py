@@ -18,7 +18,7 @@ class Topo():
         # add reporter dose because not in 
         # part list where dose_list was defined
         # but not included in parts_list
-        self.dose.update({'Rep': 1})
+        self.dose.update({'Rep': 200})
         self.part_list = [k for k in self.dose.keys() if k != 'Rep']
         
         # add protein degradation parameters for 
