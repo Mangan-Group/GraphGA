@@ -309,17 +309,17 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #################################################################
 ########### Amplifier experimental circuit new predictions ######
 #################################################################
-repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
 # amp_unique_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_objectives.pkl"
 # amp_unique_circuits_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_circuits.pkl"
-amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
-amp_results = pd.read_pickle(repo_path+amp_results_path)
-amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
-amp_obj = amp_obj.flatten()
+# amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
+# amp_results = pd.read_pickle(repo_path+amp_results_path)
+# amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
+# amp_obj = amp_obj.flatten()
 # print(max(amp_obj))
 # print(amp_obj)
-amp = Amplifier("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+# amp = Amplifier("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
 
 # amp_unique_obj = pd.read_pickle(repo_path+amp_unique_obj_path).flatten()*-1
 # amp_unique_circuits = pd.read_pickle(repo_path+amp_unique_circuits_path)
@@ -430,7 +430,7 @@ amp = Amplifier("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57
 # print(len(sc_results))
 # sc_obj = pd.read_pickle(repo_path+sc_obj_path)[["ON_rel", "FI_rel"]]*-1
 # print(sc_obj[sc_obj["FI_rel"] > 2].drop_duplicates().sort_values(by="FI_rel", ascending=False))
-sc = SignalConditioner('P1', [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+# sc = SignalConditioner('P1', [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
 
 
 # not_equal = []
@@ -450,9 +450,9 @@ sc = SignalConditioner('P1', [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32
 # circuit_1 = sc_results[1][0]
 
 # print(circuit_1.in_dict, circuit_1.dose)
-circuit_1_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('P1', 'I1'), ('I1', 'Rep')], {'Z12': 60, 'I1': 60}, 'P1')
-objs = sc.func(circuit_1_exp)
-print("c1: ",objs)
+# circuit_1_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('P1', 'I1'), ('I1', 'Rep')], {'Z12': 60, 'I1': 60}, 'P1')
+# objs = sc.func(circuit_1_exp)
+# print("c1: ",objs)
 # print(circuit_1_exp.part_list)
 # if ("Z12" in circuit_1_exp.part_list) and ("I1" in circuit_1_exp.part_list):
 #     print(circuit_1_exp.edge_list)
@@ -463,44 +463,44 @@ print("c1: ",objs)
 # sc_results[7][0].plot_graph()
 # circuit_2 = sc_results[7][0]
 # print(circuit_2.dose, circuit_2.in_dict)
-circuit_2_exp = Topo([('P1', 'Z12'), ('P1', 'I11'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'Z12': 55, 'I11': 75}, "P1")
-objs_neg = sc.func(circuit_2_exp)
-print("c2: ", objs_neg)
+# circuit_2_exp = Topo([('P1', 'Z12'), ('P1', 'I11'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'Z12': 55, 'I11': 75}, "P1")
+# objs_neg = sc.func(circuit_2_exp)
+# print("c2: ", objs_neg)
 
 ### Circuit 3 from experiments
 # sc_results[12][0].plot_graph()
 # circuit_3 = sc_results[12][0]
 # print(circuit_3.dose, circuit_3.in_dict)
-circuit_3_exp = Topo([('P1', 'Z9'), ('P1', 'I11'), ('Z9', 'Rep'), ('Z9', 'I11'), ('I11', 'Rep')], {'I11': 35, 'Z9': 75}, 'P1')
-objs_neg = sc.func(circuit_3_exp)
-print("c3: ", objs_neg)
+# circuit_3_exp = Topo([('P1', 'Z9'), ('P1', 'I11'), ('Z9', 'Rep'), ('Z9', 'I11'), ('I11', 'Rep')], {'I11': 35, 'Z9': 75}, 'P1')
+# objs_neg = sc.func(circuit_3_exp)
+# print("c3: ", objs_neg)
 
 ### Circuit 4 from experiments
 # sc_results[24][0].plot_graph()
 # circuit_4 = sc_results[24][0]
 # print(circuit_4.dose, circuit_4.in_dict)
 # print(circuit_4.edge_list)
-circuit_4_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('I1', 'Rep')], {'Z12': 55, 'I1': 5}, "P1")
-objs_neg = sc.func(circuit_4_exp)
-print("c4: ", objs_neg)
+# circuit_4_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('I1', 'Rep')], {'Z12': 55, 'I1': 5}, "P1")
+# objs_neg = sc.func(circuit_4_exp)
+# print("c4: ", objs_neg)
 
 ### Circuit 5 from experiments
 # sc_results[21][0].plot_graph()
 # circuit_5 = sc_results[21][0]
 # print(circuit_5.dose, circuit_5.in_dict)
 # print(circuit_5.edge_list, circuit_5.dose)
-circuit_5_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I15'), ('I15', 'Rep')], {'Z12': 55, 'I15': 20}, "P1")
-objs_neg = sc.func(circuit_5_exp)
-print("c5: ", objs_neg)
+# circuit_5_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I15'), ('I15', 'Rep')], {'Z12': 55, 'I15': 20}, "P1")
+# objs_neg = sc.func(circuit_5_exp)
+# print("c5: ", objs_neg)
 
 ### Circuit 6 from experiments
 # sc_results[11][0].plot_graph()
 # circuit_6 = sc_results[11][0]
 # print(circuit_6.dose, circuit_6.in_dict)
 # print(circuit_6.edge_list, circuit_6.dose)
-circuit_6_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'I11': 5, "Z12": 50}, "P1")
-objs_neg = sc.func(circuit_6_exp)
-print("c6: ", objs_neg)
+# circuit_6_exp = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I11'), ('I11', 'Rep')], {'I11': 5, "Z12": 50}, "P1")
+# objs_neg = sc.func(circuit_6_exp)
+# print("c6: ", objs_neg)
 
 
 ### Original GA run for signal conditioner ZF1 and ZF2 only
@@ -584,22 +584,79 @@ print("c6: ", objs_neg)
 #     circuit[0].plot_graph()
 #     plot_graph(repo_path +"2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/topology_" + str(i) + ".svg", circuit[0])
 
-### Pulse all ZFs, t_pulse 126h
+# ### Pulse all ZFs, t_pulse 126h (80 gen)
 # repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/2024-03-05_Pulse_pop_DsRED_inhibitor_t_pulse_126h_new_ZFreg_dose_term_seed_0/final_objectives_df.pkl"
-# file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/2024-03-05_Pulse_pop_DsRED_inhibitor_t_pulse_126h_new_ZFreg_dose_term_seed_0/final_population.pkl"
+# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_seed_0/final_objectives_df.pkl"
+# file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_seed_0/final_population.pkl"
 
 # final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
-# print(final_obj_unique)
+# final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
+# final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 1.0]
+# final_obj_unique_reset_idx = final_obj_unique.reset_index()
+# # print(final_obj_unique_reset_idx)
 # unique_obj_idx = final_obj_unique.index.to_list()
-# unique_obj_idx.remove(0)
+# # unique_obj_idx.remove(0)
+# # print(unique_obj_idx)
 # final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
+# # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
+# for i, circuit in enumerate(final_circuits_unique):
+# #     print(circuit[0].edge_list)
+#     print(circuit[0].dose)
+#     print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
+# #         circuit[0].dose.pop("Rep")
+# #         circuit_topo = Topo(circuit[0].edge_list, circuit[0].dose, "P1")
+# #         objs = pulse.func(circuit_topo)
+# #         print(objs)
+#     circuit[0].plot_graph()
 
+
+# ### Pulse ZF1 and ZF2 only, t_pulse 126h (50 gen)
+# repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
+# file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
+
+# final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
+# final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
+# final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
+# final_obj_unique_reset_idx = final_obj_unique.reset_index()
+# # print(final_obj_unique_reset_idx)
+# unique_obj_idx = final_obj_unique.index.to_list()
+# # unique_obj_idx.remove(0)
+# # print(unique_obj_idx)
+# final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
+# # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
+# for i, circuit in enumerate(final_circuits_unique):
+# #     print(circuit[0].edge_list)
+#     print(circuit[0].dose)
+#     print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
+# #         circuit[0].dose.pop("Rep")
+# #         circuit_topo = Topo(circuit[0].edge_list, circuit[0].dose, "P1")
+# #         objs = pulse.func(circuit_topo)
+# #         print(objs)
+#     circuit[0].plot_graph()
+
+
+### Pulse ZF1 and ZF2 only, 3 obj 126h (50 gen)
+repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
+file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
+
+final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
+final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
+final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
+final_obj_unique_reset_idx = final_obj_unique.reset_index()
+# print(final_obj_unique_reset_idx)
+unique_obj_idx = final_obj_unique.index.to_list()
+# unique_obj_idx.remove(0)
+# print(unique_obj_idx)
+final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
 # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
-# for circuit in final_circuits_unique:
-# #     print(circuit[0].edge_list, circuit[0].dose, circuit[0].in_dict)
+for i, circuit in enumerate(final_circuits_unique):
+#     print(circuit[0].edge_list)
+#     print(circuit[0].dose)
+    print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
 #         circuit[0].dose.pop("Rep")
 #         circuit_topo = Topo(circuit[0].edge_list, circuit[0].dose, "P1")
 #         objs = pulse.func(circuit_topo)
 #         print(objs)
-#     circuit[0].plot_graph()
+    circuit[0].plot_graph()

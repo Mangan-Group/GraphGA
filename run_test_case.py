@@ -107,25 +107,25 @@ def run(
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
-    "test_case": "SignalConditioner",
+    "test_case": "Amplifier",
     "promo_node": "P1",
-    "dose_specs": [5, 75, 5],
+    "dose_specs": [75, 75, 5],
     "max_part": 2,
     "inhibitor": True,
     "DsRed_inhibitor": False,
-    "num_dict": {1: 46, 2: 122},
-    "n_gen": 50,
-    "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
-    "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
-    "mutate_dose": True,
-    "pop": True,
+    "num_dict": {1: 26, 2: 26},
+    "n_gen": 40,
+    "probability_crossover": 0.55, #0.32, increased to 0.5, then 0.75
+    "probability_mutation": 1.0, #0.57, increased to 0.75, then 1.0
+    "mutate_dose": False,
+    "pop": False,
     "num_processes": 8,
-    "obj_labels": ["ON_rel", "FI_rel"],
+    "obj_labels": ["ON_rel"],
     "max_time": 42,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_Cond_pop_inhibitor_ZF1_ZF2_new_dose_terms"
+    "folder_name": "Amplifier_single_cell_new_dose_terms"
 }
 
 if __name__ == "__main__":
