@@ -509,6 +509,7 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 # sc_obj_path = "SC_seed_pop_DsRED_inhibitor/2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/final_objectives_df.pkl"
 # sc_all_obj_path = "SC_seed_pop_DsRED_inhibitor/2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/all_objectives.pkl"
 # sc_all_circuits_path = "SC_seed_pop_DsRED_inhibitor/2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/all_circuits.pkl"
+# sc_all_cell_results_path = "SC_seed_pop_DsRED_inhibitor/Original_dose_terms/2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/All_circuits_all_cell_results.pkl"
 # sc_all_obj = pd.read_pickle(repo_path+sc_all_obj_path)*-1
 # # print(sc_all_obj)
 # sc_pareto_obj = pd.read_pickle(repo_path+sc_obj_path)
@@ -535,7 +536,8 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #     print(circuit[0].edge_list)
 #     print(circuit[0].dose)
 # print(high_obj)
-
+# all_cells = pd.read_pickle(repo_path+sc_all_cell_results_path)
+# print(all_cells)
 
 ####################################################################
 ########## NEW GA RUNS WITH UPDATED DOSE TERMS ######################
@@ -546,12 +548,13 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 # sc_obj_path = "SC_seed_pop_DsRED_inhibitor/2024-03-06_Signal_Cond_pop_DsRED_inhibitor_ngen80_new_dose_terms_seed_0/final_objectives_df.pkl"
 # sc_all_obj_path = "SC_seed_pop_DsRED_inhibitor/2024-03-06_Signal_Cond_pop_DsRED_inhibitor_ngen80_new_dose_terms_seed_0/all_objectives.pkl"
 # sc_all_circuits_path = "SC_seed_pop_DsRED_inhibitor/2024-03-06_Signal_Cond_pop_DsRED_inhibitor_ngen80_new_dose_terms_seed_0/all_circuits.pkl"
+# sc_all_cells_path = "SC_seed_pop_DsRED_inhibitor/2024-03-06_Signal_Cond_pop_DsRED_inhibitor_ngen80_new_dose_terms_seed_0/All_circuits_all_cell_results.pkl"
 # # sc_all_obj = pd.read_pickle(repo_path+sc_all_obj_path)*-1
 # # print(sc_all_obj)
 # sc_pareto_obj = pd.read_pickle(repo_path+sc_obj_path)
 # sc_pareto_circuits = pd.read_pickle(repo_path+sc_results_path)
 # sc_pareto_obj = sc_pareto_obj.drop_duplicates()
-# # # print(sc_pareto_obj)
+# print(sc_pareto_obj)
 # sc_pareto_obj["ON_rel"] = sc_pareto_obj["ON_rel"]*-1
 # sc_pareto_obj["FI_rel"] = sc_pareto_obj["FI_rel"]*-1
 # sc_pareto_obj_high = sc_pareto_obj[sc_pareto_obj["FI_rel"] >= 1.0]
@@ -562,7 +565,10 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 # print((45/200)**0.5)
 #     circuit[0].plot_graph()
 #     plot_graph(repo_path +"2024-02-15_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_seed_0/topology_" + str(i) + ".svg", circuit[0])
-    
+
+# all_cell_results = pd.read_pickle(repo_path+sc_all_cells_path)
+# print(all_cell_results)
+
 ### SC ZF1 and ZF2 only, 60gen
 # repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 # sc_results_path = "SC_seed_pop_DsRED_inhibitor/2024-03-05_Signal_Cond_pop_DsRED_inhibitor_ZF1_ZF2_new_ZF_reg_dose_term_seed_0/final_population.pkl"
@@ -637,26 +643,70 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 
 
 ### Pulse ZF1 and ZF2 only, 3 obj 126h (50 gen)
-repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
-file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
+# repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
+# file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
 
-final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
-final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
-final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
-final_obj_unique_reset_idx = final_obj_unique.reset_index()
-# print(final_obj_unique_reset_idx)
-unique_obj_idx = final_obj_unique.index.to_list()
-# unique_obj_idx.remove(0)
-# print(unique_obj_idx)
-final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
-# pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
-for i, circuit in enumerate(final_circuits_unique):
-#     print(circuit[0].edge_list)
-#     print(circuit[0].dose)
-    print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
-#         circuit[0].dose.pop("Rep")
-#         circuit_topo = Topo(circuit[0].edge_list, circuit[0].dose, "P1")
-#         objs = pulse.func(circuit_topo)
-#         print(objs)
-    circuit[0].plot_graph()
+# final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
+# final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
+# final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
+# final_obj_unique_reset_idx = final_obj_unique.reset_index()
+# # print(final_obj_unique_reset_idx)
+# unique_obj_idx = final_obj_unique.index.to_list()
+# # unique_obj_idx.remove(0)
+# # print(unique_obj_idx)
+# final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
+# # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
+# for i, circuit in enumerate(final_circuits_unique):
+# #     print(circuit[0].edge_list)
+# #     print(circuit[0].dose)
+#     print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
+# #         circuit[0].dose.pop("Rep")
+# #         circuit_topo = Topo(circuit[0].edge_list, circuit[0].dose, "P1")
+# #         objs = pulse.func(circuit_topo)
+# #         print(objs)
+#     circuit[0].plot_graph()
+
+df_full = pd.DataFrame()
+
+df1 = pd.DataFrame([[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                     columns=['A', 'B', 'C'])
+df2 = pd.DataFrame([[10, 11, 12], [15, 16, 17]],
+                     columns=['A',"B",'C'])
+
+df3 = pd.DataFrame([[21, 22, 23], [24, 25, 26], [27, 28, 29]],
+                     columns=['A', 'B', 'C'])
+df4 = pd.DataFrame([[210, 211, 212], [215, 216, 217]],
+                     columns=['A',"B",'C'])
+
+l1 = [["ON_rel1", df1], 
+      ["ON_rel2", df2]]
+# l1 = [[["ON_rel1" ,"FI_rel1"], df1], 
+#       [["ON_rel2", "FI_rel2"], df2]]
+l1 = np.asarray(l1, dtype=object)
+l1_obj = np.asarray(l1[:,0].tolist())
+l1_df = l1[:,1].tolist()
+l1_df.insert(0, df_full)
+# print(l1_obj)
+# print(l1_df)
+# df_full = pd.concat(l1_df, ignore_index=True)
+
+# l2 = [["ON_rel3", df3], 
+#       ["ON_rel4", df4]]
+# l2 = np.asarray(l2, dtype=object)
+# l2_obj = np.asarray(l2[:,0].tolist())
+# l2_df = l2[:,1].tolist()
+# l2_df.insert(0, df_full)
+# # print(l2_obj)
+# # print(l2_df)
+# df_full = pd.concat(l2_df, ignore_index=True)
+# print(df_full)
+
+topology = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('I1', 'Rep')], {'Z12': 55, 'I1': 5}, "P1")
+pop_ON_rel = [1, 2, 3, 4, 5]
+pop_rep_on = [1000, 2000, 4000, 3000, 5000]
+all_cells_dict = {"Topology": topology, 
+                "ON_rel for each cell": [pop_ON_rel],
+                "Rep ON state for each cell": [pop_rep_on]}
+all_cells_df = pd.DataFrame.from_dict(all_cells_dict)
+print(all_cells_df)

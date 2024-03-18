@@ -68,11 +68,21 @@ def run(
         topologies = [g[0] for g in population]
         with Pool(settings["num_processes"]) as pool:
             obj_list = pool.imap(problem.func, topologies)
+            # obj_all_cells_dict_list = pool.imap(problem.func, topologies)
 
             pool.close()
             pool.join()
         obj_list = list(obj_list)
         obj = np.asarray(obj_list)
+        # obj_all_cells_dict_list = list(obj_all_cells_dict_list)
+        # obj_all_cells_dict_list = np.asarray(obj_all_cells_dict_list, dtype=object)
+        # # extract column of output list with objectives only
+        # obj = np.asarray(obj_all_cells_dict_list[:,0].tolist())
+        # # extract list of all_cells_dfs from output list
+        # all_cells_dict_list = obj_all_cells_dict_list[:,1].tolist()
+        # # concatenate list of all_cells_dfs to problem.all_cells df
+        # # all_cells_dict_list.insert(0, problem.all_cells)
+        # problem.all_cells_dict_list_initial = all_cells_dict_list
     else:
         obj = np.asarray(
             [problem.func(g[0]) for g in population])
@@ -107,25 +117,25 @@ def run(
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
-    "test_case": "Amplifier",
+    "test_case": "PulseGenerator",
     "promo_node": "P1",
-    "dose_specs": [75, 75, 5],
+    "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": False,
-    "num_dict": {1: 26, 2: 26},
-    "n_gen": 40,
-    "probability_crossover": 0.55, #0.32, increased to 0.5, then 0.75
-    "probability_mutation": 1.0, #0.57, increased to 0.75, then 1.0
-    "mutate_dose": False,
-    "pop": False,
+    "DsRed_inhibitor": True,
+    "num_dict": {1: 46, 2: 122},
+    "n_gen": 80,
+    "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
+    "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
+    "mutate_dose": True,
+    "pop": True,
     "num_processes": 8,
-    "obj_labels": ["ON_rel"],
-    "max_time": 42,
+    "obj_labels": ["t_pulse", "prominence_rel"],
+    "max_time": 126,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Amplifier_single_cell_new_dose_terms"
+    "folder_name": "Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_all_cells"
 }
 
 if __name__ == "__main__":

@@ -45,7 +45,7 @@ def solve_single_objective_for_topology(problem: object, topology: list, Z_mat_l
     obj_list = []
     for Z_mat in Z_mat_list:
         problem.Z = Z_mat
-        obj = problem.func(topology[0])*-1
+        obj = abs(problem.func(topology[0]))
         obj_list.append(obj)
 
     topology_dict = {}
@@ -63,11 +63,12 @@ def solve_multi_objective_for_topology(problem: object, topology: list, Z_mat_li
     obj_list = []
     for Z_mat in Z_mat_list:
         problem.Z = Z_mat
-        obj = problem.func(topology[0])
+        obj_negative = problem.func(topology[0])
+        obj = [abs(i) for i in obj_negative]
         obj_list.append(obj)
 
     topology_dict = {}
-    obj_list = np.asarray(obj_list) *-1
+    obj_list = np.asarray(obj_list)
     for i in range(len(problem.obj_labels)):
         label = problem.obj_labels[i]
         topology_dict[label+"_range"] = max(obj_list[:, i]) - min(obj_list[:, i])
@@ -105,30 +106,3 @@ def get_objective_errors(Z_matrix_sampling: pd.DataFrame, CI_metrics: list):
         CI_metric_maxes.append(CI_metric_max)
     
     return CI_metric_maxes
-
-    # ON_rel_range = Z_mat_sampling_df["objectives_range"].tolist()
-    # ON_rel_range_mean = round(np.mean(ON_rel_range), 4)
-    # fig_text = "mean = " + str(ON_rel_range_mean)
-    # fig_name = "ON_rel_range_distribution.svg"
-    # fig_path = folder_path + "/" + fig_name
-    # plot_obj_distribution(fig_path, ON_rel_range, 
-    #                 "ON_rel range", fig_text)
-
-    # ON_rel_range = Z_mat_sampling_df["objectives[0]_range"].tolist()
-    # ON_rel_range_mean = round(np.mean(ON_rel_range), 4)
-    # fig_text1 = "mean = " + str(ON_rel_range_mean)
-    # fig_name1 = "ON_rel_range_distribution.svg"
-    # fig_path1 = folder_path + "/" + fig_name1
-    # plot_obj_distribution(fig_path1, ON_rel_range, 
-    #                 "ON_rel range", fig_text1)
-    
-    # FI_rel_range = Z_mat_sampling_df["objectives[1]_range"].tolist()
-    # FI_rel_range_mean = round(np.mean(FI_rel_range), 4)
-    # fig_text2 = "mean = " + str(FI_rel_range_mean)
-    # fig_name2 = "FI_rel_range_distribution.svg"
-    # fig_path2 = folder_path + "/" + fig_name2
-    # plot_obj_distribution(fig_path2, FI_rel_range, 
-    #                 "FI_rel range", fig_text2)
-
-
-# print(int(69.8))

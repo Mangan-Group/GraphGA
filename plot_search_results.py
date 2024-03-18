@@ -198,29 +198,41 @@ def plot_2D_obj_confidence_interval(
         CI_metric_maxes: list,
         obj_labels: list,
 ):
-    all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")*-1
+    all_objectives = np.abs(pd.read_pickle(results_path+"all_objectives.pkl"))
     
     obj1_CI = CI_metric_maxes[0]
     obj2_CI = CI_metric_maxes[1]
 
     # upper_obj1 = np.array([i+obj1_CI_list[0] for i in (objectives[obj_labels[0]]*-1)])
-    upper_obj1 = np.array(objectives[obj_labels[0]]*-1)
-    sorted_upper_idx = np.argsort(upper_obj1)
-    sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
-    lower_obj1 = np.array([i-obj1_CI[0] for i in (objectives[obj_labels[0]]*-1)])
-    sorted_lower_idx = np.argsort(lower_obj1)
-    sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
+    if "t_pulse" in '\t'.join(obj_labels):
+        obj1 = np.abs(np.array(objectives[obj_labels[0]]))
+        upper_obj1 = np.array([i+obj1_CI for i in obj1])
+        sorted_upper_idx = np.argsort(upper_obj1)
+        sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
+        lower_obj1 = obj1
+        sorted_lower_idx = np.argsort(lower_obj1)
+        sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
+    else:
+        upper_obj1 = np.abs(np.array(objectives[obj_labels[0]]))
+        sorted_upper_idx = np.argsort(upper_obj1)
+        sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
+        lower_obj1 = np.array([i-obj1_CI for i in upper_obj1])
+        sorted_lower_idx = np.argsort(lower_obj1)
+        sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
 
     # upper_obj2 = np.array([i+obj2_CI_list[0] for i in (objectives[obj_labels[1]]*-1)])
-    upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
+    upper_obj2 = np.abs(np.array(objectives[obj_labels[1]]))
     sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
-    lower_obj2 = np.array([i-obj2_CI[0] for i in (objectives[obj_labels[1]]*-1)])
+    lower_obj2 = np.array([i-obj2_CI for i in upper_obj2])
     sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
 
     xfill = np.sort(np.concatenate([upper_obj1, lower_obj1]))
-    y1fill = np.interp(xfill, sorted_upper_obj1, sorted_upper_obj2)
-    y2fill = np.interp(xfill, sorted_lower_obj1, sorted_lower_obj2)
-
+    if "t_pulse" in '\t'.join(obj_labels):
+        y1fill = np.interp(xfill, sorted_upper_obj1, sorted_lower_obj2)
+        y2fill = np.interp(xfill, sorted_lower_obj1, sorted_upper_obj2)
+    else:
+        y1fill = np.interp(xfill, sorted_upper_obj1, sorted_upper_obj2)
+        y2fill = np.interp(xfill, sorted_lower_obj1, sorted_lower_obj2)
     fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
     ax.fill_between(xfill, y1fill, y2fill, alpha=0.4, color=sky_blue, zorder=2)
     ax.plot(all_objectives[:, 0], all_objectives[:, 1], linestyle="none", 
@@ -268,12 +280,12 @@ def plot_3D_obj_confidence_interval(
     all_obj1_vals = np.sort(np.concatenate([upper_obj1, lower_obj1]))
     all_obj2_vals = np.sort(np.concatenate([upper_obj2, lower_obj2]))
 
-    obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
-    obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, obj3_obj3_upper)
+    # obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
+    obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, sorted_upper_obj3)
     obj_3_upper_interpolation = obj_3_upper_function(all_obj1_vals, all_obj2_vals)[0, :]
 
-    obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
-    obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, obj3_obj3_lower)
+    # obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
+    obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, sorted_lower_obj3)
     obj_3_lower_interpolation = obj_3_lower_function(all_obj1_vals, all_obj2_vals)[0, :]
 
     upper_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_upper_interpolation)]

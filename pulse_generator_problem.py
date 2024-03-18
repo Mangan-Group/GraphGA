@@ -34,7 +34,7 @@ class PulseGenerator:
                 "prominence_rel"
             ],
             max_time: float=42,
-            single_cell_tracking: bool=True
+            single_cell_tracking: bool=False
             ) -> None:
         
         self.promo_node = promo_node
@@ -68,10 +68,20 @@ class PulseGenerator:
             # outputs
             if single_cell_tracking:
                 self.simulate = self.simulate_pop_single_cell_tracking
-                # add df to store results from each cell in population
-                self.all_cells = pd.DataFrame(columns=["Topology", "Rep ON state time series for each cell"])
+                if len(self.obj_labels) == 3:
+                    self.func = self.func_single_cell_tracking_3obj
+                elif "t_pulse" in '\t'.join(self.obj_labels):
+                    self.func = self.func_single_cell_tracking_t_pulse
+                elif "peak_rel" in '\t'.join(self.obj_labels):
+                    self.func = self.func_single_cell_tracking_peak_rel
             else:
                 self.simulate = self.simulate_pop
+                if len(self.obj_labels) == 3:
+                    self.func = self.func_obj_3obj
+                elif "t_pulse" in '\t'.join(self.obj_labels):
+                    self.func = self.func_obj_t_pulse
+                elif "peak_rel" in '\t'.join(self.obj_labels):
+                    self.func = self.func_obj_peak_rel
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
@@ -79,12 +89,12 @@ class PulseGenerator:
             # set simulate function for single cell
             self.simulate = self.simulate_cell
 
-        if len(self.obj_labels) == 3:
-            self.func = self.func_3obj
-        elif "t_pulse" in '\t'.join(self.obj_labels):
-            self.func = self.func_t_pulse
-        elif "peak_rel" in '\t'.join(self.obj_labels):
-            self.func = self.func_peak_rel
+            if len(self.obj_labels) == 3:
+                self.func = self.func_obj_3obj
+            elif "t_pulse" in '\t'.join(self.obj_labels):
+                self.func = self.func_obj_t_pulse
+            elif "peak_rel" in '\t'.join(self.obj_labels):
+                self.func = self.func_obj_peak_rel
 
     def simulate_cell(
         self,
@@ -116,13 +126,17 @@ class PulseGenerator:
             )
             rep_on_ts_all.append(rep_on_ts)
 
-        self.all_cells.loc[len(self.all_cells.index)] = [
-            topology, [rep_on_ts_all]
-        ]
-
+        rep_on_ts_rel_all = self.calc_all_cell_rep_rel(
+            topology, rep_on_ts_all
+        )
         rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
+        rep_on_ts_rel_mean = self.calc_rep_rel(topology, rep_on_ts_means)
 
-        return t, rep_on_ts_means
+        all_cells_dict = {"Topology": topology, 
+                          "Rep_rel time series for each cell": rep_on_ts_rel_all,
+                          "Rep_rel time series mean": rep_on_ts_rel_mean}
+
+        return t, rep_on_ts_means, all_cells_dict
     
     def simulate_pop(
         self, 
@@ -192,7 +206,7 @@ class PulseGenerator:
     #             count += 1
     #     return count, pulse_cell_ts
 
-    def func_peak_rel(
+    def func_obj_peak_rel(
         self,
         topology: object
     ):
@@ -205,7 +219,7 @@ class PulseGenerator:
 
         return [-peak_rel, -prominence_rel]
 
-    def func_t_pulse(
+    def func_obj_t_pulse(
         self,
         topology: object
     ):
@@ -222,7 +236,7 @@ class PulseGenerator:
         # return [-peak_rel, -prominence_rel]
         return [t_pulse, -prominence_rel]
     
-    def func_3obj(
+    def func_obj_3obj(
         self,
         topology: object
     ):
@@ -238,3 +252,66 @@ class PulseGenerator:
         )
 
         return [t_pulse, -peak_rel, -prominence_rel]
+    
+    def func_single_cell_tracking_peak_rel(
+        self,
+        topology: object
+    ):
+        _, rep_on_ts, all_cells_dict = self.simulate(topology)
+        rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        # want peak_rel >= 0.25
+        peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        # want prominence_rel >= 0.2
+        prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+
+        return [[-peak_rel, -prominence_rel], all_cells_dict]
+
+    def func_single_cell_tracking_t_pulse(
+        self,
+        topology: object
+    ):
+        t, rep_on_ts, all_cells_dict = self.simulate(topology)
+        rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        # want peak_rel >= 0.25
+        peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        # want prominence_rel >= 0.2
+        prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+
+        t_pulse = self.calc_t_pulse(
+            t, rep_on_ts_rel, peak_rel, prominence_rel)
+
+        return [[t_pulse, -prominence_rel], all_cells_dict]
+    
+    def func_single_cell_tracking_3obj(
+        self,
+        topology: object
+    ):
+        t, rep_on_ts, all_cells_dict = self.simulate(topology)
+        rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts)
+        # want peak_rel >= 0.25
+        peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+        # want prominence_rel >= 0.2
+        prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+
+        t_pulse = self.calc_t_pulse(
+            t, rep_on_ts_rel, peak_rel, prominence_rel
+        )
+
+        return [[t_pulse, -peak_rel, -prominence_rel], all_cells_dict]
+
+
+    def calc_all_cell_rep_rel(
+            self, topology,
+            rep_on_ts_all
+    ):
+        
+        rep_on_ts_rel_all = []
+        for i in range(len(rep_on_ts_all)):
+            rep_on_ts_rel = self.calc_rep_rel(
+                topology, rep_on_ts_all[i]
+            )
+            rep_on_ts_rel_all.append(
+                rep_on_ts_rel
+            )
+
+        return rep_on_ts_rel_all

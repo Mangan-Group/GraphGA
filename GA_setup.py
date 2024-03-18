@@ -101,7 +101,7 @@ def single_obj_GA(
                     pool.join()
                 obj_list = list(obj_list)
                 obj_children = np.asarray(obj_list)
-                
+
             else:
                 obj_children = np.asarray(
                     [problem.func(g[0]) for g in children])
@@ -185,10 +185,6 @@ def single_obj_GA(
     )
     
     if problem.pop:
-        # save all_cell results df (see problem class)
-        file_name = "All_circuits_all_cell_results.pkl"
-        problem.all_cells.to_pickle(folder_path + "/" + file_name)
-
         # get edge lists for each circuit sampled in GA
         # and add dose as an "edge"
         circuit_edge_lists = []
@@ -306,7 +302,7 @@ def multi_obj_GA(
     all_obj.append(obj)
     all_circuits = []
     all_circuits.append(population)
-
+    # all_cells_dict_list = []
     # create class instance of non-dominated
     # sorting class (to sort multi-objective
     # and determine pareto front)
@@ -344,11 +340,19 @@ def multi_obj_GA(
                 child_topologies = [g[0] for g in children]
                 with Pool(problem.num_processes) as pool:
                     obj_list = pool.imap(problem.func, child_topologies)
+                    # obj_all_cells_dict_list = pool.imap(problem.func, child_topologies)
 
                     pool.close()
                     pool.join()
                 obj_list = list(obj_list)
                 obj_children = np.asarray(obj_list)
+                # obj_all_cells_dict_list = list(obj_all_cells_dict_list)
+                # obj_all_cells_dict_list = np.asarray(obj_all_cells_dict_list, dtype=object)
+                # # extract column of output list with objectives only
+                # obj_children = np.asarray(obj_all_cells_dict_list[:,0].tolist())
+                # # extract list of all_cells_dfs from output list
+                # all_cells_dict_children = obj_all_cells_dict_list[:,1].tolist()
+                # all_cells_dict_list.extend(all_cells_dict_children)
                 
             else:
                 obj_children = np.asarray(
@@ -443,13 +447,12 @@ def multi_obj_GA(
     )
 
     if problem.pop:
-        # save all_cell results df (see problem class)
-        file_name = "All_circuits_all_cell_results.pkl"
-        problem.all_cells.to_pickle(folder_path + "/" + file_name)
-
-        # S_all = nds.do(all_obj, len(all_obj))
-        # sorted_all_obj = all_obj[S_all, :]
-        # sorted_all_circuits = all_circuits[S_all]
+        # # save all_cell results df (see problem class)
+        # all_cells_dict_list = problem.all_cells_dict_list_initial + all_cells_dict_list
+        # # print(all_cells_dict_list)
+        # problem.all_cells = pd.DataFrame.from_dict(all_cells_dict_list)
+        # file_name = "All_circuits_all_cell_results.pkl"
+        # problem.all_cells.to_pickle(folder_path + "/" + file_name)
 
         circuit_edge_lists = []
         for circuit in all_circuits:

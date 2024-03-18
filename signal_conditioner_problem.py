@@ -31,7 +31,7 @@ class SignalConditioner:
             num_processes: int=None,
             obj_labels: list=["ON_rel", "FI_rel"],
             max_time: int=42,
-            single_cell_tracking: bool=True
+            single_cell_tracking: bool=False
             ) -> None:
         
         self.promo_node = promo_node
@@ -65,16 +65,17 @@ class SignalConditioner:
             # outputs
             if single_cell_tracking:
                 self.simulate = self.simulate_pop_single_cell_tracking
-                # add df to store results from each cell in population
-                self.all_cells = pd.DataFrame(columns=["Topology", "Rep OFF state for each cell", "Rep ON state for each cell"])
+                self.func = self.func_single_cell_tracking
             else:
                 self.simulate = self.simulate_pop
+                self.func = self.func_obj
         else:
             # set ref = simulation for single cell population
             self.ref = Ref
             self.Z = None
             # set simulate function for single cell
             self.simulate = self.simulate_cell
+            self.func = self.func_obj
 
     def simulate_cell(
         self,
@@ -114,12 +115,19 @@ class SignalConditioner:
             pop_rep_off.append(rep_off)
             pop_rep_on.append(rep_on)
 
-        self.all_cells.loc[len(self.all_cells.index)] = [
-            topology, [pop_rep_off], [pop_rep_on]
-        ]
+        pop_ON_rel, pop_FI_rel = self.calc_all_cell_metrics(
+            topology, pop_rep_off, pop_rep_on
+        )
+        all_cells_dict = {"Topology": topology, 
+                          "ON_rel for each cell": [pop_ON_rel],
+                          "FI_rel for each cell": [pop_FI_rel],
+                          "Rep OFF state for each cell": [pop_rep_off],
+                          "Rep ON state for each cell": [pop_rep_on]}
+
         rep_off_mean = np.mean(pop_rep_off)
         rep_on_mean = np.mean(pop_rep_on)
-        return rep_off_mean, rep_on_mean
+
+        return rep_off_mean, rep_on_mean, all_cells_dict
     
     def simulate_pop(
         self, 
@@ -156,7 +164,7 @@ class SignalConditioner:
         FI_rel = FI/FI_ref
         return FI_rel
 
-    def func(
+    def func_obj(
         self,
         topology: object
     ):
@@ -167,3 +175,36 @@ class SignalConditioner:
         FI_rel = self.calc_FI_rel(topology, FI_sc)
 
         return [-ON_rel, -FI_rel]
+    
+    def func_single_cell_tracking(
+        self,
+        topology: object
+    ):
+        
+        rep_off, rep_on, all_cells_df  = self.simulate(topology)
+        ON_rel = self.calc_ON_rel(topology, rep_on)
+        FI_sc = self.calc_FI(rep_off, rep_on)
+        FI_rel = self.calc_FI_rel(topology, FI_sc)
+
+        return [[-ON_rel, -FI_rel], all_cells_df]
+    
+    def calc_all_cell_metrics(
+            self, topology,
+            pop_rep_off, pop_rep_on
+    ):
+        
+        pop_ON_rel = []
+        for i in range(len(pop_rep_on)):
+            ON_rel = self.calc_ON_rel(topology, pop_rep_on[i])
+            pop_ON_rel.append(ON_rel)
+
+        pop_FI = []
+        for i in range(len(pop_rep_on)):
+            FI = self.calc_FI(pop_rep_off[i], pop_rep_on[i])
+            pop_FI.append(FI)
+
+        pop_FI_rel = []
+        for i in range(len(pop_rep_on)):
+            FI_rel = self.calc_FI_rel(topology, pop_FI[i])
+
+        return pop_ON_rel, pop_FI_rel

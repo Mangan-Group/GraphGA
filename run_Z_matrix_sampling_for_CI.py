@@ -11,7 +11,11 @@ from solve_objectives_for_Z_matrix_samples import (
     solve_all_topology_objectives,
     get_objective_errors
 )
-from plot_search_results import plot_1D_obj_confidence_interval, plot_2D_obj_confidence_interval, plot_3D_obj_confidence_interval
+from plot_search_results import (
+    plot_1D_obj_confidence_interval, 
+    plot_2D_obj_confidence_interval, 
+    plot_3D_obj_confidence_interval
+)
 
 def run_Z_matrix_sampling(
         testcase: object,
@@ -58,7 +62,6 @@ def run_Z_matrix_sampling(
 
     for i in range(len(settings["CI_metrics"])):
         CI_metric_maxes = get_objective_errors(Z_matrix_sampling, settings["CI_metrics"][i])
-
         if len(CI_metric_maxes) == 1:
             figure_path = folder_path + "/" + settings["CI_metrics"][i][0]+"_CI.svg"
             plot_1D_obj_confidence_interval(
@@ -94,16 +97,15 @@ settings = {
     "probability_mutation": None,
     "mutate_dose": True,
     "pop": True,
-    "CI": None,
     "num_processes": 8,
-    "obj_labels": ["t_pulse", "peak_rel", "prominence_rel"],
+    "obj_labels": ["t_pulse", "prominence_rel"],
     "objective_threshold": None,
-    "max_time": 42,
-    "CI_metrics": [["t_pulse_range", "peak_rel_range", "prominence_rel_range"], ["t_pulse_std_error", "peak_rel_std_error", "prominence_rel_std_error"]],
+    "max_time": 126,
+    "CI_metrics": [["t_pulse_range", "prominence_rel_range"], ["t_pulse_std_error", "prominence_rel_std_error"]],
     "CI_ylim": False,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/2024-02-05_Pulse_pop_DsRED_inhibitor_3obj_126h_seed_0/",
-    "folder_name": "Pulse_pop_DsRED_inhibitor_3obj_126h_Z_matrix_sampling"
+    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_seed_0/",
+    "folder_name": "Pulse_pop_DsRED_inhibitor_Z_matrix_sampling"
 }
 
 if __name__ == "__main__":
@@ -118,4 +120,3 @@ if __name__ == "__main__":
     
 
     Z_matrix_sampling = run_Z_matrix_sampling(test_case, settings, Z_mat_list)
-    # print(Z_matrix_sampling["ON_rel_range"].tolist())

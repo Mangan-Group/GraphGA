@@ -160,8 +160,8 @@ plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 ### Signal Conditioner population model ###
 #############################################################
 # # load files
-# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# file_path_all_cells = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/All_circuits_all_cell_results.pkl"
+repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+file_path_all_cells = "SC_seed_pop_DsRED_inhibitor/Original_dose_terms/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/All_circuits_all_cell_results.pkl"
 # file_path_all_obj = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/all_objectives.pkl"
 # file_path_final_obj = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df_with_type.pkl"
 # file_path_final_circuits = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_population.pkl"
@@ -171,8 +171,8 @@ plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 # with open(repo_path + file_path_all_obj, "rb") as fid:
 #             all_obj = pickle.load(fid)
 
-# df_all_cells = pd.read_pickle(repo_path + file_path_all_cells)
-
+df_all_cells = pd.read_pickle(repo_path + file_path_all_cells)
+print(df_all_cells)
 # with open(repo_path + file_path_final_circuits, "rb") as fid:
 #             final_circuits = pickle.load(fid)
 
@@ -355,28 +355,28 @@ repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 # file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/2024-02-05_Pulse_pop_DsRED_inhibitor_3obj_126h_seed_0/final_population.pkl"
 # file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/2024-02-26_Pulse_pop_DsRED_inhibitor_ZF1_ZF2_t_pulse_126h_seed_0/final_objectives_df.pkl"
 # file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/2024-02-26_Pulse_pop_DsRED_inhibitor_ZF1_ZF2_t_pulse_126h_seed_0/final_population.pkl"
-file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/2024-02-26_Pulse_pop_DsRED_inhibitor_ZF1_ZF2_3_obj_126h_seed_0/final_objectives_df.pkl"
-file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/2024-02-26_Pulse_pop_DsRED_inhibitor_ZF1_ZF2_3_obj_126h_seed_0/final_population.pkl"
+# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/2024-02-26_Pulse_pop_DsRED_inhibitor_ZF1_ZF2_3_obj_126h_seed_0/final_objectives_df.pkl"
+# file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/2024-02-26_Pulse_pop_DsRED_inhibitor_ZF1_ZF2_3_obj_126h_seed_0/final_population.pkl"
 
-pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "peak_rel", "prominence_rel"])
+# pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "peak_rel", "prominence_rel"])
 
-final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
-print(final_obj_unique)
-unique_obj_idx = final_obj_unique.index.to_list()
-unique_obj_idx.remove(1)
-final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
-for circuit in final_circuits_unique:
-    # print(circuit[0].in_dict, circuit[0].dose)
+# final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
+# print(final_obj_unique)
+# unique_obj_idx = final_obj_unique.index.to_list()
+# unique_obj_idx.remove(1)
+# final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
+# for circuit in final_circuits_unique:
+#     # print(circuit[0].in_dict, circuit[0].dose)
 
-    doses = deepcopy(circuit[0].dose)
-    edges = deepcopy(circuit[0].edge_list)
-    del doses["Rep"]
-    circuit_exp = Topo(edges, doses, "P1")
-    # print(circuit_exp.in_dict)
-    # print({'Z2': circuit[0].dose["Z2"], 'I1': circuit[0].dose["I1"]})
-    # obj_topo = pulse.func(circuit[0])
-    # objs = pulse.func(circuit_exp)
-    # print(obj_topo)
-    print(circuit_exp.in_dict, circuit_exp.dose)
+#     doses = deepcopy(circuit[0].dose)
+#     edges = deepcopy(circuit[0].edge_list)
+#     del doses["Rep"]
+#     circuit_exp = Topo(edges, doses, "P1")
+#     # print(circuit_exp.in_dict)
+#     # print({'Z2': circuit[0].dose["Z2"], 'I1': circuit[0].dose["I1"]})
+#     # obj_topo = pulse.func(circuit[0])
+#     # objs = pulse.func(circuit_exp)
+#     # print(obj_topo)
+#     print(circuit_exp.in_dict, circuit_exp.dose)
     # print(objs)
 
