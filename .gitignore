@@ -100,7 +100,7 @@ venv.bak/
 dmypy.json
 
 # Results folders
-Results/Combinatorial_results
+outdated/Combinatorial_results
 GA_results
 
 # generally informed by:
