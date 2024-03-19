@@ -181,12 +181,12 @@ class SignalConditioner:
         topology: object
     ):
         
-        rep_off, rep_on, all_cells_df  = self.simulate(topology)
+        rep_off, rep_on, all_cells_dict  = self.simulate(topology)
         ON_rel = self.calc_ON_rel(topology, rep_on)
         FI_sc = self.calc_FI(rep_off, rep_on)
         FI_rel = self.calc_FI_rel(topology, FI_sc)
 
-        return [[-ON_rel, -FI_rel], all_cells_df]
+        return [[-ON_rel, -FI_rel], all_cells_dict]
     
     def calc_all_cell_metrics(
             self, topology,
@@ -206,5 +206,6 @@ class SignalConditioner:
         pop_FI_rel = []
         for i in range(len(pop_rep_on)):
             FI_rel = self.calc_FI_rel(topology, pop_FI[i])
+            pop_FI_rel.append(FI_rel)
 
         return pop_ON_rel, pop_FI_rel

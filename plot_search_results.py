@@ -87,7 +87,7 @@ def plot_pareto_front(
             
         if types:
             palette = ["gray", "black"]
-            fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+            fig, ax = plt.subplots(1, 1, figsize= (2.25, 2.25))
             sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
                             y= obj_df[obj_labels[1]], hue='type', 
                             palette=palette, ax=ax)
@@ -292,7 +292,7 @@ def plot_3D_obj_confidence_interval(
     lower_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_lower_interpolation)]
     all_vertices = [upper_vertices]+[lower_vertices]
     print(all_vertices)
-    fig = plt.figure(figsize= (2.25, 2))
+    fig = plt.figure(figsize= (2.25, 2.25))
     ax = fig.add_subplot(projection='3d', computed_zorder=False)
     ax.scatter(
         xs=all_objectives[:, 0], ys=all_objectives[:, 1]*-1,
@@ -307,32 +307,71 @@ def plot_3D_obj_confidence_interval(
     plt.show()
     # plt.savefig(figure_path, bbox_inches="tight")
 
+def plot_1D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
+    #NOT executable
+    obj_all_cells = all_cell_results_df_row[settings["obj_labels"][0]]
 
-#plot amplifier single cell 1D objective scatter plot
-# amp_all_obj_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
+def plot_2D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
+    obj1_all_cells = all_cell_results_df_row[
+        settings["obj_labels"][0] + " for each cell"][0]
+    obj2_all_cells = all_cell_results_df_row[
+        settings["obj_labels"][1] + " for each cell"][0]
+    obj1_mean = all_cell_results_df_row[
+        settings["obj_labels"][0] + "_mean"]
+    obj2_mean = all_cell_results_df_row[
+        settings["obj_labels"][1] + "_mean"]
+    # print(len(obj1_all_cells))
+    # print(len(obj2_all_cells))
+    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    for i in range(len(obj1_all_cells)):
+        plt.plot(obj1_all_cells[i], obj2_all_cells[i],
+                 linestyle="None", marker = "o",
+                 markersize=1
+        )
+    plt.plot(obj1_mean, obj2_mean, linestyle="None",
+             marker = "o",markersize=1, color="k", 
+             label="population mean"
+    )
+    # plt.legend()
+    plt.xlabel(settings["obj_labels"][0])
+    plt.ylabel(settings["obj_labels"][1])
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
 
-# with open(amp_all_obj_path, "rb") as fid:
-#     amp_all_obj = pickle.load(fid)
+def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
 
-# amp_unique_obj = np.unique(amp_all_obj)
+    all_cells_rep_rel = all_cell_results_df_row[
+        "Rep_rel time series for each cell"]
+    rep_rel_max = np.amax(np.asarray(all_cells_rep_rel))
+    # print(rep_rel_max)
+    rep_rel_mean = all_cell_results_df_row[
+        "Rep_rel time series mean"]
+    t = np.arange(0, settings["max_time"] + 1, 1)
 
-# plot_1D_obj_scatter("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/obj_scatter_plot_small.svg", amp_all_obj, "ON_rel")
+    fig, axs = plt.subplots(1, 2, figsize= (5, 2.5))
+    for i in range(len(all_cells_rep_rel)):
+        axs[0].plot(t[:42], all_cells_rep_rel[i][:42],
+                 lw="1")
+        axs[1].plot(t[:42], all_cells_rep_rel[i][:42],
+                 lw="1")
+    axs[0].plot(t[:42], rep_rel_mean[:42], color="k",
+             label="population mean", lw="2"
+    )
+    axs[1].plot(t[:42], rep_rel_mean[:42], color="k",
+             label="population mean", lw="2"
+    )
+    # plt.legend()
+    axs[0].set_xlabel("time (hours)")
+    axs[1].set_xlabel("time (hours)")
+    axs[0].set_ylabel("Reporter_rel")
+    axs[1].set_ylabel("Reporter_rel")
+    axs[1].set_ylim(top=(rep_rel_max/2))
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
 
-# sc_obj_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df_with_type.pkl"
-# sc_pareto = pd.read_pickle(sc_obj_path)
-# print(sc_pareto)
-# plot_pareto_front("/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_population_pareto_front_small.svg", sc_pareto, ["ON_rel", "FI_rel"], False)
-# sc_pareto = sc_pareto[["ON_rel", "FI_rel"]]
-# print(sc_pareto)
 
-# sc_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/"
-# unique_obj_df = pd.read_pickle(sc_path + "unique_objectives_df.pkl")*-1
-# graph_file_name = "unique_obj_scatter_plot.svg"
-# plot_pareto_front(
-#     sc_path + "/" + graph_file_name,
-#     unique_obj_df,
-#     ["ON_rel", "FI_rel"],
-#     types=False
-# )
-# print(unique_obj_df[(unique_obj_df["FI_rel"] > 2.5) & (unique_obj_df["FI_rel"] <= 3.0)])
-# print(unique_obj_df)
+
+    
+
+    
+    
