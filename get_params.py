@@ -3,11 +3,14 @@ import numpy as np
 
 promo = {}
 
+promo['P0'] = {}
 promo['P1'] = {}
 promo['P2'] = {}
 promo["P_exp_amp"] = {}
 promo["P_exp_sc"] = {}
 
+promo['P0']['off'] = 0.00001
+promo['P0']['on'] = 0.42
 promo['P1']['off'] = 0.42
 promo['P1']['on'] = 0.93
 promo['P2']['off'] = 0.93

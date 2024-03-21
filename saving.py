@@ -34,7 +34,9 @@ def make_main_directory(settings: dict) -> str:
         json.dump(settings, fid)
     return folder_path
 
-def make_results_analysis_directory(full_results_path: str) -> str:
+def make_results_analysis_directory(full_results_path: str,
+                                    settings
+) -> str:
     """Makes sub-folder for results analysis within main results
         folder
 
@@ -57,5 +59,9 @@ def make_results_analysis_directory(full_results_path: str) -> str:
     except FileExistsError:
         print("Directory already exists")
     os.chdir(folder_path)
+
+    # save settings
+    with open("./settings.json", "w", encoding="utf-8") as fid:
+        json.dump(settings, fid)
 
     return folder_path

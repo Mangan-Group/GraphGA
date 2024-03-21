@@ -1,20 +1,16 @@
 import timeit
 import numpy as np
 import pickle
-import pandas as pd
 from multiprocessing import Pool
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
-from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from saving import make_main_directory
 from GA import sampling
 from GA_setup import (
     single_obj_GA,
     multi_obj_GA
 )
-from plot_search_results import plot_obj_distribution
-from load_Z_mat_samples import Z_mat_list
 
 
 def run(
@@ -117,25 +113,25 @@ def run(
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
 settings = {
-    "test_case": "PulseGenerator",
+    "test_case": "Amplifier",
     "promo_node": "P1",
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": True,
-    "num_dict": {1: 46, 2: 122},
-    "n_gen": 80,
-    "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
-    "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
+    "DsRed_inhibitor": False,
+    "num_dict": {1: 35, 2: 59},
+    "n_gen": 50,
+    "probability_crossover": 0.53, #0.32, increased to 0.5, then 0.75
+    "probability_mutation": 1.0, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
-    "pop": True,
+    "pop": False,
     "num_processes": 8,
-    "obj_labels": ["t_pulse", "prominence_rel"],
-    "max_time": 126,
+    "obj_labels": ["ON_rel"],
+    "max_time": 42,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_all_cells"
+    "folder_name": "Test_amp_hp_opt"
 }
 
 if __name__ == "__main__":
@@ -161,6 +157,3 @@ if __name__ == "__main__":
 
         run(test_case, settings)
         print("seed "+str(seed)+" complete")
-
-# run_combinitorial_pop_samples(SignalConditioner, settings,
-#                               Z_mat_list)

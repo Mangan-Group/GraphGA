@@ -9,6 +9,7 @@ from amplifier_problem import Amplifier
 from load_files_pop import Ref_pop20
 from scipy.stats import sem
 from copy import deepcopy
+from diversity_metrics import first_seen
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 
@@ -160,8 +161,8 @@ plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 ### Signal Conditioner population model ###
 #############################################################
 # # load files
-repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-file_path_all_cells = "SC_seed_pop_DsRED_inhibitor/Original_dose_terms/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/All_circuits_all_cell_results.pkl"
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# file_path_all_cells = "SC_seed_pop_DsRED_inhibitor/Original_dose_terms/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/All_circuits_all_cell_results.pkl"
 # file_path_all_obj = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/all_objectives.pkl"
 # file_path_final_obj = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_objectives_df_with_type.pkl"
 # file_path_final_circuits = "SC_seed_pop_DsRED_inhibitor/2023-11-30_Signal_Cond_pop_DsRED_inhibitor_ngen60_seed_0/final_population.pkl"
@@ -171,8 +172,8 @@ file_path_all_cells = "SC_seed_pop_DsRED_inhibitor/Original_dose_terms/2023-11-3
 # with open(repo_path + file_path_all_obj, "rb") as fid:
 #             all_obj = pickle.load(fid)
 
-df_all_cells = pd.read_pickle(repo_path + file_path_all_cells)
-print(df_all_cells)
+# df_all_cells = pd.read_pickle(repo_path + file_path_all_cells)
+# print(df_all_cells)
 # with open(repo_path + file_path_final_circuits, "rb") as fid:
 #             final_circuits = pickle.load(fid)
 
@@ -380,3 +381,21 @@ repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 #     print(circuit_exp.in_dict, circuit_exp.dose)
     # print(objs)
 
+amp_min_obj_path = "Amp_seed_single_cell_vary_dose/2024-03-12_Amplifier_single_cell_vary_dose_new_dose_terms_seed_0/minimum_obj_all_gens.pkl"
+amp_obj_path = "Amp_seed_single_cell_vary_dose/2024-03-12_Amplifier_single_cell_vary_dose_new_dose_terms_seed_0/all_objectives.pkl"
+amp_min_circuit_path = "Amp_seed_single_cell_vary_dose/2024-03-12_Amplifier_single_cell_vary_dose_new_dose_terms_seed_0/min_obj_circuit_all_gens.pkl"
+
+with open(repo_path+amp_min_circuit_path, "rb") as fid:
+    amp_min_circuit = pickle.load(fid)
+
+with open(repo_path+amp_min_obj_path, "rb") as fid:
+    amp_min_obj = pickle.load(fid)
+# print(first_seen(amp_min_obj))
+
+with open(repo_path+amp_obj_path, "rb") as fid:
+    amp_all_obj = pickle.load(fid)
+amp_all_obj = np.sort(amp_all_obj.flatten())
+amp_all_obj = np.unique(amp_all_obj)
+# print(amp_all_obj[:20])
+
+print(amp_min_circuit[-1][0].dose)

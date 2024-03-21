@@ -1,8 +1,6 @@
 import numpy as np
 from scipy.integrate import odeint
 from scipy.signal import find_peaks, peak_prominences
-from multiprocessing import Pool
-import pandas as pd
 from get_system_equations_pop import (
     system_equations_pop,
     system_equations_DsRed_pop

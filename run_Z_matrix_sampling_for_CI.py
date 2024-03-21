@@ -1,6 +1,5 @@
 import numpy as np
 import pickle
-import pandas as pd
 from saving import make_main_directory
 from load_Z_mat_samples import Z_mat_list
 from amplifier_problem import Amplifier
@@ -104,8 +103,8 @@ settings = {
     "CI_metrics": [["t_pulse_range", "prominence_rel_range"], ["t_pulse_std_error", "prominence_rel_std_error"]],
     "CI_ylim": False,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_seed_0/",
-    "folder_name": "Pulse_pop_DsRED_inhibitor_Z_matrix_sampling"
+    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/",
+    "folder_name": "Pulse_pop_DsRED_inhibitor_ZF1_ZF2_Z_matrix_sampling"
 }
 
 if __name__ == "__main__":

@@ -3,10 +3,8 @@ from define_circuit import *
 from copy import deepcopy, copy
 
 from scipy.integrate import odeint
-from load_files import *
-from get_system_equations import *
-
-from itertools import combinations, permutations, product
+from load_files_pop import tf_list, inhibitor_list
+from itertools import combinations, permutations
 
 
 # Randomly generate a path from a part n to the reporter

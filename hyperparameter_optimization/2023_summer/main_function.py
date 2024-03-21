@@ -1,4 +1,5 @@
 from GA import *
+from get_system_equations import system_equations
 from define_problem import *
 
 
@@ -40,7 +41,7 @@ def full_sim(mut_rate, cov_rate, promo_node, num_dict, max_part, min_dose, max_d
 
     # From this point, the code continues the same as the original main.py file
     num_circuits = len(population)
-    n_gen = 40
+    n_gen = 50
 
     obj = np.asarray([problem.func(g[0]) for g in population])
 
@@ -56,7 +57,7 @@ def full_sim(mut_rate, cov_rate, promo_node, num_dict, max_part, min_dose, max_d
             children = crossover(population, obj)
         else:
             children = deepcopy(population)
-        mutate(problem, children, mut_rate)
+        mutate(problem, children, mut_rate, dose=True)
         obj_children = np.asarray([-simulate(g[0]) / Ref[g[0].promo_node]['on'] for g in children])
         obj = np.append(obj, obj_children)
         population = np.vstack((population, children))

@@ -1,6 +1,5 @@
 import numpy as np
 import networkx as nx
-import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -90,7 +89,8 @@ def plot_pareto_front(
             fig, ax = plt.subplots(1, 1, figsize= (2.25, 2.25))
             sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
                             y= obj_df[obj_labels[1]], hue='type', 
-                            palette=palette, ax=ax)
+                            palette=palette, ax=ax, s=8)
+            plt.legend(fontsize="8")
             
         else:
             fig, ax = plt.subplots(1, 1, figsize= (2.25, 2.25))
@@ -308,8 +308,26 @@ def plot_3D_obj_confidence_interval(
     # plt.savefig(figure_path, bbox_inches="tight")
 
 def plot_1D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
-    #NOT executable
-    obj_all_cells = all_cell_results_df_row[settings["obj_labels"][0]]
+    obj_all_cells = all_cell_results_df_row[
+        settings["obj_labels"][0] + " for each cell"][0]
+    obj_mean = all_cell_results_df_row[
+        settings["obj_labels"][0] + "_mean"]
+    x_vals = [1]*len(obj_all_cells)
+    jittered_x = x_vals + 0.1*np.random.rand(
+        len(x_vals))
+    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    for i in range(len(obj_all_cells)):
+        ax.plot(jittered_x[i], obj_all_cells[i], linestyle="None",
+                marker="o", markersize=2)
+    ax.plot(1, obj_mean, linestyle="None",
+             marker = "o",markersize=2, color="k", 
+             label="population mean"
+    )
+    ax.set_xticklabels([])
+    ax.set_xticks([])
+    ax.set_ylabel(settings["obj_labels"][0])
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
 
 def plot_2D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
     obj1_all_cells = all_cell_results_df_row[
@@ -320,8 +338,6 @@ def plot_2D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
         settings["obj_labels"][0] + "_mean"]
     obj2_mean = all_cell_results_df_row[
         settings["obj_labels"][1] + "_mean"]
-    # print(len(obj1_all_cells))
-    # print(len(obj2_all_cells))
     fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
     for i in range(len(obj1_all_cells)):
         plt.plot(obj1_all_cells[i], obj2_all_cells[i],
@@ -350,14 +366,14 @@ def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
 
     fig, axs = plt.subplots(1, 2, figsize= (5, 2.5))
     for i in range(len(all_cells_rep_rel)):
-        axs[0].plot(t[:42], all_cells_rep_rel[i][:42],
+        axs[0].plot(t[:43], all_cells_rep_rel[i][:43],
                  lw="1")
-        axs[1].plot(t[:42], all_cells_rep_rel[i][:42],
+        axs[1].plot(t[:43], all_cells_rep_rel[i][:43],
                  lw="1")
-    axs[0].plot(t[:42], rep_rel_mean[:42], color="k",
+    axs[0].plot(t[:43], rep_rel_mean[:43], color="k",
              label="population mean", lw="2"
     )
-    axs[1].plot(t[:42], rep_rel_mean[:42], color="k",
+    axs[1].plot(t[:43], rep_rel_mean[:43], color="k",
              label="population mean", lw="2"
     )
     # plt.legend()

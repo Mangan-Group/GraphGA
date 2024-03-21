@@ -4,8 +4,7 @@ from scipy.integrate import odeint
 
 with open("promo.pkl", "rb") as fid:
     promo = pickle.load(fid)
-# with open("Z_200.npy", 'rb') as fid:
-#     Z_200 = np.load(fid)
+
 Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrices/"
 with open(Z_path + "Z_mat_20_cell0.npy", 'rb') as fid:
     Z_20 = np.load(fid)
@@ -17,7 +16,7 @@ def reference(y,t,k_end, Z):
 
 def simulate_reference(Z, filename):
     Ref = dict()
-    for k in list(promo.keys())[:4]:
+    for k in list(promo.keys())[:5]:
         ref_off = []
         ref_on = []
         for i in range(0, len(Z)):
@@ -34,10 +33,7 @@ def simulate_reference(Z, filename):
     
     return Ref
     
-# filename_200 = "Ref_pop200.pkl"
 filename_20 = "Ref_pop20.pkl"
-
-# Ref_200 = simulate_reference(Z_200, filename_200)
 Ref_20 = simulate_reference(Z_20, filename_20)
 
 print(Ref_20)

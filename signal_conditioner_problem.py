@@ -1,7 +1,5 @@
 import numpy as np
 from scipy.integrate import odeint
-import pandas as pd
-from multiprocessing import Pool
 from get_system_equations_pop import (
     system_equations_pop,
     system_equations_DsRed_pop

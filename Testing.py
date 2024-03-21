@@ -5,6 +5,7 @@ Created on Wed Aug 31 14:16:07 2022
 @author: Katie_Dreyer
 """
 import os
+import json
 import numpy as np
 import networkx as nx
 import time
@@ -27,6 +28,7 @@ from pymoo.indicators.hv import HV
 from plot_search_results import plot_graph
 from math import exp
 from scipy.interpolate import interp2d
+from get_selected_results import get_selected_all_cell_metrics, plot_all_cell_objs
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 sky_blue = [i/255 for i in [86, 180, 233]]
@@ -617,22 +619,113 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 
 
 # ### Pulse ZF1 and ZF2 only, t_pulse 126h (50 gen)
-# repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
-# file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
+repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
+file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
+file_path_unique_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/unique_objectives_df.pkl"
+file_path_unique_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/unique_circuits.pkl"
 
 # final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
 # final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
 # final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
+
+unique_obj = pd.read_pickle(repo_path+file_path_unique_obj)
+unique_circuits = pd.read_pickle(repo_path+file_path_unique_circuits)
+unique_obj_high_prom = unique_obj[unique_obj["prominence_rel"] < -0.2]
+unique_obj_high_prom_abs = unique_obj_high_prom.copy()
+unique_obj_high_prom_abs["prominence_rel"] = abs(unique_obj_high_prom["prominence_rel"])
+# for index, row in unique_obj_high_prom_abs.iterrows():
+#     if row["prominence_rel"] in final_obj_unique["prominence_rel"].tolist():
+#         unique_obj_high_prom_abs.drop(index, inplace=True)
+
+unique_circuits_high_prom = unique_circuits[unique_obj_high_prom_abs.index.tolist()]
+unique_obj_high_prom_abs.reset_index(inplace=True)
+sorted_selected_pareto_obj = unique_obj_high_prom_abs.sort_values("t_pulse", ascending=False)
+sorted_obj_idx = sorted_selected_pareto_obj.index.tolist()
+sorted_selected_pareto_circuits = unique_circuits_high_prom[sorted_obj_idx].flatten()
+sorted_selected_pareto_obj.reset_index(inplace=True)
+print(sorted_selected_pareto_obj)
+# edge_lists = []
+# dose_dict_list = []
+objs_list_p1 = []
+all_cells_dict_list_p1 = []
+pulse_p1 = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"], single_cell_tracking=True)
+
+pulse_idx_p0 = []
+objs_list_p0 = []
+all_cells_dict_list_p0 = []
+pulse_p0 = PulseGenerator("P0", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"], single_cell_tracking=True)
+
+pulse_idx_p2 = []
+objs_list_p2 = []
+all_cells_dict_list_p2 = []
+pulse_p2 = PulseGenerator("P2", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"], single_cell_tracking=True)
+
+for i, circuit in enumerate(sorted_selected_pareto_circuits):
+#       edge_lists.append(circuit.edge_list)
+#       dose_dict_list.append(circuit.dose)
+      keys_order = list(circuit.in_dict.keys())
+      keys_order.remove("Rep")
+      circuit.dose.pop("Rep")
+      doses_ordered = {key: circuit.dose[key] for key in keys_order}
+
+      # circuit_topo_p1 = Topo(circuit.edge_list, doses_ordered, "P1")
+      # [objs_p1, all_cells_dict_p1] = pulse_p1.func(circuit_topo_p1)
+      # objs_list.append(objs_p1)
+      # all_cells_dict_list.append(all_cells_dict_p1)
+      circuit_topo_p0 = Topo(circuit.edge_list, doses_ordered, "P0")
+      [objs_p0, all_cells_dict_p0] = pulse_p0.func(circuit_topo_p0)
+      objs_list_p0.append(objs_p0)
+      all_cells_dict_list_p0.append(all_cells_dict_p0)
+      if objs_p0[0] != 0.0:
+            pulse_idx_p0.append(i)
+
+      circuit_topo_p2 = Topo(circuit.edge_list, doses_ordered, "P2")
+      [objs_p2, all_cells_dict_p2] = pulse_p2.func(circuit_topo_p2)
+      objs_list_p2.append(objs_p2)
+      all_cells_dict_list_p2.append(all_cells_dict_p2)
+      if objs_p2[0] != 0.0:
+            pulse_idx_p2.append(i)
+      # print(objs)
+      # print(circuit.edge_list)
+print(np.abs(objs_list_p0))
+print(np.abs(objs_list_p2))
+
+# selected_results_dict = {
+#       "Topology": sorted_selected_pareto_circuits,
+#       "Edge list": edge_lists,
+#       "Doses": dose_dict_list
+# }
+# for obj in ["t_pulse", "prominence_rel"]:
+#         selected_results_dict[obj] = sorted_selected_pareto_obj[obj].tolist()
+# selected_results_df = pd.DataFrame.from_dict(selected_results_dict)
+# # selected_results_df.to_csv("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/2024-03-19_results_analysis_sub_opt/" + "selected_results_sub_opt.csv")# print(unique_circuits_high_prom[-1])
+# settings_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/settings.json"
+# with open(settings_path, "rb") as fid:
+#       settings = json.load(fid)
+# if __name__ == "__main__":
+#       all_cell_results_df = get_selected_all_cell_metrics(settings, selected_results_df)
+#       all_cell_results_df.to_csv("/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/2024-03-19_results_analysis_sub_opt/" + "all_cellselected_results_sub_opt.csv")
+#       # print(all_cell_results_df)
+#       base_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/2024-03-19_results_analysis_sub_opt/"
+#       plot_all_cell_objs(base_path, settings, all_cell_results_df)
+# for circuit in unique_circuits_high_prom:
+#     print(circuit[0].edge_list)
+#     print(circuit[0].dose)
+#     circuit[0].plot_graph()
+
+# print(final_obj_unique)
 # final_obj_unique_reset_idx = final_obj_unique.reset_index()
 # # print(final_obj_unique_reset_idx)
 # unique_obj_idx = final_obj_unique.index.to_list()
 # # unique_obj_idx.remove(0)
 # # print(unique_obj_idx)
 # final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
+# print(final_circuits_unique)
 # # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
+
 # for i, circuit in enumerate(final_circuits_unique):
-# #     print(circuit[0].edge_list)
+#     print(circuit[0].edge_list)
 #     print(circuit[0].dose)
 #     print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
 # #         circuit[0].dose.pop("Rep")
@@ -667,46 +760,3 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 # #         print(objs)
 #     circuit[0].plot_graph()
 
-df_full = pd.DataFrame()
-
-df1 = pd.DataFrame([[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                     columns=['A', 'B', 'C'])
-df2 = pd.DataFrame([[10, 11, 12], [15, 16, 17]],
-                     columns=['A',"B",'C'])
-
-df3 = pd.DataFrame([[21, 22, 23], [24, 25, 26], [27, 28, 29]],
-                     columns=['A', 'B', 'C'])
-df4 = pd.DataFrame([[210, 211, 212], [215, 216, 217]],
-                     columns=['A',"B",'C'])
-
-l1 = [["ON_rel1", df1], 
-      ["ON_rel2", df2]]
-# l1 = [[["ON_rel1" ,"FI_rel1"], df1], 
-#       [["ON_rel2", "FI_rel2"], df2]]
-l1 = np.asarray(l1, dtype=object)
-l1_obj = np.asarray(l1[:,0].tolist())
-l1_df = l1[:,1].tolist()
-l1_df.insert(0, df_full)
-# print(l1_obj)
-# print(l1_df)
-# df_full = pd.concat(l1_df, ignore_index=True)
-
-# l2 = [["ON_rel3", df3], 
-#       ["ON_rel4", df4]]
-# l2 = np.asarray(l2, dtype=object)
-# l2_obj = np.asarray(l2[:,0].tolist())
-# l2_df = l2[:,1].tolist()
-# l2_df.insert(0, df_full)
-# # print(l2_obj)
-# # print(l2_df)
-# df_full = pd.concat(l2_df, ignore_index=True)
-# print(df_full)
-
-topology = Topo([('P1', 'Z12'), ('Z12', 'Rep'), ('Z12', 'I1'), ('I1', 'Rep')], {'Z12': 55, 'I1': 5}, "P1")
-pop_ON_rel = [1, 2, 3, 4, 5]
-pop_rep_on = [1000, 2000, 4000, 3000, 5000]
-all_cells_dict = {"Topology": topology, 
-                "ON_rel for each cell": [pop_ON_rel],
-                "Rep ON state for each cell": [pop_rep_on]}
-all_cells_df = pd.DataFrame.from_dict(all_cells_dict)
-print(all_cells_df)
