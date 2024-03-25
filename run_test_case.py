@@ -112,26 +112,31 @@ def run(
 
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
+pop_size = 46.0
+pop_ratio = 0.48
+total_population = pop_size*2
+one_part_circuits = int(total_population*pop_ratio)
+two_part_circuits = int(total_population - one_part_circuits)
 settings = {
-    "test_case": "Amplifier",
+    "test_case": "PulseGenerator",
     "promo_node": "P1",
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": False,
-    "num_dict": {1: 35, 2: 59},
-    "n_gen": 50,
-    "probability_crossover": 0.53, #0.32, increased to 0.5, then 0.75
-    "probability_mutation": 1.0, #0.57, increased to 0.75, then 1.0
+    "DsRed_inhibitor": True,
+    "num_dict": {1: one_part_circuits, 2: two_part_circuits},
+    "n_gen": 60,
+    "probability_crossover": 0.72, #0.32, increased to 0.5, then 0.75
+    "probability_mutation": 0.70, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
     "pop": False,
     "num_processes": 8,
-    "obj_labels": ["ON_rel"],
-    "max_time": 42,
+    "obj_labels": ["peak_rel", "prominence_rel"],
+    "max_time": 126,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Test_amp_hp_opt"
+    "folder_name": "Pulse_single_cell_opt_hp"
 }
 
 if __name__ == "__main__":
@@ -150,7 +155,8 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    for seed in range(0, 1):
+    for seed in range(20, 22):
+        settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
         np.random.seed(seed)
         settings["seed"] = seed
         settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
