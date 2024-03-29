@@ -141,7 +141,8 @@ def single_obj_GA(
             bar()
     
     # print in which gen the min obj first appeared
-    # print(first_seen(obj_min))
+    print(obj_min)
+    print(first_seen(obj_min))
     # print doses and edge list for opt circuit
     # print(circuit_min[-1][0].dose)
     # print(circuit_min[-1][0].edge_list)
@@ -383,6 +384,10 @@ def multi_obj_GA(
 
             # print("generation "+ str(gen) + " complete")
             bar()
+
+    # print in which gen the min obj first appeared
+    print(hypervolumes)
+    print(first_seen(hypervolumes))
 
     fronts = NonDominatedSorting().do(obj)
 

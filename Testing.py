@@ -26,7 +26,7 @@ from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
 from pymoo.indicators.hv import HV
-from plot_search_results import plot_graph
+from plot_search_results import plot_graph, plot_hypervolumes_set
 from math import exp
 from scipy.interpolate import interp2d
 from get_selected_results import get_selected_all_cell_metrics, plot_all_cell_objs
@@ -797,30 +797,53 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #########################################################
 ### Loading results for comparison to opt hyperparams ###
 #########################################################
+
+### AMPLIFIER single cell###
 # path_amp_const = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2024-03-12_Amplifier_single_cell_new_dose_terms_seed_0/minimum_obj_all_gens.pkl"
 # with open(path_amp_const, "rb") as fid:
 #     min_objs_const = pickle.load(fid)
-# print(min_objs_const)
+# print(min_objs_const, len(min_objs_const))
 
 # path_amp_vary = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_single_cell_const_dose/2024-03-12_Amplifier_single_cell_new_dose_terms_seed_0/minimum_obj_all_gens.pkl"
 # with open(path_amp_vary, "rb") as fid:
 #     min_objs_vary = pickle.load(fid)
 # print(min_objs_vary)
 
-# path1 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_inhibitor/2024-03-12_Signal_Cond_single_cell_inhibitor_new_dose_terms_seed_0/hypervolumes.pkl"
-# with open(path1, "rb") as fid:
+### AMPLIFIER population###
+
+### SIGNAL CONDITIONER single cell###
+# path_sc = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_inhibitor/2024-03-12_Signal_Cond_single_cell_inhibitor_new_dose_terms_seed_0/hypervolumes.pkl"
+# with open(path_sc, "rb") as fid:
 #     hvs1 = pickle.load(fid)
-# print(hvs1)
+# print("SC: ", first_seen(hvs1))
 
-# path2 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_DsRED_inhibitor/2024-03-11_Signal_Cond_single_cell_DsRED_inhibitor_new_dose_terms_seed_0/hypervolumes.pkl"
-# with open(path2, "rb") as fid:
+# path_sc_dsr = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_DsRED_inhibitor/2024-03-11_Signal_Cond_single_cell_DsRED_inhibitor_new_dose_terms_seed_0/hypervolumes.pkl"
+# with open(path_sc_dsr, "rb") as fid:
 #     hvs2 = pickle.load(fid)
-# print(hvs2)
+# print("SC DsR: ", first_seen(hvs2))
 
+### SIGNAL CONDITIONER population###
+# path_sc_pop = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_inhibitor/2024-03-07_Signal_Cond_pop_inhibitor_new_dose_terms_seed_0/hypervolumes.pkl"
+# with open(path_sc_pop, "rb") as fid:
+#     hvs1 = pickle.load(fid)
+# print("SC: ", hvs1)
+
+# path_sc_pop = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_pop_inhibitor/2024-03-07_Signal_Cond_pop_inhibitor_ngen80_new_dose_terms_seed_0/hypervolumes.pkl"
+# with open(path_sc_pop, "rb") as fid:
+#     hvs1 = pickle.load(fid)
+# print("SC: ", first_seen(hvs1))
+
+# path_sc_dsr = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_DsRED_inhibitor/2024-03-11_Signal_Cond_single_cell_DsRED_inhibitor_new_dose_terms_seed_0/hypervolumes.pkl"
+# with open(path_sc_dsr, "rb") as fid:
+#     hvs2 = pickle.load(fid)
+# print("SC DsR: ", first_seen(hvs2))
+
+
+## Pulse single cell###
 # path3 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/2024-03-11_Pulse_single_cell_DsRED_inhibitor_126h_new_dose_terms_seed_0/hypervolumes.pkl"
 # with open(path3, "rb") as fid:
 #     hvs3 = pickle.load(fid)
-# print(hvs3)
+# print(hvs3, first_seen(hvs3))
 
 # path4 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/2024-03-11_Pulse_single_cell_DsRED_inhibitor_t_pulse_126h_new_dose_terms_seed_0/hypervolumes.pkl"
 # with open(path4, "rb") as fid:
@@ -830,7 +853,7 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 # path5 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/2024-03-11_Pulse_single_cell_DsRED_inhibitor_3obj_126h_new_dose_terms_seed_0/hypervolumes.pkl"
 # with open(path5, "rb") as fid:
 #     hvs5 = pickle.load(fid)
-# print(hvs5)
+# print(hvs5, first_seen(hvs5))
 
 
 #########################################################
@@ -862,13 +885,136 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #     print(min_circuit_vary[-1][0].edge_list)
 #     print(min_circuit_vary[-1][0].dose)
 
-path_pulse = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/2024-03-25_Pulse_single_cell_opt_hp_seed_"
-hv_path = "hypervolumes.pkl"
-for seed in range(0,2):
-    full_path = path_pulse + str(seed) + "/"
-    with open(full_path + hv_path, "rb") as fid:
-        hypervolumes = pickle.load(fid)
-    print(hypervolumes[-1])
+# path_sc = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_inhibitor/Optimized_hyperparams_fixed_pop_ngen50/"
+# results_runs = "2024-03-26_Signal_cond_single_cell_inhibitor_opt_hp_seed_"
+# hv_path = "hypervolumes.pkl"
+# hv_lists = []
+# for seed in range(0,10):
+#     full_path = path_sc + results_runs + str(seed) + "/"
+#     with open(full_path + hv_path, "rb") as fid:
+#         hypervolumes = pickle.load(fid)
+#     print(hypervolumes[-1], first_seen(hypervolumes))
+#     hv_lists.append(hypervolumes)
+# plot_hypervolumes_set(path_sc+"all_hypervolume_progressions_zoomed.svg", 60, hv_lists, 42)
+
+# path_sc_vary = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_inhibitor/Optimized_hyperparams_vary_pop_ngen50/"
+# results_runs = "2024-03-28_Signal_cond_single_cell_inhibitor_opt_hp_seed_"
+# hv_path = "hypervolumes.pkl"
+# hv_lists = []
+# for seed in range(0,10):
+#     full_path = path_sc_vary + results_runs + str(seed) + "/"
+#     with open(full_path + hv_path, "rb") as fid:
+#         hypervolumes = pickle.load(fid)
+#     print(hypervolumes[-1], first_seen(hypervolumes))
+#     hv_lists.append(hypervolumes)
+# plot_hypervolumes_set(path_sc_vary+"all_hypervolume_progressions_zoomed.svg", 50, hv_lists, 42.0)
+
+# path_sc_dsr = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_ngen50/"
+# results_runs = "2024-03-28_Signal_cond_single_cell_DsRED_inhibitor_opt_hp_seed_"
+# hv_path = "hypervolumes.pkl"
+# hv_lists = []
+# for seed in range(0,10):
+#     full_path = path_sc_dsr + results_runs + str(seed) + "/"
+#     with open(full_path + hv_path, "rb") as fid:
+#         hypervolumes = pickle.load(fid)
+#     print(hypervolumes[-1], first_seen(hypervolumes))
+#     hv_lists.append(hypervolumes)
+# plot_hypervolumes_set(path_sc_dsr+"all_hypervolume_progressions.svg", 50, hv_lists)
+
+# path_sc_dsr_ngen80 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/SC_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_ngen80/"
+# results_runs = "2024-03-28_Signal_cond_single_cell_DsRED_inhibitor_opt_hp_seed_"
+# hv_path = "hypervolumes.pkl"
+# hv_lists = []
+# for seed in range(0,10):
+#     full_path = path_sc_dsr_ngen80 + results_runs + str(seed) + "/"
+#     with open(full_path + hv_path, "rb") as fid:
+#         hypervolumes = pickle.load(fid)
+#     print(hypervolumes[-1], first_seen(hypervolumes))
+#     hv_lists.append(hypervolumes)
+# plot_hypervolumes_set(path_sc_dsr_ngen80+"all_hypervolume_progressions.svg", 80, hv_lists)
 
 
+# path_pulse = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/2024-03-25_Pulse_single_cell_opt_hp_seed_"
+# hv_path = "hypervolumes.pkl"
+# for seed in range(0,2):
+#     full_path = path_pulse + str(seed) + "/"
+#     with open(full_path + hv_path, "rb") as fid:
+#         hypervolumes = pickle.load(fid)
+#     print(hypervolumes[-1])
 
+# path_pulse = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop/"
+# results_runs = "2024-03-28_Pulse_single_cell_DsRED_inhibitor_126h_opt_hp_seed_"
+# hv_path = "hypervolumes.pkl"
+# hv_lists = []
+# for seed in range(0,10):
+#     full_path = path_pulse + results_runs + str(seed) + "/"
+#     with open(full_path + hv_path, "rb") as fid:
+#         hypervolumes = pickle.load(fid)
+#     print(hypervolumes[-1], first_seen(hypervolumes))
+#     hv_lists.append(hypervolumes)
+# plot_hypervolumes_set(path_pulse+"all_hypervolume_progressions.svg", 40, hv_lists)
+
+############################################################################
+####### Testing circuit edge set comparison ################################
+############################################################################
+
+path_all_circuits = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2024-03-08_Amplifier_pop_vary_dose_new_dose_terms_seed_0/all_circuits.pkl"
+with open(path_all_circuits, "rb") as fid:
+     all_circuits = pickle.load(fid)
+all_circuits_sample = all_circuits[:5]
+circuit_edge_lists = []
+for circuit in all_circuits_sample:
+    circuit_edges = circuit[0].edge_list
+    for key, val in circuit[0].dose.items():
+        circuit_edges.append((key, str(val)))
+    circuit_edge_lists.append(circuit_edges)
+
+combo_edges_lists = []
+for edges in circuit_edge_lists:
+    edge_combos = [edge[0] + edge[1] for
+        edge in edges]
+    combo_edges_lists.append(edge_combos)
+
+# print(combo_edges_lists)
+unique_edge_combo = []
+index_list = []
+seen = set()
+for i, combo_list in enumerate(
+    combo_edges_lists):
+    combo_set = frozenset(combo_list)
+    if combo_set not in seen:
+        seen.add(combo_set)
+        index_list.append(i)
+        unique_edge_combo.append(combo_list)
+print("seen: ", seen, len(seen))
+# unique_obj = all_obj[index_list]
+# unique_circuits = all_circuits[index_list]
+     
+all_circuits_sample2 = all_circuits[:6]
+circuit_edge_lists2 = []
+for circuit in all_circuits_sample2:
+    circuit_edges = circuit[0].edge_list
+    for key, val in circuit[0].dose.items():
+        circuit_edges.append((key, str(val)))
+    circuit_edge_lists2.append(circuit_edges)
+
+combo_edges_lists2 = []
+for edges in circuit_edge_lists2:
+    edge_combos = [edge[0] + edge[1] for
+        edge in edges]
+    combo_edges_lists2.append(edge_combos)
+
+# print(combo_edges_lists)
+unique_edge_combo2 = []
+index_list2 = []
+seen2 = set()
+for i, combo_list in enumerate(
+    combo_edges_lists2):
+    combo_set = frozenset(combo_list)
+    if combo_set not in seen2:
+        seen2.add(combo_set)
+        index_list2.append(i)
+        unique_edge_combo2.append(combo_list)
+print("seen2: ", seen2, len(seen2))
+unique_circuits = seen.symmetric_difference(seen2)
+print("unique: ", unique_circuits)

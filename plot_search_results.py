@@ -71,6 +71,24 @@ def plot_hypervolume(
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
+def plot_hypervolumes_set(
+        figure_path: str,
+        n_gens: int,
+        hypervolumes_lists: np.ndarray,
+        y_lower_lim: float=None
+):
+    generations = np.arange(n_gens)
+
+    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+    for hv_list in hypervolumes_lists:
+        ax.plot(generations, hv_list)
+    ax.set_xlabel("Generation")
+    ax.set_ylabel("Hypervolume")
+    if y_lower_lim:
+        ax.set_ylim(bottom=y_lower_lim)
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
+
 def plot_pareto_front(
         figure_path: str, 
         obj_df: pd.DataFrame,
