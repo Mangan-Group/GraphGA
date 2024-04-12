@@ -112,7 +112,7 @@ def run(
 
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
-pop_size = 84.0
+pop_size = 100.0
 pop_ratio = 0.25
 total_population = pop_size*2
 one_part_circuits = int(total_population*pop_ratio)
@@ -123,11 +123,11 @@ settings = {
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
-    "DsRed_inhibitor": False,
+    "DsRed_inhibitor": True,
     "num_dict": {1: one_part_circuits, 2: two_part_circuits},
-    "n_gen": 50,
-    "probability_crossover": 0.32, #0.32, increased to 0.5, then 0.75
-    "probability_mutation": 0.57, #0.57, increased to 0.75, then 1.0
+    "n_gen": 60,
+    "probability_crossover": 0.64, #0.32, increased to 0.5, then 0.75
+    "probability_mutation": 0.31, #0.57, increased to 0.75, then 1.0
     "mutate_dose": True,
     "pop": False,
     "num_processes": 8,
@@ -136,7 +136,7 @@ settings = {
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_cond_single_cell_inhibitor_original_hp"
+    "folder_name": "Signal_cond_single_cell_DsRED_inhibitor_opt_stderr_hp"
 }
 
 if __name__ == "__main__":

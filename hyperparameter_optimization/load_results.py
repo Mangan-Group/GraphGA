@@ -17,11 +17,11 @@ import pandas as pd
 # with open(path_amp_const_pop + "pareto_front.pkl", "rb") as fid:
 #     pareto_front = pickle.load(fid)
 # print(pareto_front)
-pd.set_option('display.max_columns', None)
-path_amp_vary_pop = "/Users/kdreyer/Documents/Github/GraphGA/hyperparameter_optimization/Results/Amplifier_population_vary_dose/"
-with open(path_amp_vary_pop + "pareto_front.pkl", "rb") as fid:
-    pareto_front = pickle.load(fid)
-print(pareto_front)
+# pd.set_option('display.max_columns', None)
+# path_amp_vary_pop = "/Users/kdreyer/Documents/Github/GraphGA/hyperparameter_optimization/Results/Amplifier_population_vary_dose/"
+# with open(path_amp_vary_pop + "pareto_front.pkl", "rb") as fid:
+#     pareto_front = pickle.load(fid)
+# print(pareto_front)
 
 ### SIGNAL CONDITIONER ###
 # path_sig_cond_varied_pop_hps0 = "/Users/kdreyer/Documents/Github/GraphGA/hyperparameter_optimization/Results/Signal_conditioner_single_cell/varied_pop_hps/run0_ngen50/"
