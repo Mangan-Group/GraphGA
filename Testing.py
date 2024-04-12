@@ -954,67 +954,23 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #     hv_lists.append(hypervolumes)
 # plot_hypervolumes_set(path_pulse+"all_hypervolume_progressions.svg", 40, hv_lists)
 
-############################################################################
-####### Testing circuit edge set comparison ################################
-############################################################################
+repository_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+results_base_path = "Amp_seed_pop_vary_dose/Single_cell_model_opt_hyperparams/2024-04-02_Amplifier_pop_vary_dose_single_cell_opt_hp"
+for seed in range(0, 10):
+    results_full_path = results_base_path.removesuffix("_seed_" + str(seed-1))
+    results_full_path = results_full_path + "_seed_" + str(seed) + "/"
+    with open(repository_path + results_full_path + 
+        "all_objectives.pkl", "rb") as fid:
+        all_obj = pickle.load(fid)
+    all_obj = np.abs(all_obj)
+    max_obj_idx = np.argmax(all_obj)
+    max_obj = all_obj[max_obj_idx]
+    #import unique circuits
+    with open(repository_path + results_full_path + 
+            "all_circuits.pkl", "rb") as fid:
+        all_circuits = pickle.load(fid)
+    max_circuit = all_circuits[max_obj_idx]
+    print(max_circuit[0].dose)
+    max_circuit[0].plot_graph()
 
-path_all_circuits = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Amp_seed_pop_vary_dose/2024-03-08_Amplifier_pop_vary_dose_new_dose_terms_seed_0/all_circuits.pkl"
-with open(path_all_circuits, "rb") as fid:
-     all_circuits = pickle.load(fid)
-all_circuits_sample = all_circuits[:5]
-circuit_edge_lists = []
-for circuit in all_circuits_sample:
-    circuit_edges = circuit[0].edge_list
-    for key, val in circuit[0].dose.items():
-        circuit_edges.append((key, str(val)))
-    circuit_edge_lists.append(circuit_edges)
-
-combo_edges_lists = []
-for edges in circuit_edge_lists:
-    edge_combos = [edge[0] + edge[1] for
-        edge in edges]
-    combo_edges_lists.append(edge_combos)
-
-# print(combo_edges_lists)
-unique_edge_combo = []
-index_list = []
-seen = set()
-for i, combo_list in enumerate(
-    combo_edges_lists):
-    combo_set = frozenset(combo_list)
-    if combo_set not in seen:
-        seen.add(combo_set)
-        index_list.append(i)
-        unique_edge_combo.append(combo_list)
-print("seen: ", seen, len(seen))
-# unique_obj = all_obj[index_list]
-# unique_circuits = all_circuits[index_list]
-     
-all_circuits_sample2 = all_circuits[:6]
-circuit_edge_lists2 = []
-for circuit in all_circuits_sample2:
-    circuit_edges = circuit[0].edge_list
-    for key, val in circuit[0].dose.items():
-        circuit_edges.append((key, str(val)))
-    circuit_edge_lists2.append(circuit_edges)
-
-combo_edges_lists2 = []
-for edges in circuit_edge_lists2:
-    edge_combos = [edge[0] + edge[1] for
-        edge in edges]
-    combo_edges_lists2.append(edge_combos)
-
-# print(combo_edges_lists)
-unique_edge_combo2 = []
-index_list2 = []
-seen2 = set()
-for i, combo_list in enumerate(
-    combo_edges_lists2):
-    combo_set = frozenset(combo_list)
-    if combo_set not in seen2:
-        seen2.add(combo_set)
-        index_list2.append(i)
-        unique_edge_combo2.append(combo_list)
-print("seen2: ", seen2, len(seen2))
-unique_circuits = seen.symmetric_difference(seen2)
-print("unique: ", unique_circuits)
+    

@@ -141,7 +141,7 @@ def single_obj_GA(
             bar()
     
     # print in which gen the min obj first appeared
-    print(obj_min)
+    print(obj_min[-1])
     print(first_seen(obj_min))
     # print doses and edge list for opt circuit
     # print(circuit_min[-1][0].dose)

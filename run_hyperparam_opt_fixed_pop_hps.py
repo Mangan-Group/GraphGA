@@ -19,6 +19,8 @@ from GA_setup_hyperparameter_opt import (
     single_obj_GA,
     multi_obj_GA
 )
+from pymoo.config import Config
+Config.warnings['not_compiled'] = False
 
 _, is_manager, _, _ = parse_args()
 seed = 20
@@ -59,7 +61,6 @@ def run(x:dict):
         1: num_one_part_circuits,
         2: num_two_part_circuits
     }
-    print(num_dict)
     problem = test_case(
         promo_node="P1",
         dose_specs=[5, 75, 5],
@@ -80,30 +81,9 @@ def run(x:dict):
     fitness = []
     convergence = []
     for seed_val in seeds:
-        # np.random.seed(seed_val)
-        # population = sampling(
-        #     problem.promo_node,
-        #     problem.num_dict,
-        #     problem.min_dose,
-        #     problem.max_dose,
-        #     problem.dose_interval,
-        #     inhibitor=problem.inhibitor
-        # )
-        # num_circuits = len(population)
-        # # calculate objective for each circuit 
-        # # in initial population
-        # obj = np.asarray(
-        #     [problem.func(g[0]) for g in population])
-
-        # run multi-objective GA if multiple objectives
-        # (determined by type of first first objective 
-        # in array- will be array if more than one)
         if len(problem.obj_labels) > 1:
             [pareto_objs, gen_converged] = multi_obj_GA(
                 problem,
-                # population,
-                # num_circuits,
-                # obj,
                 seed_val
             )
             fitness.append(pareto_objs)
@@ -112,9 +92,6 @@ def run(x:dict):
         else:
             [final_obj, gen_converged] = single_obj_GA(
                 problem,
-                # population,
-                # num_circuits,
-                # obj,
                 seed_val
             )
             fitness.append(final_obj)
@@ -192,6 +169,7 @@ if __name__ == "__main__":
             pickle.dump(my_moop.getObjectiveData(), fid)
 
         # Print the pareto front
+        pd.set_option('display.max_columns', None)
         print(results)
 
 
