@@ -121,7 +121,7 @@ if __name__ == "__main__":
     my_moop.addDesign({'name': "population_size",
                        'des_type': "integer", # Variable type
                        'lb': 2, # Lower bound
-                       'ub': 50}) # Upper bound
+                       'ub': 100}) # Upper bound
 
     my_moop.addDesign({'name': "population_ratio",
                        'des_type': "continuous",

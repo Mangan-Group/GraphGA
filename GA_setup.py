@@ -185,6 +185,22 @@ def single_obj_GA(
         "phenotype",
     )
     
+    file_name = "minimum_obj_all_gens.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(obj_min, fid)
+
+    file_name = "min_obj_circuit_all_gens.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(circuit_min, fid)
+
+    # plot graph of circuit with final min 
+    # objective
+    graph_file_name = "circuit_with_min_obj.svg"
+    plot_graph(
+        folder_path + "/" + graph_file_name,
+        circuit_min[-1][0]
+    )
+
     if problem.pop:
         # get edge lists for each circuit sampled in GA
         # and add dose as an "edge"
@@ -194,7 +210,6 @@ def single_obj_GA(
             for key, val in circuit[0].dose.items():
                 circuit_edges.append((key, str(val)))
             circuit_edge_lists.append(circuit_edges)
-
 
         combo_edges_lists = []
         for edges in circuit_edge_lists:
@@ -232,23 +247,6 @@ def single_obj_GA(
         )
 
     else:
-        # save single cell specific results as .pkl files
-        file_name = "minimum_obj_all_gens.pkl"
-        with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(obj_min, fid)
-
-        file_name = "min_obj_circuit_all_gens.pkl"
-        with open(folder_path + "/" + file_name, "wb") as fid:
-            pickle.dump(circuit_min, fid)
-    
-        # plot graph of circuit with final min 
-        # objective
-        graph_file_name = "circuit_with_min_obj.svg"
-        plot_graph(
-            folder_path + "/" + graph_file_name,
-            circuit_min[-1][0]
-        )
-
         if get_unique:
             # unique objectives and circuits for all
             # objectives and all_circuits (all gens)

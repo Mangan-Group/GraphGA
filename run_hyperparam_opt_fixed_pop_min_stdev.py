@@ -29,10 +29,12 @@ settings = {
 "test_case": "SignalConditioner",
 "DsRed_inhibitor": False,
 "n_gen": 50,
+"population_size": 200,
+"population_ratio": 0.25,
 "pop": False,
 "obj_labels": ["ON_rel", "FI_rel"],
 "max_time": 42,
-"seeds": [seed, seed+1, seed+2, seed+3],
+"seeds": [seed, seed+1, seed+2],
 "folder_path": "./Signal_conditioner_single_cell/"
 }
 with open(settings["folder_path"] + "settings.json", "w") as fid:
@@ -48,9 +50,9 @@ def run(x:dict):
     elif settings["test_case"] == "PulseGenerator":
         test_case = PulseGenerator
 
-    num_circuits = x["population_size"]*2
+    num_circuits = settings["population_size"]
     num_one_part_circuits = int(
-        num_circuits*x["population_ratio"]
+        num_circuits*settings["population_ratio"]
     )
     num_two_part_circuits = int((num_circuits - 
                              num_one_part_circuits
@@ -75,7 +77,7 @@ def run(x:dict):
         max_time=settings["max_time"]
     )
 
-    seeds = [seed, seed+1, seed+2, seed+3]
+    seeds = [seed, seed+1, seed+2]
     fitness = []
     convergence = []
     for seed_val in seeds:
@@ -118,16 +120,6 @@ if __name__ == "__main__":
     my_moop = libE_MOOP(LocalGPS)
 
     # Add design variables (the hyperparameters being optimized)
-    # Must have a population of at least 3 for the chosen throuple in crossing over
-    my_moop.addDesign({'name': "population_size",
-                       'des_type': "integer", # Variable type
-                       'lb': 2, # Lower bound
-                       'ub': 50}) # Upper bound
-
-    my_moop.addDesign({'name': "population_ratio",
-                       'des_type': "continuous",
-                       'lb': 0.0,
-                       'ub': 1.0})
 
     my_moop.addDesign({'name': "mutation_rate",
                        'des_type': "continuous",

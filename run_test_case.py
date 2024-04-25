@@ -112,31 +112,31 @@ def run(
 
 
 # make this a .json file (config_Amplifier, config_SignalConditioner, config_PulseGenerator)
-pop_size = 100.0
-pop_ratio = 0.25
+pop_size = 91.0 #signal conditioner: 84.0, amplifier: 26
+pop_ratio = 0.269123 #signal conditioner: 0.274159, amplifier: 0.5
 total_population = pop_size*2
 one_part_circuits = int(total_population*pop_ratio)
 two_part_circuits = int(total_population - one_part_circuits)
 settings = {
-    "test_case": "SignalConditioner",
+    "test_case": "PulseGenerator",
     "promo_node": "P1",
     "dose_specs": [5, 75, 5],
     "max_part": 2,
     "inhibitor": True,
     "DsRed_inhibitor": True,
     "num_dict": {1: one_part_circuits, 2: two_part_circuits},
-    "n_gen": 60,
-    "probability_crossover": 0.64, #0.32, increased to 0.5, then 0.75
-    "probability_mutation": 0.31, #0.57, increased to 0.75, then 1.0
+    "n_gen": 50,
+    "probability_mutation": 0.811513,  #signal conditioner: 0.566336, amplifier: 1.0
+    "probability_crossover": 0.144813, #signal conditioner: 0.319159, amplifier: 0.554235
     "mutate_dose": True,
     "pop": False,
     "num_processes": 8,
-    "obj_labels": ["ON_rel", "FI_rel"],
-    "max_time": 42,
+    "obj_labels": ["t_pulse", "prominence_rel"],
+    "max_time": 126,
     "plot": False,
     "seed": 0,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_cond_single_cell_DsRED_inhibitor_opt_stderr_hp"
+    "folder_name": "Pulse_single_cell_DsRED_inhibitor_t_pulse_opt_hp_stdev_ngen50_nseed4"
 }
 
 if __name__ == "__main__":

@@ -942,8 +942,8 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #         hypervolumes = pickle.load(fid)
 #     print(hypervolumes[-1])
 
-# path_pulse = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop/"
-# results_runs = "2024-03-28_Pulse_single_cell_DsRED_inhibitor_126h_opt_hp_seed_"
+# path_pulse = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_opt_stderr/"
+# results_runs = "2024-04-12_Pulse_single_cell_opt_stderr_hp_seed_"
 # hv_path = "hypervolumes.pkl"
 # hv_lists = []
 # for seed in range(0,10):
@@ -952,25 +952,24 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #         hypervolumes = pickle.load(fid)
 #     print(hypervolumes[-1], first_seen(hypervolumes))
 #     hv_lists.append(hypervolumes)
-# plot_hypervolumes_set(path_pulse+"all_hypervolume_progressions.svg", 40, hv_lists)
+# plot_hypervolumes_set(path_pulse+"all_hypervolume_progressions.svg", 50, hv_lists)
 
-repository_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-results_base_path = "Amp_seed_pop_vary_dose/Single_cell_model_opt_hyperparams/2024-04-02_Amplifier_pop_vary_dose_single_cell_opt_hp"
-for seed in range(0, 10):
-    results_full_path = results_base_path.removesuffix("_seed_" + str(seed-1))
-    results_full_path = results_full_path + "_seed_" + str(seed) + "/"
-    with open(repository_path + results_full_path + 
-        "all_objectives.pkl", "rb") as fid:
-        all_obj = pickle.load(fid)
-    all_obj = np.abs(all_obj)
-    max_obj_idx = np.argmax(all_obj)
-    max_obj = all_obj[max_obj_idx]
-    #import unique circuits
-    with open(repository_path + results_full_path + 
-            "all_circuits.pkl", "rb") as fid:
-        all_circuits = pickle.load(fid)
-    max_circuit = all_circuits[max_obj_idx]
-    print(max_circuit[0].dose)
-    max_circuit[0].plot_graph()
-
+# repository_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# results_base_path = "Amp_seed_pop_vary_dose/Single_cell_model_opt_hyperparams/2024-04-02_Amplifier_pop_vary_dose_single_cell_opt_hp"
+# for seed in range(0, 10):
+#     results_full_path = results_base_path.removesuffix("_seed_" + str(seed-1))
+#     results_full_path = results_full_path + "_seed_" + str(seed) + "/"
+#     with open(repository_path + results_full_path + 
+#         "all_objectives.pkl", "rb") as fid:
+#         all_obj = pickle.load(fid)
+#     all_obj = np.abs(all_obj)
+#     max_obj_idx = np.argmax(all_obj)
+#     max_obj = all_obj[max_obj_idx]
+#     #import unique circuits
+#     with open(repository_path + results_full_path + 
+#             "all_circuits.pkl", "rb") as fid:
+#         all_circuits = pickle.load(fid)
+#     max_circuit = all_circuits[max_obj_idx]
+#     print(max_circuit[0].dose)
+#     max_circuit[0].plot_graph()
     
