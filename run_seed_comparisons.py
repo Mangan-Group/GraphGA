@@ -30,7 +30,7 @@ def run_seed_results_comparisons(results_path, seed_folder):
     )
 
 path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_sc = "SC_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_opt_stdev_ngen80_nseed4/"
-results_runs = "2024-04-18_Signal_cond_single_cell_DsRED_inhibitor_opt_hp_stdev_ngen80_nseed4_seed_"
+path_sc = "Pulse_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_vary_pop_t_pulse_opt_stdev_ngen50_nseed4/run1_ngen80/"
+results_runs = "2024-04-29_Pulse_single_cell_DsRED_inhibitor_t_pulse_opt_hp_stdev_ngen80_nseed4_seed_"
 
 run_seed_results_comparisons(path_results+path_sc, results_runs)
