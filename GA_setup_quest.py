@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from multiprocessing import Pool
-from alive_progress import alive_bar
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from pymoo.indicators.hv import HV
 from rankcrowding import RankAndCrowding
@@ -68,78 +67,76 @@ def single_obj_GA(
     pheno = np.zeros_like(geno)
     pheno[0] = pheno_diversity(obj)
 
-    with alive_bar(problem.n_gen) as bar:
-        for gen in range(problem.n_gen):
-            # perform crossover to generate new
-            # population (children) from parent 
-            # circuits if randomly generated float  
-            # is less than probability_crossover
-            if np.random.uniform() < problem.prob_crossover:
-                children = crossover(population, obj)
-            else:
-                children = deepcopy(population)
+    for gen in range(problem.n_gen):
+        # perform crossover to generate new
+        # population (children) from parent 
+        # circuits if randomly generated float  
+        # is less than probability_crossover
+        if np.random.uniform() < problem.prob_crossover:
+            children = crossover(population, obj)
+        else:
+            children = deepcopy(population)
 
-            # perform mutation on children if 
-            # randomly generated float is less 
-            # than probability_mutation (used 
-            # in mutate function)
-            mutate(
-                problem, children, 
-                problem.prob_mutation, 
-                dose=problem.mutate_dose
-            )
+        # perform mutation on children if 
+        # randomly generated float is less 
+        # than probability_mutation (used 
+        # in mutate function)
+        mutate(
+            problem, children, 
+            problem.prob_mutation, 
+            dose=problem.mutate_dose
+        )
 
-            # simulate topology and calculate obj
-            # function for each circuit in children
-            # and append to obj array
-            if problem.pop:
-                child_topologies = [g[0] for g in children]
-                with Pool(problem.num_processes) as pool:
-                    obj_list = pool.imap(problem.func, child_topologies)
+        # simulate topology and calculate obj
+        # function for each circuit in children
+        # and append to obj array
+        if problem.pop:
+            child_topologies = [g[0] for g in children]
+            with Pool(problem.num_processes) as pool:
+                obj_list = pool.imap(problem.func, child_topologies)
 
-                    pool.close()
-                    pool.join()
-                obj_list = list(obj_list)
-                obj_children = np.asarray(obj_list)
+                pool.close()
+                pool.join()
+            obj_list = list(obj_list)
+            obj_children = np.asarray(obj_list)
 
-            else:
-                obj_children = np.asarray(
-                    [problem.func(g[0]) for g in children])
-                
-            obj = np.append(obj, obj_children)
+        else:
+            obj_children = np.asarray(
+                [problem.func(g[0]) for g in children])
+            
+        obj = np.append(obj, obj_children)
 
-            # append obj of children and children
-            # to respective lists
-            all_obj.append(obj_children)
-            all_circuits.append(children)
+        # append obj of children and children
+        # to respective lists
+        all_obj.append(obj_children)
+        all_circuits.append(children)
 
-            # add children to population array
-            population = np.vstack((population, children))
-            # return array of indices that would sort
-            # obj
-            S = np.lexsort([obj])
-            # select top num_circuits obj from obj array 
-            # and top num_circuits from population
-            # (initial population + children of each gen)
-            obj = obj[S[:num_circuits]]
-            population = population[S[:num_circuits], :]
+        # add children to population array
+        population = np.vstack((population, children))
+        # return array of indices that would sort
+        # obj
+        S = np.lexsort([obj])
+        # select top num_circuits obj from obj array 
+        # and top num_circuits from population
+        # (initial population + children of each gen)
+        obj = obj[S[:num_circuits]]
+        population = population[S[:num_circuits], :]
 
-            # return index of minimum obj function
-            # from obj
-            ind_min = np.argmin(obj)
+        # return index of minimum obj function
+        # from obj
+        ind_min = np.argmin(obj)
 
-            # add min obj to obj_min and circuit with
-            # min obj to circuit_min
-            obj_min[gen + 1] = obj[ind_min]
-            circuit_min.append(population[ind_min])
+        # add min obj to obj_min and circuit with
+        # min obj to circuit_min
+        obj_min[gen + 1] = obj[ind_min]
+        circuit_min.append(population[ind_min])
 
-            # calculate metrics for population
-            geno[gen+1] = geno_diversity(population)
-            pheno[gen+1] = pheno_diversity(obj)
+        # calculate metrics for population
+        geno[gen+1] = geno_diversity(population)
+        pheno[gen+1] = pheno_diversity(obj)
 
-            # print("generation "+ str(gen) + " complete")
-            bar()
-    
+        # print("generation "+ str(gen) + " complete")
+
     # print in which gen the min obj first appeared
     print(obj_min[-1])
     print(first_seen(obj_min))
@@ -306,82 +303,80 @@ def multi_obj_GA(
     # sorting class (to sort multi-objective
     # and determine pareto front)
     nds = RankAndCrowding()
-    with alive_bar(problem.n_gen) as bar:
-        for gen in range(problem.n_gen):
-            # sort objectives using non-dominated
-            # sorting algorithm and return ranks 
-            # for each circuit index in population
-            _, rank_dict = nds.do(obj, num_circuits, return_rank=True)
+    for gen in range(problem.n_gen):
+        # sort objectives using non-dominated
+        # sorting algorithm and return ranks 
+        # for each circuit index in population
+        _, rank_dict = nds.do(obj, num_circuits, return_rank=True)
 
-            # perform crossover to generate new
-            # population (children) from parent 
-            # circuits if randomly generated float  
-            # is less than probability_crossover
-            if np.random.uniform() < problem.prob_crossover:
-                children = crossover(population, obj, rank_dict)
-            else:
-                children = deepcopy(population)
+        # perform crossover to generate new
+        # population (children) from parent 
+        # circuits if randomly generated float  
+        # is less than probability_crossover
+        if np.random.uniform() < problem.prob_crossover:
+            children = crossover(population, obj, rank_dict)
+        else:
+            children = deepcopy(population)
 
-            # perform mutation on children if 
-            # randomly generated float is less 
-            # than probability_mutation (used 
-            # in mutate function)
-            mutate(problem, children, 
-                    problem.prob_mutation, 
-                    dose=problem.mutate_dose
-            )
+        # perform mutation on children if 
+        # randomly generated float is less 
+        # than probability_mutation (used 
+        # in mutate function)
+        mutate(problem, children, 
+                problem.prob_mutation, 
+                dose=problem.mutate_dose
+        )
 
-            # simulate topology and calculate obj
-            # function for each circuit in children
-            # and append to all_obj list and obj
-            # array
-            if problem.pop:
-                child_topologies = [g[0] for g in children]
-                with Pool(problem.num_processes) as pool:
-                    obj_list = pool.imap(problem.func, child_topologies)
-                    # obj_all_cells_dict_list = pool.imap(problem.func, child_topologies)
+        # simulate topology and calculate obj
+        # function for each circuit in children
+        # and append to all_obj list and obj
+        # array
+        if problem.pop:
+            child_topologies = [g[0] for g in children]
+            with Pool(problem.num_processes) as pool:
+                obj_list = pool.imap(problem.func, child_topologies)
+                # obj_all_cells_dict_list = pool.imap(problem.func, child_topologies)
 
-                    pool.close()
-                    pool.join()
-                obj_list = list(obj_list)
-                obj_children = np.asarray(obj_list)
-                # obj_all_cells_dict_list = list(obj_all_cells_dict_list)
-                # obj_all_cells_dict_list = np.asarray(obj_all_cells_dict_list, dtype=object)
-                # # extract column of output list with objectives only
-                # obj_children = np.asarray(obj_all_cells_dict_list[:,0].tolist())
-                # # extract list of all_cells_dfs from output list
-                # all_cells_dict_children = obj_all_cells_dict_list[:,1].tolist()
-                # all_cells_dict_list.extend(all_cells_dict_children)
-                
-            else:
-                obj_children = np.asarray(
-                    [problem.func(g[0]) for g in children])
-                    
-            all_obj.append(obj_children)
+                pool.close()
+                pool.join()
+            obj_list = list(obj_list)
+            obj_children = np.asarray(obj_list)
+            # obj_all_cells_dict_list = list(obj_all_cells_dict_list)
+            # obj_all_cells_dict_list = np.asarray(obj_all_cells_dict_list, dtype=object)
+            # # extract column of output list with objectives only
+            # obj_children = np.asarray(obj_all_cells_dict_list[:,0].tolist())
+            # # extract list of all_cells_dfs from output list
+            # all_cells_dict_children = obj_all_cells_dict_list[:,1].tolist()
+            # all_cells_dict_list.extend(all_cells_dict_children)
             
-            # append children to all circuits
-            all_circuits.append(children)
+        else:
+            obj_children = np.asarray(
+                [problem.func(g[0]) for g in children])
+                
+        all_obj.append(obj_children)
+        
+        # append children to all circuits
+        all_circuits.append(children)
 
-            obj = np.vstack((obj, obj_children))
-            # add children to population array
-            population = np.vstack((population, children))
+        obj = np.vstack((obj, obj_children))
+        # add children to population array
+        population = np.vstack((population, children))
 
-            # sort objectives using non-dominated
-            # sorting algorithm and return indices
-            # of num_circuits highest rank
-            S = nds.do(obj, num_circuits)
+        # sort objectives using non-dominated
+        # sorting algorithm and return indices
+        # of num_circuits highest rank
+        S = nds.do(obj, num_circuits)
 
-            # select top num_circuits obj from obj array 
-            # and top num_circuits from population
-            # (initial population + children of each gen)
-            obj = obj[S]
-            population = population[S, :]
+        # select top num_circuits obj from obj array 
+        # and top num_circuits from population
+        # (initial population + children of each gen)
+        obj = obj[S]
+        population = population[S, :]
 
-            # append hypervolume to list
-            hypervolumes.append(hv(obj))
+        # append hypervolume to list
+        hypervolumes.append(hv(obj))
 
-            # print("generation "+ str(gen) + " complete")
-            bar()
+        # print("generation "+ str(gen) + " complete")
 
     # print in which gen the min obj first appeared
     print(hypervolumes[-1])

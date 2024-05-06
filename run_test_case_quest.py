@@ -8,7 +8,7 @@ from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
 from saving import make_main_directory
 from GA import sampling
-from GA_setup import (
+from GA_setup_quest import (
     single_obj_GA,
     multi_obj_GA
 )
