@@ -84,12 +84,12 @@ def run_Z_matrix_sampling(
     return Z_matrix_sampling
 
 settings = {
-    "test_case": "PulseGenerator",
+    "test_case": "Amplifier",
     "promo_node": "P1",
     "dose_specs": [5, 75, 5],
     "max_part": None,
     "inhibitor": True,
-    "DsRed_inhibitor": True,
+    "DsRed_inhibitor": False,
     "num_dict": None,
     "n_gen": None,
     "probability_crossover": None,
@@ -97,14 +97,14 @@ settings = {
     "mutate_dose": True,
     "pop": True,
     "num_processes": 8,
-    "obj_labels": ["t_pulse", "prominence_rel"],
-    "objective_threshold": None,
-    "max_time": 126,
-    "CI_metrics": [["t_pulse_range", "prominence_rel_range"], ["t_pulse_std_error", "prominence_rel_std_error"]],
-    "CI_ylim": False,
+    "obj_labels": ["ON_rel"],
+    "objective_threshold": 60.0,
+    "max_time": 42,
+    "CI_metrics": [["ON_rel_range"], ["ON_rel_std_error"]],
+    "CI_ylim": True,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/",
-    "folder_name": "Pulse_pop_DsRED_inhibitor_ZF1_ZF2_Z_matrix_sampling"
+    "results_path": "GA_results/Amp_seed_pop_const_dose/Original_hyperparams_worked_well/2024-05-16_Amplifier_pop_original_hp_seed_0/",
+    "folder_name": "Amplifier_pop_const_dose_Z_matrix_sampling"
 }
 
 if __name__ == "__main__":

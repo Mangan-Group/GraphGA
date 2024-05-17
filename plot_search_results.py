@@ -403,6 +403,25 @@ def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
+def plot_obj_progression_set(
+        figure_path: str,
+        n_gens: int,
+        objectives_lists: np.ndarray,
+        obj_label: str,
+        y_lower_lim: float=None
+):
+    generations = np.arange(n_gens+1)
+
+    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+    for obj_list in objectives_lists:
+        ax.plot(generations, obj_list)
+    ax.set_xlabel("Generation")
+    ax.set_ylabel(obj_label)
+    if y_lower_lim:
+        ax.set_ylim(bottom=y_lower_lim)
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
+
 
 
     

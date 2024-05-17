@@ -1,0 +1,22 @@
+{
+    "test_case": "SignalConditioner",
+    "promo_node": "P1",
+    "dose_specs": [5, 75, 5],
+    "max_part": 2,
+    "inhibitor": true,
+    "DsRed_inhibitor": true,
+    "pop_size": 100.0,
+    "pop_ratio": 0.25,
+    "n_gen": 80,
+    "probability_mutation": 0.696727,  
+    "probability_crossover": 0.783706,
+    "mutate_dose": true,
+    "pop": false,
+    "num_processes": 8,
+    "obj_labels": ["ON_rel", "FI_rel"],
+    "max_time": 42,
+    "plot": false,
+    "seed": 0,
+    "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
+    "folder_name": "Signal_cond_single_cell_DsRED_inhibitor_opt_hp_stdev_ngen50_nseed4_run2"
+}

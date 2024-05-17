@@ -123,7 +123,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    for seed in range(4, 10):
+    for seed in range(0, 10):
         settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
         np.random.seed(seed)
         settings["seed"] = seed
