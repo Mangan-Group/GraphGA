@@ -1,6 +1,7 @@
 import numpy as np
 import networkx as nx
 import pandas as pd
+import pickle
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import seaborn as sns
@@ -423,8 +424,51 @@ def plot_obj_progression_set(
     plt.savefig(figure_path, bbox_inches="tight")
 
 
+def compare_parteo_fronts(results_path=str, seed_folder=str, obj_labels=list):
+    
+    pareto_obj_dfs_list = []
+    for seed in range(0, 10):
+        #import final population circuits
+        full_path = results_path + seed_folder + str(seed) + "/"
+        with open(full_path + "final_objectives_df.pkl", "rb") as fid:
+            pareto_front = pickle.load(fid)
+        pareto_obj_dfs_list.append(pareto_front)
 
+    return pareto_obj_dfs_list
     
 
-    
-    
+def plot_pareto_front_set(
+        figure_path: str, 
+        obj_df_list: list[pd.DataFrame],
+        obj_labels: list,
+):
+        
+        fig, ax = plt.subplots(1, 1, figsize= (3, 3))
+        for obj_df in obj_df_list:
+            if np.any(np.array(obj_df[obj_labels[0]].to_list()) < 0):
+                obj_df[obj_labels[0]] = obj_df[
+                    obj_labels[0]]*-1
+            if np.any(np.array(obj_df[obj_labels[1]].to_list()) < 0):
+                obj_df[obj_labels[1]] = obj_df[
+                    obj_labels[1]]*-1
+                
+            sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
+                            y= obj_df[obj_labels[1]], ax=ax, s=30)
+            
+        for dots in ax.collections:
+            facecolors = dots.get_facecolors()
+            dots.set_edgecolors(facecolors.copy())
+            dots.set_facecolors('none')
+            dots.set_linewidth(0.75)
+
+        plt.xlabel(obj_labels[0])
+        plt.ylabel(obj_labels[1])
+        plt.savefig(figure_path, bbox_inches="tight")
+
+
+path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+path_sc = "Pulse_seed_pop_DsRED_inhibitor/t_pulse/Optimized_hyperparams_vary_pop_t_pulse_opt_stdev_ngen80_nseed4_not_converged/run2_ngen100/"
+results_runs = "2024-06-25_Pulse_pop_DsRED_inhibitor_t_pulse_vary_pop_opt_hp_stdev_ngen80_run2_ngen100_seed_"
+
+pareto_obj_dfs_list = compare_parteo_fronts(path_results+path_sc, results_runs, ["t_pulse", "prominence_rel"])
+plot_pareto_front_set(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "prominence_rel"])

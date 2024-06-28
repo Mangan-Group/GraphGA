@@ -7,7 +7,7 @@ from get_comparisons_across_seeds import (
 )
 from plot_search_results import plot_obj_progression_set
 
-def run_seed_results_comparisons(results_path, seed_folder, num_obj, ngens=None, obj_label=None):
+def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=list, ngens=None):
 
     if num_obj == 1:
         objs_list = []
@@ -18,13 +18,13 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, ngens=None,
             objs_list.append(objs)
 
         y_lower_lim = np.max(objs_list) - 0.1*np.max(objs_list)
-        figure_path = results_path+obj_label+"_progression.svg"
+        figure_path = results_path+obj_labels[0]+"_progression.svg"
         plot_obj_progression_set(figure_path, ngens, 
-                                objs_list, "Maximum "+obj_label)
+                                objs_list, "Maximum "+obj_labels[0])
         
-        figure_path_zoomed = results_path+obj_label+"_progression_zoomed.svg"
+        figure_path_zoomed = results_path+obj_labels[0]+"_progression_zoomed.svg"
         plot_obj_progression_set(figure_path_zoomed, ngens, 
-                                objs_list, "Maximum "+obj_label, y_lower_lim)
+                                objs_list, "Maximum "+obj_labels[0], y_lower_lim)
 
     else:
         (seed_unique_edge_combo_list, 
@@ -51,7 +51,8 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, ngens=None,
         )
 
 path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_sc = "Pulse_seed_pop_DsRED_inhibitor/Original_hyperparams/t_pulse/"
-results_runs = "2024-05-06_Pulse_pop_DsRED_inhibitor_t_pulse_original_hp_seed_"
+path_sc = "Pulse_seed_pop_DsRED_inhibitor/Single_cell_model_opt_hyperparams/3_obj/Fixed_pop_opt_hp_single_stdev_ngen80_run2_ngen100/"
+results_runs = "2024-06-27_Pulse_pop_DsRED_inhibitor_3obj_opt_hp_vary_pop_single_stdev_ngen80_run2_ngen100_seed_"
 
 run_seed_results_comparisons(path_results+path_sc, results_runs, 2)
+
