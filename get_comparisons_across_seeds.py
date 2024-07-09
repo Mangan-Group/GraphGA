@@ -2,7 +2,11 @@ import numpy as np
 import pickle
 import pandas as pd
 from copy import deepcopy
-from plot_search_results import plot_hypervolumes_set
+from plot_search_results import (
+    plot_hypervolumes_set,
+    plot_pareto_front_set,
+    plot_pareto_front_set_3D
+)
 
 def get_unique_in_a_seed_pareto_circuits(pareto_circuits):
 
@@ -213,10 +217,37 @@ def compare_pareto_circuits_across_seeds(results_path, seed_folder):
     
     compare_hypervolumes(results_path, seed_folder)
 
+
     return (seed_unique_edge_combo_list, seed_unique_circuits_list,
             common_edge_combo_list, common_circuits, 
             edge_combos_unique_to_seed_list, circuits_unique_to_seed_list,
             dose_varied_common_edge_combo_list, dose_varied_common_circuits)
+
+def compare_parteo_fronts(results_path=str, seed_folder=str, 
+                          num_obj=int, obj_labels=list
+):
+    
+    pareto_obj_dfs_list = []
+    for seed in range(0, 10):
+        #import final population circuits
+        full_path = results_path + seed_folder + str(seed) + "/"
+        with open(full_path + "final_objectives_df.pkl", "rb") as fid:
+            pareto_front = pickle.load(fid)
+        pareto_obj_dfs_list.append(pareto_front)
+
+    pareto_plot = "pareto_front_set.svg"
+    if num_obj == 2:
+        plot_pareto_front_set(
+            results_path+pareto_plot,
+            pareto_obj_dfs_list,
+            obj_labels
+        )
+    elif num_obj == 3:
+        plot_pareto_front_set_3D(
+            results_path+pareto_plot,
+            pareto_obj_dfs_list,
+            obj_labels
+        )
 
 def compare_hypervolumes(results_path, seed_folder):
 

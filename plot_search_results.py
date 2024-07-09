@@ -423,20 +423,6 @@ def plot_obj_progression_set(
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
-
-def compare_parteo_fronts(results_path=str, seed_folder=str, obj_labels=list):
-    
-    pareto_obj_dfs_list = []
-    for seed in range(0, 10):
-        #import final population circuits
-        full_path = results_path + seed_folder + str(seed) + "/"
-        with open(full_path + "final_objectives_df.pkl", "rb") as fid:
-            pareto_front = pickle.load(fid)
-        pareto_obj_dfs_list.append(pareto_front)
-
-    return pareto_obj_dfs_list
-    
-
 def plot_pareto_front_set(
         figure_path: str, 
         obj_df_list: list[pd.DataFrame],
@@ -465,10 +451,46 @@ def plot_pareto_front_set(
         plt.ylabel(obj_labels[1])
         plt.savefig(figure_path, bbox_inches="tight")
 
+def plot_pareto_front_set_3D(
+        figure_path: str, 
+        obj_df_list: list[pd.DataFrame],
+        obj_labels: list,
+):
+    
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    fig = plt.figure(figsize= (4, 4))
+    ax = fig.add_subplot(projection='3d')
+    for i, obj_df in enumerate(obj_df_list):
+        if np.any(np.array(obj_df[obj_labels[0]].to_list()) < 0):
+            obj_df[obj_labels[0]] = obj_df[
+                obj_labels[0]]*-1
+        if np.any(np.array(obj_df[obj_labels[1]].to_list()) < 0):
+            obj_df[obj_labels[1]] = obj_df[
+                obj_labels[1]]*-1
+        if np.any(np.array(obj_df[obj_labels[2]].to_list()) < 0):
+            obj_df[obj_labels[2]] = obj_df[
+                obj_labels[2]]*-1
+
+        ax.scatter(
+            xs=obj_df[obj_labels[0]], ys=obj_df[obj_labels[1]],
+            zs=obj_df[obj_labels[2]], fc="none", color=colors[i],
+            marker="o", s=30, linewidth=0.75
+        )
+    ax.view_init(elev=10, azim=-115)
+    ax.set_xlabel(obj_labels[0])
+    ax.set_ylabel(obj_labels[1])
+    ax.set_zlabel(obj_labels[2])
+    # plt.show()
+    plt.savefig(figure_path, bbox_inches="tight")
+
+
 
 path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_sc = "Pulse_seed_pop_DsRED_inhibitor/t_pulse/Optimized_hyperparams_vary_pop_t_pulse_opt_stdev_ngen80_nseed4_not_converged/run2_ngen100/"
-results_runs = "2024-06-25_Pulse_pop_DsRED_inhibitor_t_pulse_vary_pop_opt_hp_stdev_ngen80_run2_ngen100_seed_"
+path_sc = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
+results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
 
-pareto_obj_dfs_list = compare_parteo_fronts(path_results+path_sc, results_runs, ["t_pulse", "prominence_rel"])
-plot_pareto_front_set(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "prominence_rel"])
+# pareto_obj_dfs_list = compare_parteo_fronts(path_results+path_sc, results_runs, ["t_pulse", "peak_rel", "prominence_rel"])
+# plot_pareto_front_set_3D(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "peak_rel", "prominence_rel"])
+# plot_pareto_front_set(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "peak_rel", "prominence_rel"])
+
+#2024-06-07_Pulse_single_cell_DsRED_inhibitor_3_obj_vary_pop_opt_hp_stdev_ngen80_nseed4_run2_seed_

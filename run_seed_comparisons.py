@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 from get_comparisons_across_seeds import (
     compare_pareto_circuits_across_seeds, 
+    compare_parteo_fronts,
     compile_common_results,
     compile_seed_comparisons
 )
@@ -37,6 +38,9 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
             results_path, seed_folder
         )
 
+        compare_parteo_fronts(results_path, seed_folder,
+                              num_obj, obj_labels)
+
         compile_common_results(results_path, common_edge_combo_list, 
                             common_circuits,
                             dose_varied_common_edge_combo_list,
@@ -51,8 +55,8 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
         )
 
 path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_sc = "Pulse_seed_pop_DsRED_inhibitor/Single_cell_model_opt_hyperparams/3_obj/Fixed_pop_opt_hp_single_stdev_ngen80_run2_ngen100/"
-results_runs = "2024-06-27_Pulse_pop_DsRED_inhibitor_3obj_opt_hp_vary_pop_single_stdev_ngen80_run2_ngen100_seed_"
+path_sc = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
+results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
 
-run_seed_results_comparisons(path_results+path_sc, results_runs, 2)
+run_seed_results_comparisons(path_results+path_sc, results_runs, 3, ["t_pulse", "peak_rel", "prominence_rel"])
 
