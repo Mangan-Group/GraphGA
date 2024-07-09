@@ -5,7 +5,7 @@ import os
 import json
 from datetime import date
 
-def make_main_directory(settings: dict) -> str:
+def make_main_directory(settings: dict, custom_folder_path: str=None) -> str:
     """Makes main results folder
 
     Parameters
@@ -19,7 +19,10 @@ def make_main_directory(settings: dict) -> str:
         path leading to main results folder
     """
     # make results folder and change directories
-    results_folder_path = settings["repository_path"] + "GA_results/"
+    if custom_folder_path:
+        results_folder_path = custom_folder_path
+    else:
+        results_folder_path = settings["repository_path"] + "GA_results/"
     date_today = date.today()
     folder_path = results_folder_path + str(date_today) + "_" + settings["folder_name"]
     try:

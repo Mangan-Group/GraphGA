@@ -259,7 +259,8 @@ def plot_2D_obj_confidence_interval(
 
     ax.set_label(obj_labels[0])
     ax.set_ylabel(obj_labels[1])
-    ax.set_ylim(bottom=0)
+    if np.any(y1fill < 0) or np.any(y2fill < 0):
+        ax.set_ylim(bottom=0)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 

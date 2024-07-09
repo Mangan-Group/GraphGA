@@ -21,7 +21,10 @@ def run_Z_matrix_sampling(
         settings: dict,
         Z_mat_list: list,
 ):
-    folder_path = make_main_directory(settings)
+    custom_path = (settings["repository_path"] +
+                   settings["results_path"]
+    )
+    folder_path = make_main_directory(settings, custom_path)
 
     topologies, objectives = select_Z_matrix_sampling_topologies(
         settings["repository_path"]+settings["results_path"],
@@ -35,14 +38,14 @@ def run_Z_matrix_sampling(
     
     problem = testcase(
         promo_node=settings["promo_node"],
-        dose_specs=settings["dose_specs"],
-        max_part=settings["max_part"],
+        dose_specs=[None, None, None],
+        max_part=None,
         inhibitor=settings["inhibitor"],
         DsRed_inhibitor=settings["DsRed_inhibitor"],
-        num_dict=settings["num_dict"],
-        n_gen=settings["n_gen"],
-        probability_crossover=settings["probability_crossover"],
-        probability_mutation=settings["probability_mutation"],
+        num_dict=None,
+        n_gen=None,
+        probability_crossover=None,
+        probability_mutation=None,
         pop=True,
         num_processes=settings["num_processes"],
         obj_labels=settings["obj_labels"],
@@ -84,28 +87,22 @@ def run_Z_matrix_sampling(
     return Z_matrix_sampling
 
 settings = {
-    "test_case": "Amplifier",
+    "test_case": "PulseGenerator",
     "promo_node": "P1",
-    "dose_specs": [5, 75, 5],
-    "max_part": None,
     "inhibitor": True,
-    "DsRed_inhibitor": False,
-    "num_dict": None,
-    "n_gen": None,
-    "probability_crossover": None,
-    "probability_mutation": None,
-    "mutate_dose": True,
+    "DsRed_inhibitor": True,
     "pop": True,
     "num_processes": 8,
-    "obj_labels": ["ON_rel"],
-    "objective_threshold": 60.0,
-    "max_time": 42,
-    "CI_metrics": [["ON_rel_range"], ["ON_rel_std_error"]],
-    "CI_ylim": True,
+    "obj_labels": ["t_pulse", "prominence_rel"],
+    "objective_threshold": None,
+    "max_time": 126,
+    "CI_metrics": [["t_pulse_range", "prominence_rel_range"], ["t_pulse_std_error", "prominence_rel_std_error"]],
+    "CI_ylim": False,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/Amp_seed_pop_const_dose/Original_hyperparams_worked_well/2024-05-16_Amplifier_pop_original_hp_seed_0/",
-    "folder_name": "Amplifier_pop_const_dose_Z_matrix_sampling"
+    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/Single_cell_model_opt_hyperparams/t_pulse/Vary_pop_opt_hp_single_stdev_ngen80_run2_ngen100/2024-06-25_Pulse_pop_DsRED_inhibitor_t_pulse_vary_pop_opt_hp_stdev_ngen80_run2_ngen100_seed_0/",
+    "folder_name": "Pulse_pop_DsRED_inhibitor_t_pulse_Z_matrix_sampling"
 }
+
 
 if __name__ == "__main__":
     if settings["test_case"] == "Amplifier":
