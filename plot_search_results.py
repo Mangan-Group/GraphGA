@@ -382,12 +382,13 @@ def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
     # print(rep_rel_max)
     rep_rel_mean = all_cell_results_df_row[
         "Rep_rel time series mean"]
+    all_cells_peaks = all_cell_results_df_row["single_cell_peaks"]
     t = np.arange(0, settings["max_time"] + 1, 1)
 
     fig, axs = plt.subplots(1, 2, figsize= (5, 2.5))
     for i in range(len(all_cells_rep_rel)):
         axs[0].plot(t[:43], all_cells_rep_rel[i][:43],
-                 lw="1")
+                 lw="1", label=("cell " + str(i) + " peak " + str(round(all_cells_peaks[i], 1))))
         axs[1].plot(t[:43], all_cells_rep_rel[i][:43],
                  lw="1")
     axs[0].plot(t[:43], rep_rel_mean[:43], color="k",
@@ -396,7 +397,7 @@ def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
     axs[1].plot(t[:43], rep_rel_mean[:43], color="k",
              label="population mean", lw="2"
     )
-    # plt.legend()
+    axs[0].legend()
     axs[0].set_xlabel("time (hours)")
     axs[1].set_xlabel("time (hours)")
     axs[0].set_ylabel("Reporter_rel")

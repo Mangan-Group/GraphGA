@@ -49,7 +49,7 @@ def run_results_analysis(results_analysis_settings: dict):
             results_analysis_settings["obj_range"]
         )
 
-    all_cell_results_df = get_selected_all_cell_metrics(settings, selected_results_df)
+    all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, selected_results_df)
 
     if results_analysis_settings["plot_topologies"]:
         for i, circuit in enumerate(selected_results_df["Topology"].tolist()):
@@ -69,9 +69,11 @@ def run_results_analysis(results_analysis_settings: dict):
         results_analysis_settings["selected_results_name"] +
         ".csv"
     )
-    selected_results_df.to_csv(folder_path + selected_results_file_name)
+    # selected_results_df.to_csv(folder_path + selected_results_file_name)
     all_cell_results_file_name = "all_cell_" + selected_results_file_name
-    all_cell_results_df.to_csv(folder_path + all_cell_results_file_name)
+    # all_cell_results_df.to_csv(folder_path + all_cell_results_file_name)
+    all_cell_metrics_file_name = "all_cell_metrics_" + results_analysis_settings["selected_results_name"]
+    all_cell_metrics_df.to_csv(folder_path + all_cell_metrics_file_name + ".csv")
 
 
 
@@ -123,9 +125,9 @@ if __name__ == "__main__":
 
     results_analysis_settings = {
         "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
-        "results_path": "Pulse_seed_pop_DsRED_inhibitor/2024-03-08_Pulse_pop_DsRED_inhibitor_3obj_126h_new_dose_terms_seed_0/",
+        "results_path": "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/",
         "selected_results_name": "low_t_pulse",
-        "obj_range": {"t_pulse": [0.0, 24.0]},
+        "obj_range": {"t_pulse": [0.0, 24.0], "prominence_rel": [0.2]},
         "multi_obj": True,
         "plot_topologies": True,
         "plot_all_cell_results": True

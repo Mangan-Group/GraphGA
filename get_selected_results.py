@@ -194,10 +194,28 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
     for label in settings["obj_labels"]:
         all_cell_results_df[label + "_mean"] = selected_results_df[label].tolist()
 
-    # print(all_cell_results_df)
-    # df_file_name = "selected_results_" + selected_results_name + ".csv"
-    # selected_results_df.to_csv(repository_path + results_path + df_file_name)
-    return all_cell_results_df
+    if isinstance(problem, PulseGenerator):
+        print("pulse_test_case") 
+        all_cell_results_df["single_cell_peaks"] = 0
+        all_cell_results_df["single_cell_peaks"] = all_cell_results_df["single_cell_peaks"].astype(object)
+        all_cell_results_df["single_cell_prominence"] = 0
+        all_cell_results_df["single_cell_prominence"] = all_cell_results_df["single_cell_prominence"].astype(object)
+        for index, row in all_cell_results_df.iterrows():
+            peak_cell_list = []
+            prom_cell_list = []
+            for i in range(20):
+                peak_cell = max(row["Rep_rel time series for each cell"][i])
+                peak_cell_list.append(peak_cell)
+                prom_cell =  test_case.calc_prominence_rel(row["Rep_rel time series for each cell"][i], peak_cell)
+                prom_cell_list.append(prom_cell)
+            all_cell_results_df.at[index, "single_cell_peaks"] = peak_cell_list
+            all_cell_results_df.at[index, "single_cell_prominence"] = prom_cell_list
+    else:
+        print("not pulse")
+
+    all_cell_metrics_df = all_cell_results_df.copy().drop(['Rep_rel time series for each cell', 'Rep_rel time series mean'], axis=1)
+
+    return all_cell_results_df, all_cell_metrics_df
 
 def plot_all_cell_objs(base_path, settings, all_cell_results_df):
 
@@ -209,5 +227,5 @@ def plot_all_cell_objs(base_path, settings, all_cell_results_df):
         plot_function = plot_all_cell_time_series
 
     for index, row in all_cell_results_df.iterrows():
-        figure_path = base_path + "all_cells_" + str(index) + ".svg"
+        figure_path = base_path + "all_cells_labeled" + str(index) + ".svg"
         plot_function(figure_path, settings, row)
