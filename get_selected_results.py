@@ -195,7 +195,6 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
         all_cell_results_df[label + "_mean"] = selected_results_df[label].tolist()
 
     if isinstance(problem, PulseGenerator):
-        print("pulse_test_case") 
         all_cell_results_df["single_cell_peaks"] = 0
         all_cell_results_df["single_cell_peaks"] = all_cell_results_df["single_cell_peaks"].astype(object)
         all_cell_results_df["single_cell_prominence"] = 0
@@ -210,11 +209,12 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
                 prom_cell_list.append(prom_cell)
             all_cell_results_df.at[index, "single_cell_peaks"] = peak_cell_list
             all_cell_results_df.at[index, "single_cell_prominence"] = prom_cell_list
+
+        all_cell_metrics_df = all_cell_results_df.copy().drop(['Rep_rel time series for each cell', 'Rep_rel time series mean'], axis=1)
+
     else:
-        print("not pulse")
-
-    all_cell_metrics_df = all_cell_results_df.copy().drop(['Rep_rel time series for each cell', 'Rep_rel time series mean'], axis=1)
-
+        all_cell_metrics_df = None
+        
     return all_cell_results_df, all_cell_metrics_df
 
 def plot_all_cell_objs(base_path, settings, all_cell_results_df):
