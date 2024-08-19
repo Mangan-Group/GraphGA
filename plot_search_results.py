@@ -406,6 +406,20 @@ def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
+def plot_pulse_ensemble_time_series(figure_path, all_cell_results_df_row, reference_all_cell):
+
+    all_cells_rep_rel = all_cell_results_df_row[
+        "Rep_rel time series for each cell"
+    ]
+    time_points = [14, 18, 22, 26, 38, 42, 46]
+    for i in range(len(all_cells_rep_rel)[0:1]):
+        print(all_cells_rep_rel)
+        for j, time in enumerate(time_points):
+            time_list = [time]*len(all_cells_rep_rel)
+            rep_rel_t_exp = all_cells_rep_rel[time_points]
+            print(rep_rel_t_exp)
+
+
 def plot_obj_progression_set(
         figure_path: str,
         n_gens: int,
@@ -487,12 +501,37 @@ def plot_pareto_front_set_3D(
 
 
 
-path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_sc = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
-results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
+# path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# path_sc = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
+# results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
 
 # pareto_obj_dfs_list = compare_parteo_fronts(path_results+path_sc, results_runs, ["t_pulse", "peak_rel", "prominence_rel"])
 # plot_pareto_front_set_3D(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "peak_rel", "prominence_rel"])
 # plot_pareto_front_set(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "peak_rel", "prominence_rel"])
 
 #2024-06-07_Pulse_single_cell_DsRED_inhibitor_3_obj_vary_pop_opt_hp_stdev_ngen80_nseed4_run2_seed_
+
+
+repo_path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/"
+results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_seed_0/Results_analysis/"
+file_name = "all_cell_selected_results_low_t_pulse.csv"
+all_cell_results = pd.read_csv(repo_path+results_path+file_name)
+# print(type(all_cell_results.loc[0, "Rep_rel time series for each cell"]))
+all_cell_time_series_opt = all_cell_results.copy().iloc[:1]
+# print(all_cell_time_series_opt)
+all_cell_time_series_opt["Rep_rel time series for each cell"] = all_cell_time_series_opt["Rep_rel time series for each cell"].astype(object)
+for index, row in all_cell_time_series_opt.iterrows():
+#     for cell_time_series in row["Rep_rel time series for each cell"].split(", ["):
+#         # cell_time_series = cell_time_series.strip(' []')
+#         print(cell_time_series)
+        # cell_time_series = [float(val) for val in cell_time_series]
+        all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = eval(row["Rep_rel time series for each cell"])
+    # row["Rep_rel time series for each cell"] = [cell_time_series.strip(' []') for cell_time_series in row["Rep_rel time series for each cell"].split(",")]
+    #                                           #  for val in cell_time_series]
+print(type(all_cell_time_series_opt.at[0, "Rep_rel time series for each cell"]))
+# print(type(all_cell_time_series_opt[0]))
+# for all_cell_time_series in all_cell_time_series_opt:
+    # for time_series in all_cell_time_series:
+    #     print(time_series)
+# figure_path = 
+# plot_pulse_ensemble_time_series()
