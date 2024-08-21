@@ -11,8 +11,9 @@ Z_20_df = pd.DataFrame(data = Z_20, columns = ["plasmid_" + str(i) for i in rang
 Z_20_df_log = Z_20_df.copy()
 for col in ["plasmid_" + str(i) for i in range(5)]:
     max_val = max(Z_20_df[col])
-    print(max_val*0.6)
-    print(Z_20_df[Z_20_df[col] >= 0.6*max_val])
+    # print(max_val*0.6)
+    # print(Z_20_df[Z_20_df[col] >= 0.6*max_val])
+    print(Z_20_df[Z_20_df[col] >= 1.8])
     # Z_20_df_log[col] = np.log10(Z_20_df_log[col])
 # print(Z_20_df_log)
 

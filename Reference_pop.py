@@ -36,4 +36,19 @@ def simulate_reference(Z, filename):
 filename_20 = "Ref_pop20.pkl"
 Ref_20 = simulate_reference(Z_20, filename_20)
 
-print(Ref_20)
+# print(Ref_20)
+
+def simulate_reference_time_series(promo_list, Z):
+    Ref_all_cells = dict()
+    for k in promo_list:
+        ref_off_time_series = []
+        ref_on_time_series = []
+        for i in range(0, len(Z)):
+            off_time_series = odeint(reference, np.zeros(2), np.arange(0, 46 + 1), args=(promo[k]['off']*promo['k_txn'], Z[i, 0]))[:,-1]
+            on_time_series = odeint(reference, np.zeros(2), np.arange(0, 46 + 1), args=(promo[k]['on']*promo['k_txn'], Z[i, 0]))[:, -1]
+            ref_off_time_series.append(off_time_series)
+            ref_on_time_series.append(on_time_series)
+
+        Ref_all_cells.update({k: {'off all cells': ref_off_time_series, 'on all cells': ref_on_time_series}})
+    
+    return Ref_all_cells
