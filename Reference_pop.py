@@ -2,7 +2,9 @@ import numpy as np
 import pickle
 from scipy.integrate import odeint
 
-with open("promo.pkl", "rb") as fid:
+repo_path = "/Users/kdreyer/Documents/Github/GraphGA/"
+
+with open(repo_path+"promo.pkl", "rb") as fid:
     promo = pickle.load(fid)
 
 Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrices/"

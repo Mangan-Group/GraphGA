@@ -55,8 +55,8 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
         )
 
 path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_sc = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
+path_pulse = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
 results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
 
-run_seed_results_comparisons(path_results+path_sc, results_runs, 3, ["t_pulse", "peak_rel", "prominence_rel"])
+run_seed_results_comparisons(path_results+path_pulse, results_runs, 3, ["t_pulse", "peak_rel", "prominence_rel"])
 

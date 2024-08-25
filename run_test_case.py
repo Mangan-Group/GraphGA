@@ -101,11 +101,6 @@ def run(
         )
 
 
-# pop_size = 84.0 #signal conditioner: 84.0, amplifier: 26
-# pop_ratio = 0.274159 #signal conditioner: 0.274159, amplifier: 0.5
-
-
-
 if __name__ == "__main__":
     settings_path = sys.argv[1]
     settings_file = open(settings_path, encoding="utf-8")

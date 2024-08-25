@@ -20,13 +20,12 @@ from itertools import product, combinations, permutations, chain
 from scipy.integrate import odeint
 # from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 # from rankcrowding import RankAndCrowding
-from plot_search_results import *
 from GA import sampling, check_valid
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
 from pymoo.indicators.hv import HV
-from plot_search_results import plot_graph, plot_hypervolumes_set
+from plot_search_results import plot_graph, plot_hypervolumes_set, plot_1D_obj_scatter
 from math import exp
 from scipy.interpolate import interp2d
 from get_selected_results import get_selected_all_cell_metrics, plot_all_cell_objs
@@ -35,306 +34,69 @@ from diversity_metrics import first_seen
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 sky_blue = [i/255 for i in [86, 180, 233]]
 
-# from load_files_pop import (
-#     Z_20,  
-#     Ref_pop20, 
-#     Ref, 
-#     tf_list, 
-#     inhibitor_list
-# )
-# # print(tf_list + inhibitor_list + ['Rep'])
-# edge_list = [('P1', 'Z1'), ('P1', 'I6'), ('I6', 'Z2'), ('Z1', 'Z2'), ('Z1', 'Rep')]
-# dose_list = {'Z2': 25, 'Z1': 75, 'I6': 75}
-# promo_node = 'P1'
-# topology = Topo(
-#     edge_list,
-#     dose_list, 
-#     promo_node
-# )
-# print(topology.in_dict["Z2"]["Z"][0])
-# edge_list = [('P1', 'Z1'), ('Z1', 'Z1'), ('Z1', 'Rep')]
-# dose_list = {'Z1': 75}
-# promo_node = 'P1'
-# topology = Topo(
-#     edge_list,
-#     dose_list, 
-#     promo_node
-# )
-
-# print(type(topology.part_list[0]))
-# print(list(topology.graph.predecessors('Z1')))
-# print(list(topology.graph.successors('Z1')))
-
-
-# print(topology.pool)
-# print(topology.in_dict)
-# print((topology.in_dict["Z1"]['P'] != []) + (topology.in_dict["Z2"]['P'] != []))
-
-# with open("Amplifier/Amplifier_objective_1.pkl", "rb") as fid:
-#     amp_opt1 = pickle.load(fid)
-
-# with open("Amplifier/Amplifier_objective_2.pkl", "rb") as fid:
-#     amp_opt2 = pickle.load(fid)
-
-# with open("Amplifier/Amplifier_combo_1.pkl", "rb") as fid:
-#     amp_topos1 = pickle.load(fid)
-
-# with open("Amplifier/Amplifier_combo_2.pkl", "rb") as fid:
-#     amp_topos2 = pickle.load(fid)
-
-# amp_on_rel1 = [-i/Ref['P1']['on'] for i in amp_opt1]
-# sort_idx1 = np.argsort(amp_on_rel1)
-# obj_sorted_sc1 = -1*(np.asarray(amp_on_rel1)[sort_idx1])
-# topo_sorted_sc1 = np.asarray(amp_topos1)[sort_idx1]
-# # print(obj_sorted_s1)
-# amp_on_rel2 = [-i/Ref['P1']['on'] for i in amp_opt2]
-# sort_idx2 = np.argsort(amp_on_rel2)
-# obj_sorted_sc2 = -1*(np.asarray(amp_on_rel2)[sort_idx2])
-# topo_sorted_sc2 = np.asarray(amp_topos2)[sort_idx2]
-
-# amp_topos_sorted_all = np.concatenate((topo_sorted_sc1, topo_sorted_sc2))
-# # with open("Amplifier/Amplifier_topos_all.pkl", "wb") as fid:
-# #     pickle.dump(amp_topos_sorted_all, fid)
-
-# print(amp_topos_sorted_all[0])
-
-# with open("Amplifier/Amplifier_ON_rel_1.pkl", 'rb') as fid:
-#     obj_sorted_sc1 = pickle.load(fid)
-
-# with open("Amplifier/Amplifier_ON_rel_2.pkl", 'rb') as fid:
-#     obj_sorted_sc2 = pickle.load(fid)
-
-# obj_sorted_sc = np.concatenate((obj_sorted_sc1, obj_sorted_sc2))
-# # print(obj_sorted_sc)
-
-# # with open("Amplifier/Amplifier_ON_rel_all.pkl", "wb") as fid:
-# #     pickle.dump(obj_sorted_sc, fid)
-
-# # hist, bins, _ = plt.hist(obj_sorted_sc, bins= 30)
-# # plt.xlabel("ON_rel")
-# # plt.ylabel("Count")
-# # plt.show()ß
-# # plt.savefig("230322_amp_all_sc_ON_rel_dist.svg")
-# # print(bins[-5])
-
-# # idx_high = np.argwhere(obj_sorted_sc >= bins[-5])
-# # obj_sc_high = obj_sorted_sc[idx_high]
-# # print(obj_sc_high)
-# # print(idx_high)
-
-
-# with open("Results/Combinatorial_results/230329_Amplifier_pop_sampling.pkl", "rb") as fid:
-#     pop_sampling = pickle.load(fid)
-
-# num_topos = 432
-# obj_range_list = []
-# for i in range(num_topos):
-#     obj_info = pop_sampling["topologies_list["+str(i)+"]"]
-#     obj_range = obj_info["objectives_range"]
-#     obj_range_list.append(obj_range)
-
-# with open("Results/Combinatorial_results/230329_Amplifier_pop_sampling2.pkl", "rb") as fid:
-#     pop_sampling2 = pickle.load(fid)
-
-# with open("Results/Combinatorial_results/230403_Amplifier_pop_sampling3.pkl", "rb") as fid:
-#     pop_sampling3 = pickle.load(fid)
-
-# num_topos = 432
-# obj_range_list3 = []
-# for i in range(num_topos):
-#     obj_info = pop_sampling3["topologies_list["+str(i)+"]"]
-#     obj_range = obj_info["objectives_range"]
-#     obj_range_list3.append(obj_range)
-
-
-# # print(obj_range_list)
-# plt.hist(obj_range_list3, bins= 30)
-# plt.xlabel("ON_rel range")
-# plt.ylabel("Count")
-# plt.show()
-
-# list1 = [[1], [2], [3]]
-# arr1 = np.asarray(list1)
-# list2 = np.array([0, 2])
-# print(list1, arr1)
-
-# print(arr1[list2])
-
-# list1 = ['Z1', 'Z2', 'Z3']
-# list2 = ['I4', 'I5', 'I6']
-# list1 = [5, 10, 15]
-
-# list3 = combinations(list1, 1)
-# list4 = combinations(list1, 1)
-# # print(list(list3))
-# prod = list(product(list1, list1))
-# print(prod)
-# combo_two = [(i[0] + i[1]) for i in list(product(list3, list4))]
-# print(combo_two)
-
-# l = [2]*5
-# print(l)
-
-# print(np.random.choice(10, 1))
-
-# def add_to_list(l1):
-#     l1.append(2)
-
-
-# l1 = [1, 2, 3]
-# add_to_list(l1)
-# print(l1)
-
-# with open("init_pop_2.pkl", "rb") as fid:
-#     population = pickle.load(fid)
-
-# print(population)
-
-# with open("/Users/kdreyer/Documents/Github/GraphGA/SigCond/SigCond_combo_2.pkl", "rb") as fid:
-#     sig_cond = pickle.load(fid)
-
-# # print(sig_cond)
-# print(len(sig_cond))
-
-# with open("Amplifier/Amplifier_combo_1.pkl", "rb") as fid:
-#     amp1 = pickle.load(fid)
-
-# print(len(amp1))
-
-# with open("Amplifier/Amplifier_combo_2.pkl", "rb") as fid:
-#     amp2 = pickle.load(fid)
-
-# print(len(amp2))
-
-# with open("/Users/kdreyer/Desktop/SigCond_combo_65.pkl", "rb") as fid:
-#     sig_cond = pickle.load(fid)
-
-# print(len(sig_cond))
-
-# with open('SigCond_combo_pareto.pkl', 'rb') as f:
-#     sig_cond_obj = pd.read_pickle(f)
-
-# print(len(sig_cond_obj))
-# # print(sig_cond_obj)
-
-# print(np.arange(5, 75+1, 5))
-
-# print(np.random.randint(1))
-# path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/2023-10-19_Amplifier_single_cell_test/initial_population.pkl"
-# with open(path, "rb") as fid:
-#     pop = pickle.load(fid)
-
-# # print(type(pop))
-
-# path = path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/2023-10-19_Amplifier_single_cell_test/top_num_circuit_circuits_each_gen.pkl"
-# with open(path, "rb") as fid:
-#     top_circuits = pickle.load(fid)
-
-# print(type(top_circuits))
-
-# l1 = [[1, 2], [3, 4], [1, 2]]
-
-# l2 = np.asarray(l1)
-
-# unique_rows, unique_index = np.unique(l2, axis=0, return_index=True)
-
-# print(unique_rows, unique_index)
-
-
-# arr = np.array([[1], [2], [3], [4], [5]])
-
-# num_vals = 3
-
-# top_num_vals_obj = arr[-num_vals:, 0]
-# print(top_num_vals_obj)
-
-# path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/2023-10-20_Amplifier_pop_const_dose_seed_0/all_objectives.pkl"
-# with open(path, "rb") as fid:
-#     all_obj = pickle.load(fid)
-
-
-
-# with open("/Users/kdreyer/Documents/Github/GraphGA/GA_results/2023-10-24_Signal_cond_pop_inhibitor_seed_0/all_objectives.pkl", "rb") as fid:
-#     all_obj = pickle.load(fid)
-
-# # print(all_obj)
-
-# with open("/Users/kdreyer/Documents/Github/GraphGA/GA_results/2023-10-24_Signal_cond_pop_inhibitor_seed_0/all_circuits.pkl", "rb") as fid:
-#     all_circuits = pickle.load(fid)
-
-# with open("/Users/kdreyer/Documents/Github/GraphGA/GA_results/2023-10-24_Signal_cond_pop_inhibitor_seed_0/final_objectives_df_with_type.pkl", 'rb') as f:
-#     obj_df_type = pd.read_pickle(f)
-# obj_df_type["ON_rel"] = obj_df_type["ON_rel"]*-1
-# obj_df_type["FI_rel"] = obj_df_type["FI_rel"]*-1
-# print(obj_df_type)
-
-# plot_pareto_front("", obj_df_type, ["ON_rel", "FI_rel"])
-# path1 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/outdated/Amp_seed_pop_const_dose/2023-10-23_Amplifier_pop_const_dose_seed_0/all_circuits.pkl"
-# with open(path1, "rb") as fid:
-#     all_circuits = pickle.load(fid)
-
-# # path2 = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/outdated/Amp_seed_pop_const_dose/2023-10-23_Amplifier_pop_const_dose_seed_0/all_objectives.pkl"
-# # with open(path2, "rb") as fid:
-# #     all_obj = pickle.load(fid)
-# circuit_edge_lists = []
-# for circuit in all_circuits:
-#     circuit_edges = circuit[0].edge_list
-#     for key, val in circuit[0].dose.items():
-#         circuit_edges.append((key, str(val)))
-#     circuit_edge_lists.append(circuit_edges)
-#     print("finished circuit " + str(len(circuit_edge_lists)))
-# print(circuit_edge_lists[-1])
-# combo_edges_lists = []
-# for edges in circuit_edge_lists:
-#     edge_combos = list([edge[0] + edge[1] for edge in edges])
-#     combo_edges_lists.append(edge_combos)
-# print(type(combo_edges_lists))
-
-# unique_edge_combo = []
-# index_list = []
-# seen = set()
-# for i, combo_list in enumerate(combo_edges_lists):
-#     combo_set = frozenset(combo_list)
-#     if combo_set not in seen:
-#         seen.add(combo_set)
-#         index_list.append(i)
-#         unique_edge_combo.append(combo_list)
-#     print("finished circuit " + str(i))
-# # print(index_list, unique_edge_combo)
-# print(len(index_list))
-# # print(seen)
-# unique_obj = all_obj[index_list]
-# unique_obj_pos = unique_obj*-1
-# print(len(np.argwhere(unique_obj_pos >= 67.5)))
-
- 
-
-
 #################################################################
 ########### Amplifier experimental circuit new predictions ######
 #################################################################
-# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# amp_results_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_circuits.pkl"
-# amp_unique_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_objectives.pkl"
-# amp_unique_circuits_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/unique_circuits.pkl"
-# amp_obj_path = "Amp_seed_pop_vary_dose/2023-10-31_Amplifier_pop_vary_dose_seed_0/all_objectives.pkl"
-# amp_results = pd.read_pickle(repo_path+amp_results_path)
-# amp_obj = pd.read_pickle(repo_path+amp_obj_path)*-1
-# amp_obj = amp_obj.flatten()
-# print(max(amp_obj))
-# print(amp_obj)
-# amp = Amplifier("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
-
-# amp_unique_obj = pd.read_pickle(repo_path+amp_unique_obj_path).flatten()*-1
-# amp_unique_circuits = pd.read_pickle(repo_path+amp_unique_circuits_path)
-# amp_unique_obj_high = np.where(amp_unique_obj > 69.5)[0]
-# unique_circuits_high = amp_unique_circuits[amp_unique_obj_high]
-# unique_obj_high = amp_unique_obj[amp_unique_obj_high]
-# print(unique_obj_high[31])
-# print(unique_circuits_high)
+repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+amp_single_cell_path = "Amp_seed_single_cell_vary_dose/Optimized_hyperparams/2024-04-23_Amplifier_single_cell_vary_dose_opt_hp_seed_0/minimum_obj_all_gens.pkl"
+amp_single_circuits_path = "Amp_seed_single_cell_vary_dose/Optimized_hyperparams/2024-04-23_Amplifier_single_cell_vary_dose_opt_hp_seed_0/all_circuits.pkl"
+amp_population_path = "Amp_seed_pop_vary_dose/Single_cell_model_opt_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_single_cell_opt_hp_seed_9/minimum_obj_all_gens.pkl"
+amp_population_all_objs =  "Amp_seed_pop_vary_dose/Single_cell_model_opt_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_single_cell_opt_hp_seed_9/all_objectives.pkl"
+amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/2024-04-24_Amplifier_pop_vary_dose_Z_matrix_sampling/Z_matrix_sampling_for_CI.pkl"
 
 
+with open(repo_path+amp_single_circuits_path, "rb") as fid:
+    amp_all_circuits_single = pickle.load(fid)
+
+amp_circuits_single = amp_all_circuits_single.flatten()
+for topology in amp_circuits_single:
+    if "Z2" in topology.part_list and "Z6" in topology.part_list and len(topology.edge_list) == 5:
+        print(topology.edge_list)
+
+# with open(repo_path+amp_population_all_objs, "rb") as fid:
+#     amp_all_objs_pop = pickle.load(fid)
+# amp_all_objs_pop = np.array(amp_all_objs_pop).flatten()
+# idx_CI = np.argwhere(amp_all_objs_pop <=-63.11786016).flatten()
+# amp_obj_CI = amp_all_objs_pop[idx_CI]
+# amp_unique_obj_CI = np.unique(amp_obj_CI)
+# print(amp_unique_obj_CI)
+
+# with open(repo_path+amp_single_cell_path, "rb") as fid:
+#     amp_min_objs_single = pickle.load(fid)
+# print(amp_min_objs_single[-1])
+
+# with open(repo_path+amp_population_path, "rb") as fid:
+#     amp_min_objs_pop = pickle.load(fid)
+# amp_min_objs_pop = np.array(amp_min_objs_pop)
+# print(amp_min_objs_pop)
+# idx_CI = np.argwhere(amp_min_objs_pop <=-63.11786016).flatten()
+# print(amp_min_objs_pop[idx_CI])
+# print(amp_min_objs_pop[-1])
+
+with open(repo_path+amp_population_Z_sampling, "rb") as fid:
+    amp_Z_sampling = pickle.load(fid)
+# print(amp_Z_sampling.columns)
+
+ON_rel_lists = amp_Z_sampling["ON_rel_list"].tolist()
+# ON_rel_stderr = max(amp_Z_sampling["ON_rel_std_error"].tolist())
+# print(ON_rel_stderrs)
+# ON_rel_arrs = np.array(ON_rel_lists).flatten()
+# ON_rel_Z0 = [ON_rel_list[0] for ON_rel_list in ON_rel_lists]
+# ON_rel_Z0_arr = np.array(ON_rel_Z0)
+# ON_rel_Z0_arrs_uniq = np.unique(ON_rel_Z0_arr)
+# print(np.argwhere(ON_rel_Z0_arr >= 62.5).flatten())
+# print(np.argwhere(ON_rel_Z0_arrs_uniq >= 62.5).flatten())
+
+# print(np.argmax(ON_rel_Z0))
+# print(ON_rel_Z0[69] - 0.22782770911190156)
 # print(len(amp_unique_obj_high[0]))
+# topology_list = amp_Z_sampling["topology"].tolist()
+# for topology in topology_list:
+#     if "Z6" not in topology.part_list or "Z2" not in topology.part_list:
+#         # print(topology.edge_list)
+#         topology.plot_graph()
+
+
 ### Circuit 1 from experiments
 # print(np.where(np.logical_and(amp_obj>69.982, amp_obj<69.98215)))
 # print(amp_obj[[1874, 1940, 1951, 1965, 2027, 2074, 2108, 2112, 2165, 2175, 2226,
@@ -997,20 +759,20 @@ sky_blue = [i/255 for i in [86, 180, 233]]
 #     print(max_circuit[0].dose)
 #     max_circuit[0].plot_graph()
     
-repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-results_path = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_2/"
-amp = Amplifier("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
+# repo_path ="/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# results_path = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_2/"
+# amp = Amplifier("P1", [5, 75, 5], 2, True, False, {1: 46, 2: 122}, 2, 0.32, 0.57, False, True)
 
-with open(repo_path + results_path + 
-            "all_circuits.pkl", "rb") as fid:
-        all_circuits = pickle.load(fid)
+# with open(repo_path + results_path + 
+#             "all_circuits.pkl", "rb") as fid:
+#         all_circuits = pickle.load(fid)
 
-for circuit in all_circuits:
-      edge_list = circuit[0].edge_list
-      flattened_edges = list(chain.from_iterable(edge_list))
-      if "Z9" in flattened_edges and "Z2" in flattened_edges and len(flattened_edges) == 10:
-             print(edge_list)
-             print(amp.func(circuit[0]))
+# for circuit in all_circuits:
+#       edge_list = circuit[0].edge_list
+#       flattened_edges = list(chain.from_iterable(edge_list))
+#       if "Z9" in flattened_edges and "Z2" in flattened_edges and len(flattened_edges) == 10:
+#              print(edge_list)
+#              print(amp.func(circuit[0]))
 
         # if edge_list == [('P1', 'Z9'), ('Z9', 'Z9'), ('Z9', 'Z6'), ('Z6', 'Z6'), ('Z6', 'Z9'), ('Z6', 'Rep')]:
         #     if edge_list == [('P1', 'Z9'), ('Z9', 'Rep'), ('Z9', 'Z9')]:
@@ -1026,3 +788,10 @@ for circuit in all_circuits:
 #     print(edge_list)
 # ON_rel_neg = amp.func(circuit_1_exp)
 # print(ON_rel_neg)
+
+# path_results = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/Amp_seed_single_cell_vary_dose/Original_hyperparams_worked_well/2024-04-22_Amplifier_single_cell_vary_dose_original_hp_seed_0/"
+# all_obj_fname = "all_objectives.pkl"
+# with open(path_results+all_obj_fname, "rb") as fid:
+#     amp_all_obj = pickle.load(fid)
+# # print(amp_all_obj)
+# plot_1D_obj_scatter(path_results+"all_obj_scatter.svg", amp_all_obj, ["ON_rel"])

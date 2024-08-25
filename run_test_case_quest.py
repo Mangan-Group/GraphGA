@@ -101,11 +101,6 @@ def run(
         )
 
 
-# pop_size = 84.0 #signal conditioner: 84.0, amplifier: 26
-# pop_ratio = 0.274159 #signal conditioner: 0.274159, amplifier: 0.5
-
-
-
 if __name__ == "__main__":
     settings_path = sys.argv[1]
     settings_file = open(settings_path, encoding="utf-8")
@@ -123,7 +118,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    for seed in range(4, 10):
+    for seed in range(0, 10):
         settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
         np.random.seed(seed)
         settings["seed"] = seed

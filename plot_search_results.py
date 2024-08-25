@@ -274,71 +274,76 @@ def plot_2D_obj_confidence_interval(
     plt.savefig(figure_path, bbox_inches="tight")
 
 
-def plot_3D_obj_confidence_interval(
-        objectives: pd.DataFrame,
-        results_path: str,
-        figure_path: str,
-        CI_metric_maxes: list,
-        obj_labels: list,
-):
-    all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")
+### not currently executable 
+# def plot_3D_obj_confidence_interval(
+#         objectives: pd.DataFrame,
+#         results_path: str,
+#         figure_path: str,
+#         CI_metric_maxes: list,
+#         obj_labels: list,
+# ):
+#     all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")
     
-    obj1_CI = CI_metric_maxes[0]
-    obj2_CI = CI_metric_maxes[1]
-    obj3_CI = CI_metric_maxes[2]
+#     obj1_CI = CI_metric_maxes[0]
+#     obj2_CI = CI_metric_maxes[1]
+#     obj3_CI = CI_metric_maxes[2]
 
-    upper_obj1 = np.array(objectives[obj_labels[0]])
-    sorted_upper_idx = np.argsort(upper_obj1)
-    sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
-    lower_obj1 = np.array([i-obj1_CI for i in (objectives[obj_labels[0]])])
-    sorted_lower_idx = np.argsort(lower_obj1)
-    sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
+#     upper_obj1 = np.array(objectives[obj_labels[0]])
+#     sorted_upper_idx = np.argsort(upper_obj1)
+#     sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
+#     lower_obj1 = np.array([i-obj1_CI for i in (objectives[obj_labels[0]])])
+#     sorted_lower_idx = np.argsort(lower_obj1)
+#     sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
 
-    upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
-    sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
-    lower_obj2 = np.array([i-obj2_CI for i in (objectives[obj_labels[1]]*-1)])
-    sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
+#     upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
+#     sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
+#     lower_obj2 = np.array([i-obj2_CI for i in (objectives[obj_labels[1]]*-1)])
+#     sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
 
-    upper_obj3 = np.array(objectives[obj_labels[2]]*-1)
-    sorted_upper_obj3 = upper_obj3[sorted_upper_idx]
-    lower_obj3 = np.array([i-obj3_CI for i in (objectives[obj_labels[2]]*-1)])
-    sorted_lower_obj3 = lower_obj3[sorted_lower_idx]
+#     upper_obj3 = np.array(objectives[obj_labels[2]]*-1)
+#     sorted_upper_obj3 = upper_obj3[sorted_upper_idx]
+#     lower_obj3 = np.array([i-obj3_CI for i in (objectives[obj_labels[2]]*-1)])
+#     sorted_lower_obj3 = lower_obj3[sorted_lower_idx]
 
-    # obj1_obj1_upper, obj2_obj2_upper = np.meshgrid(sorted_upper_obj1, sorted_upper_obj2)
-    # obj3_obj3_upper = np.array(sorted_upper_obj3*len(sorted_upper_obj3)).reshape(len(sorted_upper_obj3), len(sorted_upper_obj3))
-    # obj_3_upper_interpolation = interp2d(obj1_obj1_upper, obj2_obj2_upper, obj3_obj3_upper)
-    all_obj1_vals = np.sort(np.concatenate([upper_obj1, lower_obj1]))
-    all_obj2_vals = np.sort(np.concatenate([upper_obj2, lower_obj2]))
+#     # obj1_obj1_upper, obj2_obj2_upper = np.meshgrid(sorted_upper_obj1, sorted_upper_obj2)
+#     # obj3_obj3_upper = np.array(sorted_upper_obj3*len(sorted_upper_obj3)).reshape(len(sorted_upper_obj3), len(sorted_upper_obj3))
+#     # obj_3_upper_interpolation = interp2d(obj1_obj1_upper, obj2_obj2_upper, obj3_obj3_upper)
+#     all_obj1_vals = np.sort(np.concatenate([upper_obj1, lower_obj1]))
+#     all_obj2_vals = np.sort(np.concatenate([upper_obj2, lower_obj2]))
 
-    # obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
-    obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, sorted_upper_obj3)
-    obj_3_upper_interpolation = obj_3_upper_function(all_obj1_vals, all_obj2_vals)[0, :]
+#     # obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
+#     obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, sorted_upper_obj3)
+#     obj_3_upper_interpolation = obj_3_upper_function(all_obj1_vals, all_obj2_vals)[0, :]
 
-    # obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
-    obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, sorted_lower_obj3)
-    obj_3_lower_interpolation = obj_3_lower_function(all_obj1_vals, all_obj2_vals)[0, :]
+#     # obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
+#     obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, sorted_lower_obj3)
+#     obj_3_lower_interpolation = obj_3_lower_function(all_obj1_vals, all_obj2_vals)[0, :]
 
-    upper_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_upper_interpolation)]
-    lower_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_lower_interpolation)]
-    all_vertices = [upper_vertices]+[lower_vertices]
-    print(all_vertices)
-    fig = plt.figure(figsize= (2.25, 2.25))
-    ax = fig.add_subplot(projection='3d', computed_zorder=False)
-    ax.scatter(
-        xs=all_objectives[:, 0], ys=all_objectives[:, 1]*-1,
-        zs=all_objectives[:, 2]*-1, color="black", zorder=1#marker="o", markersize=1,
-        # color="black", zorder=1
-    )
-    ax.add_collection3d(Poly3DCollection(all_vertices, alpha=0.4, facecolors=sky_blue, zorder=2))
-    ax.view_init(elev=10, azim=-115)
-    ax.set_xlabel(obj_labels[0])
-    ax.set_ylabel(obj_labels[1])
-    ax.set_zlabel(obj_labels[2])
-    plt.show()
+#     upper_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_upper_interpolation)]
+#     lower_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_lower_interpolation)]
+#     all_vertices = [upper_vertices]+[lower_vertices]
+#     print(all_vertices)
+#     fig = plt.figure(figsize= (2.25, 2.25))
+#     ax = fig.add_subplot(projection='3d', computed_zorder=False)
+#     ax.scatter(
+#         xs=all_objectives[:, 0], ys=all_objectives[:, 1]*-1,
+#         zs=all_objectives[:, 2]*-1, color="black", zorder=1#marker="o", markersize=1,
+#         # color="black", zorder=1
+#     )
+#     ax.add_collection3d(Poly3DCollection(all_vertices, alpha=0.4, facecolors=sky_blue, zorder=2))
+#     ax.view_init(elev=10, azim=-115)
+#     ax.set_xlabel(obj_labels[0])
+#     ax.set_ylabel(obj_labels[1])
+#     ax.set_zlabel(obj_labels[2])
+#     plt.show()
     # plt.savefig(figure_path, bbox_inches="tight")
 
 
-def plot_1D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
+def plot_1D_all_cell_obj(
+        figure_path:str,
+        settings:dict,
+        all_cell_results_df_row:pd.Series
+):
     obj_all_cells = all_cell_results_df_row[
         settings["obj_labels"][0] + " for each cell"][0]
     obj_mean = all_cell_results_df_row[
@@ -361,7 +366,11 @@ def plot_1D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
     plt.savefig(figure_path, bbox_inches="tight")
 
 
-def plot_2D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
+def plot_2D_all_cell_obj(
+        figure_path:str, 
+        settings:dict,
+        all_cell_results_df_row:pd.Series
+):
     obj1_all_cells = all_cell_results_df_row[
         settings["obj_labels"][0] + " for each cell"][0]
     obj2_all_cells = all_cell_results_df_row[
@@ -387,8 +396,11 @@ def plot_2D_all_cell_obj(figure_path, settings, all_cell_results_df_row):
     plt.savefig(figure_path, bbox_inches="tight")
 
 
-def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
-
+def plot_all_cell_time_series(
+        figure_path:str,
+        settings:dict,
+        all_cell_results_df_row:pd.Series
+):
     all_cells_rep_rel = all_cell_results_df_row[
         "Rep_rel time series for each cell"]
     rep_rel_max = np.amax(np.asarray(all_cells_rep_rel))
@@ -420,7 +432,11 @@ def plot_all_cell_time_series(figure_path, settings, all_cell_results_df_row):
     plt.savefig(figure_path, bbox_inches="tight")
 
 
-def plot_pulse_ensemble_time_series(figure_path, all_cell_results_df_row, condition):
+def plot_pulse_ensemble_time_series(
+        figure_path:str,
+        all_cell_results_df_row:pd.Series,
+        condition:int
+):
 
     all_cells_rep_rel = all_cell_results_df_row[
         "Rep_rel time series for each cell"
@@ -437,7 +453,11 @@ def plot_pulse_ensemble_time_series(figure_path, all_cell_results_df_row, condit
     plt.savefig(figure_path+"pulse_"+str(condition)+"_time_series.svg")
 
 
-def plot_pulse_ensemble_violin(figure_path, all_cell_results_df_row, condition):
+def plot_pulse_ensemble_violin(
+        figure_path:str,
+        all_cell_results_df_row:pd.Series,
+        condition:int
+):
     
     all_cells_rep_rel = all_cell_results_df_row[
         "Rep_rel time series for each cell"
@@ -466,51 +486,10 @@ def plot_pulse_ensemble_violin(figure_path, all_cell_results_df_row, condition):
     plt.savefig(figure_path+"pulse_"+str(condition)+"_violin_plot.svg")
 
 
-def plot_split_ensemble_violin(figure_path, all_cell_results_df_row, ref_all_cell_time_series, condition):
-    
-    all_cells_rep_rel = all_cell_results_df_row[
-        "Rep_rel time series for each cell"
-    ]
-    ref_on = Ref_20["P1"]["on"]
-    time_points = [14, 18, 22, 26, 38, 42, 46]
-    pulse_rel_all_cells = []
-    ref_rel_all_cells = []
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
-    for i in range(len(all_cells_rep_rel)):
-        pulse_rep_rel = all_cells_rep_rel[i]
-        rep_rel_t_exp = [pulse_rep_rel[t] for t in time_points]
-        pulse_rel_all_cells.append(rep_rel_t_exp)
-
-        ref_rep_rel = ref_all_cell_time_series[i]/ref_on
-        ref_rep_rel_t_exp = [ref_rep_rel[t] for t in time_points]
-        ref_rel_all_cells.append(ref_rep_rel_t_exp)
-    pulse_rel_t_exp_df = pd.DataFrame(pulse_rel_all_cells, columns = [str(i) + "h" for i in time_points])
-    pulse_rel_t_exp_df_T = pulse_rel_t_exp_df.transpose().copy()
-    pulse_rel_t_exp_df_T["Time (h)"] = pulse_rel_t_exp_df_T.index
-    pulse_rel_t_exp_df_T["condition"] = ["pulse"]*len(pulse_rel_t_exp_df_T.index)
-
-    ref_rel_t_exp_df = pd.DataFrame(ref_rel_all_cells, columns = [str(i) + "h" for i in time_points])
-    ref_rel_t_exp_df_T = ref_rel_t_exp_df.transpose().copy()
-    ref_rel_t_exp_df_T["Time (h)"] = ref_rel_t_exp_df_T.index
-    ref_rel_t_exp_df_T["condition"] = ["reference"]*len(ref_rel_t_exp_df_T.index)
-    df_plus_ref_rel_t_exp_T = pd.concat([pulse_rel_t_exp_df_T, ref_rel_t_exp_df_T], axis=0)
-    df_plus_ref_rel_t_exp_T_plot = pd.melt(
-            frame=df_plus_ref_rel_t_exp_T,
-            id_vars=["Time (h)", "condition"], 
-            var_name="column_name",
-            value_name="Rep_rel")
-
-    plot = sns.violinplot(data=df_plus_ref_rel_t_exp_T_plot, x="Time (h)", y="Rep_rel", hue="condition", split=True, ax=ax)
-    plot.set_xticks(range(len(ref_rel_t_exp_df_T.index)))
-    plot.set_xticklabels(time_points)
-    ax.set_xlabel("Time(h)")
-    ax.set_ylabel("Rep_rel")
-    ax.set_title("Pulse exp " + str(condition))
-    ax.set_box_aspect(1)
-    plt.savefig(figure_path+"pulse_"+str(condition)+"_violin_plot_split.svg")
-
-
-def plot_ref_ensemble_time_series(figure_path, ref_all_cell_time_series):
+def plot_ref_ensemble_time_series(
+        figure_path:str,
+        ref_all_cell_time_series:np.ndarray
+):
     ref_on = Ref_20["P1"]["on"]
     time_points = [14, 18, 22, 26, 38, 42, 46]
     ref_rel_all_cells = []
@@ -527,7 +506,10 @@ def plot_ref_ensemble_time_series(figure_path, ref_all_cell_time_series):
     plt.savefig(figure_path+"reference_time_series.svg")
 
 
-def plot_ref_ensemble_violin(figure_path, ref_all_cell_time_series):
+def plot_ref_ensemble_violin(
+        figure_path:str,
+        ref_all_cell_time_series:np.ndarray
+):
     ref_on = Ref_20["P1"]["on"]
     time_points = [14, 18, 22, 26, 38, 42, 46]
     ref_rel_all_cells = []
@@ -608,7 +590,8 @@ def plot_pareto_front_set_3D(
         obj_labels: list,
 ):
     
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+              '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
     fig = plt.figure(figsize= (4, 4))
     ax = fig.add_subplot(projection='3d')
     for i, obj_df in enumerate(obj_df_list):
@@ -636,49 +619,42 @@ def plot_pareto_front_set_3D(
 
 
 
-# path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# path_sc = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
-# results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
-
-# pareto_obj_dfs_list = compare_parteo_fronts(path_results+path_sc, results_runs, ["t_pulse", "peak_rel", "prominence_rel"])
-# plot_pareto_front_set_3D(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "peak_rel", "prominence_rel"])
-# plot_pareto_front_set(path_results+path_sc+"pareto_front_set.svg", pareto_obj_dfs_list, ["t_pulse", "peak_rel", "prominence_rel"])
-
-#2024-06-07_Pulse_single_cell_DsRED_inhibitor_3_obj_vary_pop_opt_hp_stdev_ngen80_nseed4_run2_seed_
-
-
 Ref_all_cells = simulate_reference_time_series(["P1"], Z_20)
 ref_all_cell_time_series = Ref_all_cells["P1"]["on all cells"]
-pulse_cells = [10, 13, 16, 18]
-ref_pulse_cells_time_series = [ref_all_cell_time_series[i] for i in pulse_cells]
+# pulse_cells = [10, 13, 16, 18]
+ref_pulse_cells_time_series = ref_all_cell_time_series #[ref_all_cell_time_series[i] for i in pulse_cells]
 
 repo_path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/"
 #3 obj
 # results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_seed_0/Results_analysis/"
+# file_name = "all_cell_selected_results_low_t_pulse.csv"
+
 #t pulse
 results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_seed_0/Results_analysis_sub_opt/"
+file_name = "all_cell_selected_results_sub_opt.csv"
 
 save_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/"
-file_name = "all_cell_selected_results_sub_opt.csv"
 # t_pulse results are index 0 only; 3obj are indices 0-4
 all_cell_results = pd.read_csv(repo_path+results_path+file_name)
-all_cell_time_series_opt = all_cell_results.copy().iloc[:1]
+all_cell_time_series_opt = all_cell_results.copy().iloc[1:2]
+# print(all_cell_time_series_opt["t_pulse_mean"])
 conditions = [3]
+# conditions = [1, 2, 4, 6, 5]
 drop_labels_3obj = ["Topology","Rep_rel time series mean", "t_pulse_mean", "peak_rel_mean", "prominence_rel_mean"]
 drop_labels_t_pulse = ["Topology","Rep_rel time series mean", "t_pulse_mean", "prominence_rel_mean"]
 all_cell_time_series_opt = all_cell_time_series_opt.drop(drop_labels_t_pulse, axis=1)
 all_cell_time_series_opt["Rep_rel time series for each cell"] = all_cell_time_series_opt["Rep_rel time series for each cell"].astype(object)
-pulse_cells = [10, 13, 16, 18]
+# pulse_cells = [10, 13, 16, 18]
 
 for index, row in all_cell_time_series_opt.iterrows():
         all_cell_list = eval(row["Rep_rel time series for each cell"])
-        pulse_cell_time_series_opt = [all_cell_list[i] for i in pulse_cells]
+        pulse_cell_time_series_opt = all_cell_list #[all_cell_list[i] for i in pulse_cells]
         all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = pulse_cell_time_series_opt
         # all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = eval(row["Rep_rel time series for each cell"])
         row_as_list = all_cell_time_series_opt.loc[index]
-        plot_pulse_ensemble_time_series(repo_path+save_path, row_as_list, conditions[index])
-        plot_pulse_ensemble_violin(repo_path+save_path, row_as_list, conditions[index])
-        plot_split_ensemble_violin(repo_path+save_path, row_as_list, ref_pulse_cells_time_series, conditions[index]) 
+        # plot_pulse_ensemble_time_series(repo_path+save_path, row_as_list, conditions[index])
+        # plot_pulse_ensemble_violin(repo_path+save_path, row_as_list, conditions[index])
+        # plot_split_ensemble_violin(repo_path+save_path, row_as_list, ref_pulse_cells_time_series, conditions[index]) 
 
 # plot_ref_ensemble_time_series(repo_path+save_path, ref_pulse_cells_time_series)
 # plot_ref_ensemble_violin(repo_path+save_path, ref_pulse_cells_time_series)
