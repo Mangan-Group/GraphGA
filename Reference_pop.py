@@ -2,11 +2,13 @@ import numpy as np
 import pickle
 from scipy.integrate import odeint
 
-with open("promo.pkl", "rb") as fid:
+repo_path = "/Users/kdreyer/Documents/Github/GraphGA/"
+
+with open(repo_path+"promo.pkl", "rb") as fid:
     promo = pickle.load(fid)
-with open("Z_200.npy", 'rb') as fid:
-    Z_200 = np.load(fid)
-with open("Z_20.npy", 'rb') as fid:
+
+Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrices/"
+with open(Z_path + "Z_mat_20_cell0.npy", 'rb') as fid:
     Z_20 = np.load(fid)
 
 def reference(y,t,k_end, Z):
@@ -16,7 +18,7 @@ def reference(y,t,k_end, Z):
 
 def simulate_reference(Z, filename):
     Ref = dict()
-    for k in list(promo.keys())[:2]:
+    for k in list(promo.keys())[:5]:
         ref_off = []
         ref_on = []
         for i in range(0, len(Z)):
@@ -33,10 +35,22 @@ def simulate_reference(Z, filename):
     
     return Ref
     
-filename_200 = "Ref_pop200.pkl"
 filename_20 = "Ref_pop20.pkl"
-
-Ref_200 = simulate_reference(Z_200, filename_200)
 Ref_20 = simulate_reference(Z_20, filename_20)
 
-# print(Ref_200)
+# print(Ref_20)
+
+def simulate_reference_time_series(promo_list, Z):
+    Ref_all_cells = dict()
+    for k in promo_list:
+        ref_off_time_series = []
+        ref_on_time_series = []
+        for i in range(0, len(Z)):
+            off_time_series = odeint(reference, np.zeros(2), np.arange(0, 46 + 1), args=(promo[k]['off']*promo['k_txn'], Z[i, 0]))[:,-1]
+            on_time_series = odeint(reference, np.zeros(2), np.arange(0, 46 + 1), args=(promo[k]['on']*promo['k_txn'], Z[i, 0]))[:, -1]
+            ref_off_time_series.append(off_time_series)
+            ref_on_time_series.append(on_time_series)
+
+        Ref_all_cells.update({k: {'off all cells': ref_off_time_series, 'on all cells': ref_on_time_series}})
+    
+    return Ref_all_cells

@@ -1,5 +1,7 @@
 import numpy as np
-from load_files import *
+from load_files_pop import (
+    promo, parts
+)
 
 def system_equations_pop(x, t, state, Z_list, topology):
     system = []
@@ -11,7 +13,7 @@ def system_equations_pop(x, t, state, Z_list, topology):
         denom = 1
         Z_ZF = 0
         for k in topology.in_dict[n]['P']:
-            eq += float(topology.dose[n]) / topology.pool[n] * promo[k][state] * promo['k_txn'] * Z_list[index]
+            eq += ((float(topology.dose[n]) / topology.pool[n])/200)**0.5 * promo[k][state] * promo['k_txn'] * Z_list[index]
             index += 1
         for k in topology.in_dict[n]['Z']:
             b.append(parts[k][0])
@@ -27,7 +29,7 @@ def system_equations_pop(x, t, state, Z_list, topology):
             b = np.mean(b)
             Z_ZF = Z_list[index]
             index += 1
-        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9. * Z_ZF
+        eq += ((float(topology.dose[n]) / topology.pool[n])/200)**0.5 * (b + num) / denom * 9. * Z_ZF
         system.extend([eq, -topology.protein_deg[n[0]] * x[2 * topology.var_dict[n] + 1] + x[2 * topology.var_dict[n]]])
     return system
 
@@ -41,7 +43,7 @@ def system_equations_DsRed_pop(x, t, state, Z_list, topology):
         denom = 1
         Z_ZF = 0
         for k in topology.in_dict[n]['P']:
-            eq += float(topology.dose[n]) / topology.pool[n] * promo[k][state] * promo['k_txn'] * Z_list[index]
+            eq += ((float(topology.dose[n]) / topology.pool[n])/200)**0.5 * promo[k][state] * promo['k_txn'] * Z_list[index]
             index += 1
         if len(topology.in_dict[n]['I']) == 0:
             for k in topology.in_dict[n]['Z']:
@@ -62,7 +64,9 @@ def system_equations_DsRed_pop(x, t, state, Z_list, topology):
             b = np.mean(b)
             Z_ZF = Z_list[index]
             index += 1
-        eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9. * Z_ZF
+        eq += ((float(topology.dose[n]) / topology.pool[n])/200)**0.5 * (b + num) / denom * 9. * Z_ZF
+        # eq += float(topology.dose[n]) / topology.pool[n] * (b + num) / denom * 9. * Z_ZF
+
         system.extend([eq, -topology.protein_deg[n[0]] * x[2 * topology.var_dict[n] + 1] + x[2 * topology.var_dict[n]]])
     return system
 

@@ -6,12 +6,23 @@ import copy
 seed = int(sys.argv[1])
 np.random.seed(seed)
 
+# Jocelyn added to see in which
+# generation the final obj is first
+# seen
 def first_seen(progression):
 
     looking = True
     gen_num = 0
 
+    # for each value in reversed list
+    # of minimum objective function for
+    # each generation
     for gen in reversed(progression):
+        # if the value does not equal the
+        # final value in reversed list
+        # return length of progression
+        # (number of generations) - gen_num
+        # (number of generations to end)
         if progression[-1] != gen:
             return len(progression) - gen_num
         gen_num += 1

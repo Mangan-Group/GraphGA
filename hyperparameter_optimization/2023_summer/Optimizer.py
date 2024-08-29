@@ -21,7 +21,7 @@ def sim_func(x):
 
     # Define necessary problem variables
     promo_node = 'P1'
-    min_dose = 75
+    min_dose = 5
     max_dose = 75
     dose_interval = 5
     max_part = 2
@@ -39,8 +39,8 @@ def sim_func(x):
     # Run two simulations with the given seed and the seed plus 1
     # Two simulations are run because random chance allows a bad set of hyperparameters
     # To find the optimal solution quickly but not robustly
-    value1 = full_sim(x["mut_rate"], x["cov_rate"], promo_node, num_dict, max_part, min_dose, max_dose, dose_interval, inhibitor, seed)
-    value2 = full_sim(x["mut_rate"], x["cov_rate"], promo_node, num_dict, max_part, min_dose, max_dose, dose_interval, inhibitor, (seed + 1))
+    value1 = full_sim(x["mut_rate"], x["crsovr_rate"], promo_node, num_dict, max_part, min_dose, max_dose, dose_interval, inhibitor, seed)
+    value2 = full_sim(x["mut_rate"], x["crsovr_rate"], promo_node, num_dict, max_part, min_dose, max_dose, dose_interval, inhibitor, (seed + 1))
 
     # Calculate and return the average of the two simulations for both objectives
     average = [(value1[0] + value2[0])/2, (value1[1] + value2[1])/2]
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                        'lb': 0.0,
                        'ub': 1.0})
 
-    my_moop.addDesign({'name': "cov_rate",
+    my_moop.addDesign({'name': "crsovr_rate",
                        'des_type': "continuous",
                        'lb': 0.0,
                        'ub': 1.0})
