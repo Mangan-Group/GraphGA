@@ -13,7 +13,6 @@ from solve_objectives_for_Z_matrix_samples import (
 from plot_search_results import (
     plot_1D_obj_confidence_interval, 
     plot_2D_obj_confidence_interval, 
-    plot_3D_obj_confidence_interval
 )
 
 def run_Z_matrix_sampling(
@@ -77,30 +76,30 @@ def run_Z_matrix_sampling(
                 figure_path, CI_metric_maxes, settings["obj_labels"]
             )
 
-        elif len(CI_metric_maxes) == 3:
-            figure_path = folder_path + "/" + settings["CI_metrics"][i][0]+"_"+settings["CI_metrics"][i][1]+"_"+settings["CI_metrics"][i][2]+"_CI.svg"
-            plot_3D_obj_confidence_interval(
-                objectives, settings["repository_path"]+settings["results_path"],
-                figure_path, CI_metric_maxes, settings["obj_labels"]
-            )
+        # elif len(CI_metric_maxes) == 3:
+        #     figure_path = folder_path + "/" + settings["CI_metrics"][i][0]+"_"+settings["CI_metrics"][i][1]+"_"+settings["CI_metrics"][i][2]+"_CI.svg"
+        #     plot_3D_obj_confidence_interval(
+        #         objectives, settings["repository_path"]+settings["results_path"],
+        #         figure_path, CI_metric_maxes, settings["obj_labels"]
+        #     )
 
     return Z_matrix_sampling
 
 settings = {
-    "test_case": "PulseGenerator",
+    "test_case": "Amplifier",
     "promo_node": "P1",
     "inhibitor": True,
-    "DsRed_inhibitor": True,
+    "DsRed_inhibitor": False,
     "pop": True,
     "num_processes": 8,
-    "obj_labels": ["t_pulse", "prominence_rel"],
-    "objective_threshold": None,
-    "max_time": 126,
-    "CI_metrics": [["t_pulse_range", "prominence_rel_range"], ["t_pulse_std_error", "prominence_rel_std_error"]],
-    "CI_ylim": False,
+    "obj_labels": ["ON_rel"],
+    "objective_threshold": 1E-10,
+    "max_time": 42,
+    "CI_metrics": [["ON_rel_range"], ["ON_rel_std_error"]],
+    "CI_ylim": True,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/Pulse_seed_pop_DsRED_inhibitor/Single_cell_model_opt_hyperparams/t_pulse/Vary_pop_opt_hp_single_stdev_ngen80_run2_ngen100/2024-06-25_Pulse_pop_DsRED_inhibitor_t_pulse_vary_pop_opt_hp_stdev_ngen80_run2_ngen100_seed_0/",
-    "folder_name": "Pulse_pop_DsRED_inhibitor_t_pulse_Z_matrix_sampling"
+    "results_path": "GA_results/Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/",
+    "folder_name": "Amplifier_pop_vary_dose_Z_matrix_sampling"
 }
 
 

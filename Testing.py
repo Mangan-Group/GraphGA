@@ -45,13 +45,13 @@ amp_population_all_objs =  "Amp_seed_pop_vary_dose/Single_cell_model_opt_hyperpa
 amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/2024-04-24_Amplifier_pop_vary_dose_Z_matrix_sampling/Z_matrix_sampling_for_CI.pkl"
 
 
-with open(repo_path+amp_single_circuits_path, "rb") as fid:
-    amp_all_circuits_single = pickle.load(fid)
+# with open(repo_path+amp_single_circuits_path, "rb") as fid:
+#     amp_all_circuits_single = pickle.load(fid)
 
-amp_circuits_single = amp_all_circuits_single.flatten()
-for topology in amp_circuits_single:
-    if "Z2" in topology.part_list and "Z6" in topology.part_list and len(topology.edge_list) == 5:
-        print(topology.edge_list)
+# amp_circuits_single = amp_all_circuits_single.flatten()
+# for topology in amp_circuits_single:
+#     if "Z2" in topology.part_list and "Z6" in topology.part_list and len(topology.edge_list) == 5:
+#         print(topology.edge_list)
 
 # with open(repo_path+amp_population_all_objs, "rb") as fid:
 #     amp_all_objs_pop = pickle.load(fid)
@@ -73,11 +73,11 @@ for topology in amp_circuits_single:
 # print(amp_min_objs_pop[idx_CI])
 # print(amp_min_objs_pop[-1])
 
-with open(repo_path+amp_population_Z_sampling, "rb") as fid:
-    amp_Z_sampling = pickle.load(fid)
+# with open(repo_path+amp_population_Z_sampling, "rb") as fid:
+#     amp_Z_sampling = pickle.load(fid)
 # print(amp_Z_sampling.columns)
 
-ON_rel_lists = amp_Z_sampling["ON_rel_list"].tolist()
+# ON_rel_lists = amp_Z_sampling["ON_rel_list"].tolist()
 # ON_rel_stderr = max(amp_Z_sampling["ON_rel_std_error"].tolist())
 # print(ON_rel_stderrs)
 # ON_rel_arrs = np.array(ON_rel_lists).flatten()
@@ -789,9 +789,28 @@ ON_rel_lists = amp_Z_sampling["ON_rel_list"].tolist()
 # ON_rel_neg = amp.func(circuit_1_exp)
 # print(ON_rel_neg)
 
-# path_results = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/Amp_seed_single_cell_vary_dose/Original_hyperparams_worked_well/2024-04-22_Amplifier_single_cell_vary_dose_original_hp_seed_0/"
-# all_obj_fname = "all_objectives.pkl"
-# with open(path_results+all_obj_fname, "rb") as fid:
-#     amp_all_obj = pickle.load(fid)
+path_results = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/Amp_seed_single_cell_vary_dose/Original_hyperparams_worked_well/2024-04-22_Amplifier_single_cell_vary_dose_original_hp_seed_0/"
+all_obj_fname = "all_objectives.pkl"
+all_circuits_fname = "all_circuits.pkl"
+with open(path_results+all_obj_fname, "rb") as fid:
+    amp_all_obj = pickle.load(fid)
+with open(path_results+all_circuits_fname, "rb") as fid:
+    amp_all_circuits = pickle.load(fid)
 # # print(amp_all_obj)
 # plot_1D_obj_scatter(path_results+"all_obj_scatter.svg", amp_all_obj, ["ON_rel"])
+
+unique_obj, unique_indices = np.unique(amp_all_obj,
+                                return_index=True)
+unique_circuits = amp_all_circuits[unique_indices]
+
+print(len(unique_circuits))
+
+file_name = "all_unique_obj.pkl"
+with open(path_results + file_name, "wb") as fid:
+    pickle.dump(unique_obj, fid)
+
+file_name = "all_unique_circuits.pkl"
+with open(path_results + file_name, "wb") as fid:
+    pickle.dump(unique_circuits, fid)
+
+plot_1D_obj_scatter(path_results+"unique_obj_scatter_labeled.svg", amp_all_obj, ["ON_rel"])

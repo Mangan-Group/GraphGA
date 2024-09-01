@@ -90,14 +90,17 @@ def get_single_obj_selected_results(
 
     edge_lists = []
     dose_dict_list = []
+    in_dict_list = []
     for circuit in sorted_selected_unique_circuits:
         edge_lists.append(circuit.edge_list)
         dose_dict_list.append(circuit.dose)
+        in_dict_list.append(circuit.in_dict)
 
     selected_results_dict = {
         "Topology": sorted_selected_unique_circuits,
         "Edge list": edge_lists,
         "Doses": dose_dict_list,
+        "Parts order": in_dict_list,
         settings["obj_labels"][0]: sorted_selected_unique_obj
     }
     selected_results_df = pd.DataFrame.from_dict(selected_results_dict)
@@ -133,14 +136,19 @@ def get_multi_obj_selected_results(
 
     edge_lists = []
     dose_dict_list = []
+    in_dict_list = []
     for circuit in sorted_selected_pareto_circuits:
         edge_lists.append(circuit.edge_list)
         dose_dict_list.append(circuit.dose)
+        in_dict_list.append(circuit.in_dict)
+
 
     selected_results_dict = {
         "Topology": sorted_selected_pareto_circuits,
         "Edge list": edge_lists,
-        "Doses": dose_dict_list
+        "Doses": dose_dict_list,
+        "Parts order": in_dict_list
+
     }
     for obj in settings["obj_labels"]:
         selected_results_dict[obj] = sorted_selected_pareto_obj[obj].tolist()

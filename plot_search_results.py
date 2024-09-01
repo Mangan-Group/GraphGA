@@ -7,10 +7,16 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import seaborn as sns
 from scipy.interpolate import interp2d
 from math import ceil, floor
-from Reference_pop import Z_20, Ref_20, simulate_reference_time_series
+from load_files_pop import Z_20, Ref_pop20
+from Reference_pop import simulate_reference_time_series
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
+orange_ = [i/255 for i in [230, 159, 0]]
 sky_blue = [i/255 for i in [86, 180, 233]]
+pink_ = [i/255 for i in [204, 121, 167]]
+bluish_green = [i/255 for i in [0, 158, 115]]
+vermillion = [i/255 for i in [213, 94, 0]]
+yellow_ = [i/255 for i in [240, 228, 66]]
 
 def plot_graph(
         figure_path: str,
@@ -173,14 +179,18 @@ def plot_1D_obj_scatter(
     x_vals = [1]*len(obj_vals)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    fig, ax = plt.subplots(1, 1, figsize= (1.9, 1.75))
     ax.plot(jittered_x, obj_vals, linestyle="None",
-             marker="o", markersize=1, color="gray")
+             marker="o", markersize=1, color="k",zorder=1)
+    ax.plot(1.05, max(obj_vals), linestyle="none", marker="o",
+            markersize=1.25, color=yellow_, zorder=2)
     ax.set_xticklabels([])
     ax.set_xticks([])
     ax.set_ylabel(obj_labels[0])
     if y_lower_lim:
         ax.set_ylim(lower = y_lower_lim)
+    # ax.set_yticks([0, 20, 40, 60])
+    ax.set_box_aspect(1)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -490,7 +500,7 @@ def plot_ref_ensemble_time_series(
         figure_path:str,
         ref_all_cell_time_series:np.ndarray
 ):
-    ref_on = Ref_20["P1"]["on"]
+    ref_on = Ref_pop20["P1"]["on"]
     time_points = [14, 18, 22, 26, 38, 42, 46]
     ref_rel_all_cells = []
     fig, ax = plt.subplots(1, 1, figsize= (3, 3))
@@ -510,7 +520,7 @@ def plot_ref_ensemble_violin(
         figure_path:str,
         ref_all_cell_time_series:np.ndarray
 ):
-    ref_on = Ref_20["P1"]["on"]
+    ref_on = Ref_pop20["P1"]["on"]
     time_points = [14, 18, 22, 26, 38, 42, 46]
     ref_rel_all_cells = []
     fig, ax = plt.subplots(1, 1, figsize= (3, 3))

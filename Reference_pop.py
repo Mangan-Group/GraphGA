@@ -11,6 +11,12 @@ Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrices/"
 with open(Z_path + "Z_mat_20_cell0.npy", 'rb') as fid:
     Z_20 = np.load(fid)
 
+with open(Z_path + "Z_mat_200_cell.npy", 'rb') as fid:
+    Z_200 = np.load(fid)
+
+with open(Z_path + "Z_mat_2000_cell.npy", 'rb') as fid:
+    Z_2000 = np.load(fid)
+
 def reference(y,t,k_end, Z):
     return np.array([k_end*Z - 2.7*y[0],
                     y[0] - 0.029*y[1]])
@@ -35,10 +41,14 @@ def simulate_reference(Z, filename):
     
     return Ref
     
-filename_20 = "Ref_pop20.pkl"
-Ref_20 = simulate_reference(Z_20, filename_20)
+# filename_20 = "Ref_pop20.pkl"
+# Ref_20 = simulate_reference(Z_20, filename_20)
 
-# print(Ref_20)
+# filename_200 = "Ref_pop200.pkl"
+# Ref_200 = simulate_reference(Z_200, filename_200)
+
+# filename_2000 = "Ref_pop2000.pkl"
+# Ref_2000 = simulate_reference(Z_2000, filename_2000)
 
 def simulate_reference_time_series(promo_list, Z):
     Ref_all_cells = dict()

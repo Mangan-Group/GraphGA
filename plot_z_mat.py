@@ -19,7 +19,7 @@ file_name = "all_cell_metrics_low_t_pulse.csv"
 all_cell_results = pd.read_csv(repo_path+results_path+file_name)
 all_cell_time_series_opt = all_cell_results.copy().iloc[:5]
 # print(all_cell_time_series_opt["single_cell_prominence"].to_list)
-all_cell_prom_list = eval(all_cell_time_series_opt["single_cell_prominence"].tolist()[0])
+all_cell_prom_list = eval(all_cell_time_series_opt["single_cell_prominence"].tolist()[4])
 # print(all_cell_prom_list)
 
 
@@ -35,14 +35,14 @@ cells = np.arange(20)
 ####plot all plasmids overlapping
 # path_save = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/"
 # color_list = plt.rcParams['axes.prop_cycle'].by_key()['color']
-# fig1, axs1 = plt.subplots(1, 1, figsize=(6, 3))
+fig1, axs1 = plt.subplots(1, 1, figsize=(6, 3))
 # fig2, axs2 = plt.subplots(1, 1, figsize=(6, 4))
-# for plasmid in range(5):
-#     axs1.plot(cells, Z_20[:, plasmid])
+for plasmid in range(4):
+    axs1.plot(cells, Z_20[:, plasmid], label="plasmid "+str(plasmid))
 #     # axs[plasmid, 1].hist(np.log10(Z_20[:, plasmid]), bins=20)
 #     axs1.set_xticks(cells)
-#     axs1.set_xlabel("Cell number")
-#     axs1.set_ylabel("Mean norm. amount \n of plasmid uptaken")
+    axs1.set_xlabel("Cell number")
+    axs1.set_ylabel("Mean norm. amount \n of plasmid uptaken")
 
 #     Z_20_df_log["plasmid_" + str(plasmid)].plot.density(ind=20, color=color_list[plasmid], ax=axs2)
 #     axs2.set_xlim([-3, 1.5])
@@ -53,46 +53,64 @@ cells = np.arange(20)
 # label_list = ["cell with pulse"] + [""]*(len(pulse_cell_list)-1)
 # for i, pulse_cell in enumerate(pulse_cell_list):
 #     axs1.axvline(x=pulse_cell, color="k", linewidth=1, label=label_list[i])
-# axs1.legend()
-# # plt.show()
+axs1.legend()
+plt.show()
 # fig1.savefig(path_save + "plasmid_uptake_per_cell.svg")
 # fig2.savefig(path_save + "plasmid_uptake_distribution.svg")
 
 
 
-#### stdev plasmid uptake vs prominence
-plasmids = ["plasmid_0", "plasmid_1", "plasmid_2", "plasmid_3", "plasmid_4"]
+#### avg plasmid uptake vs prominence
+# plasmids = ["plasmid_0", "plasmid_1", "plasmid_2", "plasmid_3", "plasmid_4"]
 # plasmid_uptake_maxes = [max(Z_20_df[plasmid]) for plasmid in plasmids]
 # # print(plasmid_uptake_maxes)
-# stdev_list = []
-# stdev_list_norm = []
+# fig, ax = plt.subplots(1, 1, figsize= (3, 3))
+# avg_list = []
 # for cell in range(20):
 #     uptake_list = Z_20_df.iloc[cell].tolist()
-#     uptake_list_norm = [uptake_list[i]/plasmid_uptake_maxes[i] for i in range(len(uptake_list))]
-#     # uptake_list_norm = 
-#     stdev_uptake = stats.stdev(uptake_list)
-#     stdev_uptake_norm = stats.stdev(uptake_list_norm)
-#     stdev_list.append(stdev_uptake)
-#     stdev_list_norm.append(stdev_uptake_norm)
-#     print(stdev_uptake, stdev_uptake_norm, all_cell_prom_list[cell])
-# plt.plot(stdev_list, all_cell_prom_list, linestyle="none", marker="o")
-# plt.show()
-# plt.plot(stdev_list_norm, all_cell_prom_list, linestyle="none", marker="o")
-# plt.show()
-
-
-#### plasmid uptake vs prominence
-# fig = plt.figure(figsize=(4, 3.5))
-# for plasmid in plasmids:
-#     idx = Z_20_df.sort_values(plasmid)[plasmid].index.tolist()
-#     all_cell_prom_list = eval(all_cell_time_series_opt["single_cell_prominence"].tolist()[0])
-#     all_cell_prom_list_sorted = [all_cell_prom_list[i] for i in idx]
-#     plt.plot(Z_20_df.sort_values(plasmid)[plasmid], all_cell_prom_list_sorted, linestyle="none", marker="o")
-# plt.axvline(x=1.8, color="k", linewidth=2, linestyle="dotted", label="selected threshold")
-# plt.xlabel("plasmid uptake")
-# plt.ylabel("prominence_rel")
-# plt.ylim(bottom=0)
+#     avg_uptake = np.mean(uptake_list)
+#     avg_list.append(avg_uptake)
+# max_avg_uptake = max(avg_list)
+# threshold = max_avg_uptake*0.6
+# # print(max_avg_uptake*0.6)
+# ax.plot(avg_list, all_cell_prom_list, linestyle="none", marker="o")
+# ax.axvline(x=threshold, color="k", linewidth=1, linestyle="dotted", label="selected threshold")
+# ax.set_xlabel("average plasmid uptake")
+# ax.set_ylabel("prominence_rel")
+# ax.set_ylim(bottom=0)
 # plt.legend()
+# plt.show()
+
+#### avg plasmid uptake percentile vs prominence
+# fig, ax = plt.subplots(1, 1, figsize= (3.5, 3))
+# Z_20_df["average"] = np.mean(Z_20_df, axis=1)
+# plasmid_uptake_list = Z_20_df["average"].tolist()
+# plasmid_uptake_arr = np.array(plasmid_uptake_list)
+# max_uptake = max(Z_20_df["average"])
+# threshold = 60
+# percentile = np.arange(10, 100, 10).tolist()
+# percentile_fractions = [round(i/100, 2) for i in percentile]
+# # fraction_included = [round(1.0-i, 2) for i in percentile_fractions]
+# for i, percent in enumerate(percentile_fractions):
+#     print(percent, ": ")
+#     uptake_min = max_uptake*percent
+#     print("threshold: ", uptake_min)
+#     idx_uptake_included = np.where(plasmid_uptake_arr >= uptake_min)[0]
+#     print("cells included: ", idx_uptake_included)
+#     uptake_included = plasmid_uptake_arr[idx_uptake_included]
+#     prom_included = [all_cell_prom_list[i] for i in idx_uptake_included]
+#     print("prom_rel cells included: ", prom_included)
+#     # pct_plot = [90, 80, 70, 60, 50, 40, 30, 20, 10]
+#     ax.plot([percentile[i]]*len(prom_included), prom_included, linestyle="none", marker="o", color="grey")
+
+
+# # print(max_avg_uptake*0.6)
+# ax.axvline(x=threshold, color="k", linewidth=1, linestyle="dotted", label="selected threshold")
+# ax.set_xlabel("percentile average plasmid uptake")
+# ax.set_xticks(percentile)
+# ax.set_ylabel("prominence_rel")
+# ax.set_ylim(bottom=0)
+# plt.legend(loc="center right")
 # plt.show()
 
 #pulses = 1, 7, 10, 13, 16-19
@@ -104,43 +122,40 @@ plasmids = ["plasmid_0", "plasmid_1", "plasmid_2", "plasmid_3", "plasmid_4"]
 #plasmid 4: top 8 has has 2 misses (cell 12 = #5, 17 = #6, and 15= #7, 10 = #8, 1 = #11, 7 = #15)
 
 
-
-#### percentile plasmid uptake vs. % cells that pulse
+#### percentile average plasmid uptake vs. % cells that pulse
 # fig = plt.figure(figsize=(4, 3.5))
-all_cell_prom_list = eval(all_cell_time_series_opt["single_cell_prominence"].tolist()[0])
-plasmids = ["plasmid_0", "plasmid_1", "plasmid_2", "plasmid_3", "plasmid_4"]
-percentile = np.arange(0, 100, 10).tolist()
-percentile_fractions = [i/100 for i in percentile]
-fraction_included = [round(1.0-i, 2) for i in percentile_fractions]
-# print(fraction_included)
-for plasmid in plasmids:
-    plasmid_uptake_list = Z_20_df[plasmid].tolist()
-    plasmid_uptake_arr = np.array(plasmid_uptake_list)
-    # print("full list: ", plasmid_uptake_arr)
-    max_uptake = max(Z_20_df[plasmid])
-    threshold = np.mean(plasmid_uptake_arr)*1.8
-    threshold_percent = (1 - threshold/max_uptake)*100
-    print("threshold percent : ", threshold_percent, threshold)
-    percent_pulse_cells_list = []
-    for percent in fraction_included:
-        print(percent, ": ")
-        uptake_min = max_uptake*percent
+# Z_20_df["average"] = np.mean(Z_20_df, axis=1)
+# print(Z_20_df)
+# all_cell_prom_list = eval(all_cell_time_series_opt["single_cell_prominence"].tolist()[0])
+# percentile = np.arange(10, 100, 10).tolist()
+# percentile_fractions = [round(i/100, 2) for i in percentile]
+# # fraction_included = [round(1.0-i, 2) for i in percentile_fractions]
+# # print(fraction_included)
 
-        # print("threshold: ", uptake_min)
-        idx_uptake_included = np.where(plasmid_uptake_arr >= uptake_min)[0]
-        print("cells included: ", idx_uptake_included)
-        uptake_included = plasmid_uptake_arr[idx_uptake_included]
-        prom_included = [all_cell_prom_list[i] for i in idx_uptake_included]
-        # print("prom_rel cells included: ", prom_included)
-        pulse_cell_prom = [prom for prom in prom_included if prom > 0]
-        percent_pulse_cells = (len(pulse_cell_prom)/len(prom_included))*100
-        print("percent pulse cells", percent_pulse_cells, "%")
-        percent_pulse_cells_list.append(percent_pulse_cells)
-    pct_plot = [90, 80, 70, 60, 50, 40, 30, 20, 10]
-    pct_plot_str = [str(i) for i in pct_plot]#reversed(percentile[1:]).tolist()
-    plt.plot(pct_plot_str, percent_pulse_cells_list[1:], label=str(round(threshold_percent, 1)))
-
-plt.legend(title="threshold %")
-plt.xlabel("percentile plasmid uptake included")
-plt.ylabel("% cells with a pulse")
-plt.show()
+# plasmid_uptake_list = Z_20_df["average"].tolist()
+# plasmid_uptake_arr = np.array(plasmid_uptake_list)
+# print("full list: ", plasmid_uptake_arr)
+# max_uptake = max(Z_20_df["average"])
+# threshold_percent = 60
+# print("threshold percent : ", threshold_percent)
+# percent_pulse_cells_list = []
+# for percent in percentile_fractions:
+#     print(percent, ": ")
+#     uptake_min = max_uptake*percent
+#     print("threshold: ", uptake_min)
+#     idx_uptake_included = np.where(plasmid_uptake_arr >= uptake_min)[0]
+#     print("cells included: ", idx_uptake_included)
+#     uptake_included = plasmid_uptake_arr[idx_uptake_included]
+#     prom_included = [all_cell_prom_list[i] for i in idx_uptake_included]
+#     # print("prom_rel cells included: ", prom_included)
+#     pulse_cell_prom = [prom for prom in prom_included if prom > 0]
+#     percent_pulse_cells = (len(pulse_cell_prom)/len(prom_included))*100
+#     print("percent pulse cells", percent_pulse_cells, "%")
+#     percent_pulse_cells_list.append(percent_pulse_cells)
+# plt.plot(percentile, percent_pulse_cells_list)
+# plt.axvline(x=threshold_percent, color="k", linewidth=1,linestyle="dotted", label="selected threshold")
+# plt.legend()
+# plt.xlabel("percentile average plasmid uptake")
+# plt.xticks(percentile)
+# plt.ylabel("% cells with a pulse")
+# plt.show()

@@ -66,15 +66,18 @@ def run_results_analysis(results_analysis_settings: dict):
 
     selected_results_file_name = (
         "selected_results_" + 
-        results_analysis_settings["selected_results_name"] +
-        ".csv"
+        results_analysis_settings["selected_results_name"]
     )
-    selected_results_df.to_csv(folder_path + selected_results_file_name)
+    selected_results_df.to_csv(folder_path + selected_results_file_name + ".csv")
+    selected_results_df.to_pickle(folder_path + selected_results_file_name + ".pkl")
     all_cell_results_file_name = "all_cell_" + selected_results_file_name
-    all_cell_results_df.to_csv(folder_path + all_cell_results_file_name)
-    if all_cell_metrics_df:
+    all_cell_results_df.to_csv(folder_path + all_cell_results_file_name + ".csv")
+    all_cell_results_df.to_pickle(folder_path + all_cell_results_file_name + ".pkl")
+    if all_cell_metrics_df is not None:
         all_cell_metrics_file_name = "all_cell_metrics_" + results_analysis_settings["selected_results_name"]
         all_cell_metrics_df.to_csv(folder_path + all_cell_metrics_file_name + ".csv")
+        all_cell_metrics_df.to_pickle(folder_path + all_cell_metrics_file_name + ".pkl")
+
 
 
 
@@ -82,20 +85,25 @@ if __name__ == "__main__":
     repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 
     #amplifier vary dose
-    results_path_amp_vary_dose = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/"
-    amp_vary_dose_results_name = "high_ON_rel"
-    amp_vary_dose_obj_range = [63.11786016]
+    # results_path_amp_vary_dose = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/"
+    # amp_vary_dose_results_name = "high_ON_rel"
+    # amp_vary_dose_obj_range = [63.11786016]
 
 
 
-    results_analysis_settings = {
-        "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
-        "results_path": results_path_amp_vary_dose,
-        "selected_results_name": amp_vary_dose_results_name,
-        "obj_range": amp_vary_dose_obj_range,
-        "multi_obj": False,
-        "plot_topologies": True,
-        "plot_all_cell_results": True
-    }
+    # results_analysis_settings = {
+    #     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
+    #     "results_path": results_path_amp_vary_dose,
+    #     "selected_results_name": amp_vary_dose_results_name,
+    #     "obj_range": amp_vary_dose_obj_range,
+    #     "multi_obj": False,
+    #     "plot_topologies": True,
+    #     "plot_all_cell_results": True
+    # }
+
+    results_analysis_settings = {"repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/", 
+ "results_path": "Pulse_seed_pop_DsRED_inhibitor/t_pulse/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_seed_0/", 
+ "selected_results_name": "full_pareto", "obj_range": {"t_pulse": [0.0, 60.0]},
+ "multi_obj": True, "plot_topologies": True, "plot_all_cell_results": True}
 
     run_results_analysis(results_analysis_settings)
