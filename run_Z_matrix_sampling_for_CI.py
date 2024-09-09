@@ -63,6 +63,7 @@ def run_Z_matrix_sampling(
 
     for i in range(len(settings["CI_metrics"])):
         CI_metric_maxes = get_objective_errors(Z_matrix_sampling, settings["CI_metrics"][i])
+        print("CI_metric_maxes:", CI_metric_maxes)
         if len(CI_metric_maxes) == 1:
             figure_path = folder_path + "/" + settings["CI_metrics"][i][0]+"_CI.svg"
             plot_1D_obj_confidence_interval(
@@ -86,22 +87,21 @@ def run_Z_matrix_sampling(
     return Z_matrix_sampling
 
 settings = {
-    "test_case": "Amplifier",
+    "test_case": "SignalConditioner",
     "promo_node": "P1",
     "inhibitor": True,
-    "DsRed_inhibitor": False,
+    "DsRed_inhibitor": True,
     "pop": True,
     "num_processes": 8,
-    "obj_labels": ["ON_rel"],
-    "objective_threshold": 1E-10,
+    "obj_labels": ["ON_rel", "FI_rel"],
+    "objective_threshold": None,
     "max_time": 42,
-    "CI_metrics": [["ON_rel_range"], ["ON_rel_std_error"]],
-    "CI_ylim": True,
+    "CI_metrics": [["ON_rel_range", "FI_rel_range"], ["ON_rel_std_error", "FI_rel_std_error"]],
+    "CI_ylim": False,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/",
-    "folder_name": "Amplifier_pop_vary_dose_Z_matrix_sampling"
+    "results_path": "GA_results/SC_seed_pop_DsRED_inhibitor/Original_hyperparams/2024-05-02_Signal_Cond_pop_DsRED_inhibitor_original_hp_seed_0/",
+    "folder_name": "Z_matrix_sampling"
 }
-
 
 if __name__ == "__main__":
     if settings["test_case"] == "Amplifier":

@@ -10,7 +10,12 @@ from load_files_pop import (
     Ref,
     Z_20,
     Ref_pop20,
+    Z_200,
+    Ref_pop200,
+    Z_2000,
+    Ref_pop2000
 )
+pop_model_ref = {"20 cell": Ref_pop20, "200 cell": Ref_pop200, "2000 cell": Ref_pop2000}
 
 class Amplifier:
     def __init__(
@@ -58,9 +63,11 @@ class Amplifier:
 
         if pop:
             # set ref = simulation for 20-cell population
-            self.ref = Ref_pop20
+            # self.ref = Ref_pop20
             # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
             self.Z = Z_mat
+            self.ref = pop_model_ref[str(len(self.Z))+" cell"]
+
             # set simulate function for population based on whether to track single cell
             # outputs
             if single_cell_tracking:
