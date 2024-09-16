@@ -1,13 +1,14 @@
 import numpy as np
 import pickle
 from scipy.integrate import odeint
+from load_Z_mat_samples import Z_mat_list
 
 repo_path = "/Users/kdreyer/Documents/Github/GraphGA/"
 
 with open(repo_path+"promo.pkl", "rb") as fid:
     promo = pickle.load(fid)
 
-Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrices/"
+Z_path = "/Users/kdreyer/Documents/Github/GraphGA/Z_matrix_samples/"
 with open(Z_path + "Z_mat_20_cell0.npy", 'rb') as fid:
     Z_20 = np.load(fid)
 
@@ -49,6 +50,12 @@ def simulate_reference(Z, filename):
 
 # filename_2000 = "Ref_pop2000.pkl"
 # Ref_2000 = simulate_reference(Z_2000, filename_2000)
+
+# for i, z_mat in enumerate(Z_mat_list):
+#     z_mat = Z_mat_list[i]
+#     file_name = "Z_matrix_samples/Ref_pop20_"+str(i)+".pkl"
+#     Ref_20 = simulate_reference(z_mat, file_name)
+
 
 def simulate_reference_time_series(promo_list, Z):
     Ref_all_cells = dict()

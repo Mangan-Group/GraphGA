@@ -21,7 +21,7 @@ with open(repo_path + "Ref_pop200.pkl", "rb") as fid:
 with open(repo_path + "Ref_pop2000.pkl", "rb") as fid:
     Ref_pop2000 = pickle.load(fid)
 
-Z_path = repo_path + "Z_matrices/"
+Z_path = repo_path + "Z_matrix_samples/"
 with open(Z_path + "Z_mat_20_cell0.npy", 'rb') as fid:
     Z_20 = np.load(fid)
 

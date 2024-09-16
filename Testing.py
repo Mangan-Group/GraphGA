@@ -789,28 +789,12 @@ amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_
 # ON_rel_neg = amp.func(circuit_1_exp)
 # print(ON_rel_neg)
 
-path_results = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/Amp_seed_single_cell_vary_dose/Original_hyperparams_worked_well/2024-04-22_Amplifier_single_cell_vary_dose_original_hp_seed_0/"
-all_obj_fname = "all_objectives.pkl"
-all_circuits_fname = "all_circuits.pkl"
-with open(path_results+all_obj_fname, "rb") as fid:
-    amp_all_obj = pickle.load(fid)
-with open(path_results+all_circuits_fname, "rb") as fid:
-    amp_all_circuits = pickle.load(fid)
-# # print(amp_all_obj)
-# plot_1D_obj_scatter(path_results+"all_obj_scatter.svg", amp_all_obj, ["ON_rel"])
+from scipy.stats.mstats import gmean
 
-unique_obj, unique_indices = np.unique(amp_all_obj,
-                                return_index=True)
-unique_circuits = amp_all_circuits[unique_indices]
+l1 = [[0, 1, 2, 3], [0, 4, 5, 6]]
 
-print(len(unique_circuits))
+l1_zip = list(zip(*l1))
 
-file_name = "all_unique_obj.pkl"
-with open(path_results + file_name, "wb") as fid:
-    pickle.dump(unique_obj, fid)
-
-file_name = "all_unique_circuits.pkl"
-with open(path_results + file_name, "wb") as fid:
-    pickle.dump(unique_circuits, fid)
-
-plot_1D_obj_scatter(path_results+"unique_obj_scatter_labeled.svg", amp_all_obj, ["ON_rel"])
+l1_means = [gmean(k) for k in list(zip(*l1))[1:]]
+l1_means.insert(0, 0.0)
+print(l1_means)

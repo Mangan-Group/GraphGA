@@ -4,6 +4,7 @@
 import os
 import json
 from datetime import date
+from copy import deepcopy
 
 def make_main_directory(settings: dict, custom_folder_path: str=None) -> str:
     """Makes main results folder
@@ -33,8 +34,11 @@ def make_main_directory(settings: dict, custom_folder_path: str=None) -> str:
     os.chdir(folder_path)
 
     # save settings
+    settings_save = deepcopy(settings)
+    if "Z_matrix" in settings:
+        settings_save["Z_matrix"] = settings["Z_matrix"].tolist()
     with open("./settings.json", "w", encoding="utf-8") as fid:
-        json.dump(settings, fid)
+        json.dump(settings_save, fid)
     return folder_path
 
 def make_results_analysis_directory(full_results_path: str,
