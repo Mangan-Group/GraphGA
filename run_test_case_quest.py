@@ -6,6 +6,7 @@ from multiprocessing import Pool
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
+from load_files_pop import Z_200
 from load_Z_mat_samples import Z_mat_list, Ref_list
 from saving import make_main_directory
 from GA import sampling
@@ -37,6 +38,10 @@ def run(
         Z_mat = settings["Z_matrix"]
     else:
         Z_mat = Z_mat_list[0]
+    if "mean" in settings:
+        mean_ = settings["mean"]
+    else:
+        mean_ = "arithmetic"
 
     problem = testcase(
         promo_node=settings["promo_node"],
@@ -50,6 +55,7 @@ def run(
         probability_mutation=settings["probability_mutation"],
         mutate_dose=settings["mutate_dose"],
         pop=settings["pop"],
+        mean=mean_,
         Z_mat=Z_mat,
         Ref_pop=Ref_pop,
         num_processes=settings["num_processes"],
@@ -153,10 +159,13 @@ if __name__ == "__main__":
     seed = 0
     np.random.seed(seed)
     settings["seed"] = seed
-    for i, zmat in enumerate(Z_mat_list[1:]):
-        settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
-        settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)
-        Ref_pop = Ref_list[i+1]
-        settings["reference"] = Ref_pop
-        settings["Z_matrix"] = zmat
-        run(test_case, settings)
+    # for i, zmat in enumerate(Z_mat_list[1:]):
+    #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
+    #     settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)
+    #     Ref_pop = Ref_list[i+1]
+    #     settings["reference"] = Ref_pop
+    #     settings["Z_matrix"] = zmat
+    #     run(test_case, settings)
+
+    settings["Z_matrix"] = Z_200
+    run(test_case, settings)

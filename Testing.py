@@ -383,32 +383,32 @@ amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_
 
 
 # ### Pulse ZF1 and ZF2 only, t_pulse 126h (50 gen)
-# repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
+repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
 # file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
-# file_path_unique_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/unique_objectives_df.pkl"
-# file_path_unique_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/unique_circuits.pkl"
+file_path_unique_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/unique_objectives_df.pkl"
+file_path_unique_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_new_dose_terms_seed_0/unique_circuits.pkl"
 
-# final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
-# final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
-# final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
+final_obj_unique = pd.read_pickle(repo_path+file_path_final_obj).drop_duplicates()
+final_obj_unique["prominence_rel"] = final_obj_unique["prominence_rel"]*-1
+final_obj_unique = final_obj_unique[final_obj_unique["prominence_rel"] > 0]
 
-# unique_obj = pd.read_pickle(repo_path+file_path_unique_obj)
-# unique_circuits = pd.read_pickle(repo_path+file_path_unique_circuits)
-# unique_obj_high_prom = unique_obj[unique_obj["prominence_rel"] < -0.2]
-# unique_obj_high_prom_abs = unique_obj_high_prom.copy()
-# unique_obj_high_prom_abs["prominence_rel"] = abs(unique_obj_high_prom["prominence_rel"])
-# for index, row in unique_obj_high_prom_abs.iterrows():
-#     if row["prominence_rel"] in final_obj_unique["prominence_rel"].tolist():
-#         unique_obj_high_prom_abs.drop(index, inplace=True)
+unique_obj = pd.read_pickle(repo_path+file_path_unique_obj)
+unique_circuits = pd.read_pickle(repo_path+file_path_unique_circuits)
+unique_obj_high_prom = unique_obj[unique_obj["prominence_rel"] < -0.2]
+unique_obj_high_prom_abs = unique_obj_high_prom.copy()
+unique_obj_high_prom_abs["prominence_rel"] = abs(unique_obj_high_prom["prominence_rel"])
+for index, row in unique_obj_high_prom_abs.iterrows():
+    if row["prominence_rel"] in final_obj_unique["prominence_rel"].tolist():
+        unique_obj_high_prom_abs.drop(index, inplace=True)
 
-# unique_circuits_high_prom = unique_circuits[unique_obj_high_prom_abs.index.tolist()]
-# unique_obj_high_prom_abs.reset_index(inplace=True)
-# sorted_selected_pareto_obj = unique_obj_high_prom_abs.sort_values("t_pulse", ascending=False)
-# sorted_obj_idx = sorted_selected_pareto_obj.index.tolist()
-# sorted_selected_pareto_circuits = unique_circuits_high_prom[sorted_obj_idx].flatten()
-# sorted_selected_pareto_obj.reset_index(inplace=True)
-# # print(sorted_selected_pareto_obj)
+unique_circuits_high_prom = unique_circuits[unique_obj_high_prom_abs.index.tolist()]
+unique_obj_high_prom_abs.reset_index(inplace=True)
+sorted_selected_pareto_obj = unique_obj_high_prom_abs.sort_values("t_pulse", ascending=False)
+sorted_obj_idx = sorted_selected_pareto_obj.index.tolist()
+sorted_selected_pareto_circuits = unique_circuits_high_prom[sorted_obj_idx].flatten()
+sorted_selected_pareto_obj.reset_index(inplace=True)
+# print(sorted_selected_pareto_obj)
 # edge_lists = []
 # dose_dict_list = []
 # # objs_list_p1 = []
@@ -425,10 +425,12 @@ amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_
 # # all_cells_dict_list_p2 = []
 # # pulse_p2 = PulseGenerator("P2", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"], single_cell_tracking=True)
 
-# for i, circuit in enumerate(sorted_selected_pareto_circuits):
+for i, circuit in enumerate(sorted_selected_pareto_circuits):
 #       edge_lists.append(circuit.edge_list)
 #       dose_dict_list.append(circuit.dose)
-#       keys_order = list(circuit.in_dict.keys())
+      keys_order = list(circuit.in_dict.keys())
+      print(keys_order)
+#       print(sorted_selected_pareto_obj.iloc[i])
 #       keys_order.remove("Rep")
 #       circuit.dose.pop("Rep")
 #       doses_ordered = {key: circuit.dose[key] for key in keys_order}
@@ -524,7 +526,7 @@ amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_
 
 
 ### Pulse ZF1 and ZF2 only, 3 obj 126h (50 gen)
-# repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 # file_path_final_obj = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_objectives_df.pkl"
 # file_path_final_circuits = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/2024-03-07_Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_new_dose_terms_seed_0/final_population.pkl"
 
@@ -534,13 +536,16 @@ amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_
 # final_obj_unique_reset_idx = final_obj_unique.reset_index()
 # # print(final_obj_unique_reset_idx)
 # unique_obj_idx = final_obj_unique.index.to_list()
-# # unique_obj_idx.remove(0)
-# # print(unique_obj_idx)
+# unique_obj_idx.remove(0)
+# # # print(unique_obj_idx)
 # final_circuits_unique = pd.read_pickle(repo_path+file_path_final_circuits)[unique_obj_idx]
-# # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
+# # # pulse = PulseGenerator("P1", [5, 75, 5], 2, True, True, {1: 46, 2: 122}, 2, 0.32, 0.57, mutate_dose=False, pop=True, max_time=126, obj_labels=["t_pulse (hr)", "prominence_rel"])
 # for i, circuit in enumerate(final_circuits_unique):
 # #     print(circuit[0].edge_list)
-# #     print(circuit[0].dose)
+#     print(final_obj_unique_reset_idx.iloc[i+1])
+#     print(circuit[0].dose)
+#     print(circuit[0].in_dict)
+#     print("*****************")
 #     print([final_obj_unique_reset_idx.loc[i, "t_pulse"], final_obj_unique_reset_idx.loc[i, "prominence_rel"]])
 # #         circuit[0].dose.pop("Rep")
 # #         circuit_topo = Topo(circuit[0].edge_list, circuit[0].dose, "P1")
@@ -789,12 +794,12 @@ amp_population_Z_sampling = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_
 # ON_rel_neg = amp.func(circuit_1_exp)
 # print(ON_rel_neg)
 
-from scipy.stats.mstats import gmean
+# from scipy.stats.mstats import gmean
 
-l1 = [[0, 1, 2, 3], [0, 4, 5, 6]]
+# l1 = [[0, 1, 2, 3], [0, 4, 5, 6]]
 
-l1_zip = list(zip(*l1))
+# l1_zip = list(zip(*l1))
 
-l1_means = [gmean(k) for k in list(zip(*l1))[1:]]
-l1_means.insert(0, 0.0)
-print(l1_means)
+# l1_means = [gmean(k) for k in list(zip(*l1))[1:]]
+# l1_means.insert(0, 0.0)
+# print(l1_means)

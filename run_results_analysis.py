@@ -49,7 +49,12 @@ def run_results_analysis(results_analysis_settings: dict):
             results_analysis_settings["obj_range"]
         )
 
-    all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, selected_results_df)
+    
+    if settings["pop"]:
+        all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, selected_results_df)
+    else:
+        all_cell_results_df = None
+        all_cell_metrics_df = None
 
     if results_analysis_settings["plot_topologies"]:
         for i, circuit in enumerate(selected_results_df["Topology"].tolist()):
@@ -70,9 +75,10 @@ def run_results_analysis(results_analysis_settings: dict):
     )
     selected_results_df.to_csv(folder_path + selected_results_file_name + ".csv")
     selected_results_df.to_pickle(folder_path + selected_results_file_name + ".pkl")
-    all_cell_results_file_name = "all_cell_" + selected_results_file_name
-    all_cell_results_df.to_csv(folder_path + all_cell_results_file_name + ".csv")
-    all_cell_results_df.to_pickle(folder_path + all_cell_results_file_name + ".pkl")
+    if all_cell_results_df is not None:
+        all_cell_results_file_name = "all_cell_" + selected_results_file_name
+        all_cell_results_df.to_csv(folder_path + all_cell_results_file_name + ".csv")
+        all_cell_results_df.to_pickle(folder_path + all_cell_results_file_name + ".pkl")
     if all_cell_metrics_df is not None:
         all_cell_metrics_file_name = "all_cell_metrics_" + results_analysis_settings["selected_results_name"]
         all_cell_metrics_df.to_csv(folder_path + all_cell_metrics_file_name + ".csv")
@@ -106,13 +112,13 @@ if __name__ == "__main__":
 #  "selected_results_name": "full_pareto", "obj_range": {"t_pulse": [0.0, 60.0]},
 #  "multi_obj": True, "plot_topologies": True, "plot_all_cell_results": True}
 #/Users/kdreyer/Documents/Github/GraphGA/GA_results/2024-09-11_Pulse_pop_DsRED_inhibitor_3_obj_80gens_gmean_seed_0_seed_0
-    results_path_pulse = "2024-09-11_Pulse_pop_DsRED_inhibitor_frac_pulse_seed_0_seed_0/"
-    sc_dsr_results_name = "full_pareto_front"
+    results_path_pulse = "Pulse_seed_pop_DsRED_inhibitor/frac_pulse/2024-09-16_Pulse_pop_DsRED_inhibitor_frac_pulse_pop200/"
+    pulse_results_name = "full_pareto_front"
     results_analysis_settings = {
         "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
         "results_path": results_path_pulse,
-        "selected_results_name": sc_dsr_results_name,
-        "obj_range": {"prominence_rel": [0.0, 60.0]},
+        "selected_results_name": pulse_results_name,
+        "obj_range": {"prominence_rel": [0.0, 70.0]},
         "multi_obj": True,
         "plot_topologies": True,
         "plot_all_cell_results": True

@@ -8,7 +8,7 @@ import seaborn as sns
 from scipy.interpolate import interp2d
 from math import ceil, floor
 from load_files_pop import Z_20, Ref_pop20
-from Reference_pop import simulate_reference_time_series
+# from Reference_pop import simulate_reference_time_series
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
 orange_ = [i/255 for i in [230, 159, 0]]
@@ -550,18 +550,25 @@ def plot_obj_progression_set(
         n_gens: int,
         objectives_lists: np.ndarray,
         obj_label: str,
+        y_ticks: list=None,
         y_lower_lim: float=None
 ):
     generations = np.arange(n_gens+1)
 
-    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-    for obj_list in objectives_lists:
-        ax.plot(generations, obj_list)
+    cmap = plt.get_cmap("plasma_r", len(objectives_lists))
+    fig, ax = plt.subplots(1, 1, figsize= (1.9, 1.75))
+    for i, obj_list in enumerate(objectives_lists):
+        ax.plot(generations, obj_list, color=cmap(i), label="seed"+str(i))
     ax.set_xlabel("Generation")
+    ax.set_xticks(np.arange(0, n_gens+1, 10))
+    ax.set_xlim(left=0)
     ax.set_ylabel(obj_label)
     if y_lower_lim:
         ax.set_ylim(bottom=y_lower_lim)
+    else:
+        ax.set_ylim(bottom=0)
     # plt.show()
+    plt.legend()
     plt.savefig(figure_path, bbox_inches="tight")
 
 
@@ -626,46 +633,3 @@ def plot_pareto_front_set_3D(
     ax.set_zlabel(obj_labels[2])
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
-
-
-
-Ref_all_cells = simulate_reference_time_series(["P1"], Z_20)
-ref_all_cell_time_series = Ref_all_cells["P1"]["on all cells"]
-# pulse_cells = [10, 13, 16, 18]
-ref_pulse_cells_time_series = ref_all_cell_time_series #[ref_all_cell_time_series[i] for i in pulse_cells]
-
-repo_path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/"
-#3 obj
-# results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_seed_0/Results_analysis/"
-# file_name = "all_cell_selected_results_low_t_pulse.csv"
-
-#t pulse
-results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_seed_0/Results_analysis_sub_opt/"
-file_name = "all_cell_selected_results_sub_opt.csv"
-
-save_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/"
-# t_pulse results are index 0 only; 3obj are indices 0-4
-all_cell_results = pd.read_csv(repo_path+results_path+file_name)
-all_cell_time_series_opt = all_cell_results.copy().iloc[1:2]
-# print(all_cell_time_series_opt["t_pulse_mean"])
-conditions = [3]
-# conditions = [1, 2, 4, 6, 5]
-drop_labels_3obj = ["Topology","Rep_rel time series mean", "t_pulse_mean", "peak_rel_mean", "prominence_rel_mean"]
-drop_labels_t_pulse = ["Topology","Rep_rel time series mean", "t_pulse_mean", "prominence_rel_mean"]
-all_cell_time_series_opt = all_cell_time_series_opt.drop(drop_labels_t_pulse, axis=1)
-all_cell_time_series_opt["Rep_rel time series for each cell"] = all_cell_time_series_opt["Rep_rel time series for each cell"].astype(object)
-# pulse_cells = [10, 13, 16, 18]
-
-for index, row in all_cell_time_series_opt.iterrows():
-        all_cell_list = eval(row["Rep_rel time series for each cell"])
-        pulse_cell_time_series_opt = all_cell_list #[all_cell_list[i] for i in pulse_cells]
-        all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = pulse_cell_time_series_opt
-        # all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = eval(row["Rep_rel time series for each cell"])
-        row_as_list = all_cell_time_series_opt.loc[index]
-        # plot_pulse_ensemble_time_series(repo_path+save_path, row_as_list, conditions[index])
-        # plot_pulse_ensemble_violin(repo_path+save_path, row_as_list, conditions[index])
-        # plot_split_ensemble_violin(repo_path+save_path, row_as_list, ref_pulse_cells_time_series, conditions[index]) 
-
-# plot_ref_ensemble_time_series(repo_path+save_path, ref_pulse_cells_time_series)
-# plot_ref_ensemble_violin(repo_path+save_path, ref_pulse_cells_time_series)
-# plot_ref_ensemble_time_series("", ref_all_cell_time_series)

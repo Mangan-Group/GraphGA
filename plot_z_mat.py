@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import statistics as stats
+from copy import deepcopy
 from load_files_pop import Z_20, Z_200, Z_2000
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
@@ -12,64 +13,51 @@ repo_path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity
 results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_seed_0/Results_analysis/"
 file_name = "all_cell_metrics_low_t_pulse.csv"
 
-#t pulse [1:2]
-# results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_seed_0/Results_analysis_sub_opt/"
-# file_name = "all_cell_metrics_sub_opt.csv"
-
-all_cell_results = pd.read_csv(repo_path+results_path+file_name)
-all_cell_time_series_opt = all_cell_results.copy().iloc[:5]
-# print(all_cell_time_series_opt["single_cell_prominence"].to_list)
-all_cell_prom_list = eval(all_cell_time_series_opt["single_cell_prominence"].tolist()[4])
-# print(all_cell_prom_list)
-
 
 Z_20_df = pd.DataFrame(data = Z_20, columns = ["plasmid_" + str(i) for i in range(5)])
-Z_20_df_log = Z_20_df.copy()
 Z_200_df = pd.DataFrame(data = Z_200, columns = ["plasmid_" + str(i) for i in range(9)])
-Z_200_df_log = Z_200_df.copy()
+Z_200_df = Z_200_df.drop(labels=["plasmid_" + str(i) for i in range(5,9)], axis=1)
 Z_2000_df = pd.DataFrame(data = Z_2000, columns = ["plasmid_" + str(i) for i in range(5)])
-Z_2000_df_log = Z_2000_df.copy()
-for col in ["plasmid_" + str(i) for i in range(5)]:
-#     max_val = max(Z_20_df[col])
-    Z_20_df_log[col] = np.log10(Z_20_df_log[col])
-    Z_200_df_log[col] = np.log10(Z_200_df_log[col])
-    Z_2000_df_log[col] = np.log10(Z_2000_df_log[col])
-# print(Z_20_df_log)
-
-cells = np.arange(2000)
 
 ####plot all plasmids overlapping
-path_save = repo_path + "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/"
-color_list = plt.rcParams['axes.prop_cycle'].by_key()['color']
-fig1, axs1 = plt.subplots(1, 1, figsize=(6, 3))
-# fig2, axs2 = plt.subplots(1, 1, figsize=(6, 4))
-for plasmid in range(4):
-    axs1.plot(cells, Z_2000[:, plasmid], label="plasmid "+str(plasmid))
-#     # axs[plasmid, 1].hist(np.log10(Z_20[:, plasmid]), bins=20)
+def plot_all_plasmid_uptake(Z_mat, path_save):
+    num_cells = len(Z_mat)
+    cells = np.arange(0, num_cells)
+    num_plasmids = np.shape(Z_mat)[-1]
+    color_list = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    fig1, axs1 = plt.subplots(1, 1, figsize=(6, 3))
+    fig2, axs2 = plt.subplots(1, 1, figsize=(6, 4))
+    for plasmid in range(num_plasmids):
+        axs1.plot(cells, Z_mat[:, plasmid], label="plasmid "+str(plasmid))
     axs1.set_xticks(cells)
-    # axs1.set_xlabel("Cell number")
+    axs1.set_xlabel("Cell number")
     axs1.set_xticks([])
     axs1.set_ylabel("Mean norm. amount \n of plasmid uptaken")
-    axs1.set_ylim(top=20)
-    # Z_20_df_log["plasmid_" + str(plasmid)].plot.density(ind=20, color=color_list[plasmid], ax=axs1)
+    axs1.legend()
+    Z_df = pd.DataFrame(data = Z_mat, columns = ["plasmid_" + str(i) for i in range(num_plasmids)])
+    Z_df_log = Z_df.copy()
+    for i, column in enumerate(Z_df.columns):
+        Z_df_log[column] = np.log10(Z_df_log[column])
+        Z_df_log[column].plot.density(ind=num_cells, color=color_list[i], ax=axs2)
 
-    # axs1.set_xlim([-4, 2])
-    # axs1.set_ylim([0, 0.8])
-    # axs1.set_xlabel("Mean norm. amount of \n plasmid uptaken (log10 a.u.)")
-    # axs1.set_ylabel("Probability density")
-    # axs1.set_box_aspect(1)
+    axs2.set_xlim([-4, 2])
+    axs2.set_ylim([0, 0.8])
+    axs2.set_xlabel("Mean norm. amount of \n plasmid uptaken (log10 a.u.)")
+    axs2.set_ylabel("Probability density")
+    axs2.set_box_aspect(1)
+    # plt.show()
+    fig1.savefig(path_save + "plasmid_uptake_per_cell_" +str(num_cells)+ "_cell.svg")
+    fig2.savefig(path_save + "plasmid_uptake_distribution_" +str(num_cells)+ "_cell.svg")
+
 # pulse_cell_list = [1, 7, 10, 13, 16, 17, 18, 19]
 # label_list = ["cell with pulse"] + [""]*(len(pulse_cell_list)-1)
 # for i, pulse_cell in enumerate(pulse_cell_list):
 #     axs1.axvline(x=pulse_cell, color="k", linewidth=1, label=label_list[i])
-axs1.legend()
-plt.show()
-# fig1.savefig(path_save + "plasmid_uptake_per_cell_2000_cell_zoomed.svg")
-# fig1.savefig(path_save + "plasmid_uptake_distribution_20_cell.svg")
 
 
 
 #### avg plasmid uptake vs prominence
+# def plot_avg_uptake_prom_rel():
 # plasmids = ["plasmid_0", "plasmid_1", "plasmid_2", "plasmid_3", "plasmid_4"]
 # plasmid_uptake_maxes = [max(Z_20_df[plasmid]) for plasmid in plasmids]
 # # print(plasmid_uptake_maxes)
@@ -91,6 +79,7 @@ plt.show()
 # plt.show()
 
 #### avg plasmid uptake percentile vs prominence
+# def plot_avg_uptake_pct_prom_rel():
 # fig, ax = plt.subplots(1, 1, figsize= (3.5, 3))
 # Z_20_df["average"] = np.mean(Z_20_df, axis=1)
 # plasmid_uptake_list = Z_20_df["average"].tolist()
@@ -111,7 +100,6 @@ plt.show()
 #     print("prom_rel cells included: ", prom_included)
 #     # pct_plot = [90, 80, 70, 60, 50, 40, 30, 20, 10]
 #     ax.plot([percentile[i]]*len(prom_included), prom_included, linestyle="none", marker="o", color="grey")
-
 
 # # print(max_avg_uptake*0.6)
 # ax.axvline(x=threshold, color="k", linewidth=1, linestyle="dotted", label="selected threshold")

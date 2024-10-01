@@ -3,6 +3,8 @@ import pandas as pd
 import json
 import pickle
 from multiprocessing import Pool
+from load_files_pop import Z_200
+from load_Z_mat_samples import Z_mat_list, Ref_list
 from typing import Union
 from plot_search_results import (
     plot_1D_all_cell_obj,
@@ -169,7 +171,44 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
     else:
         raise Exception("Error: test case not defined")   
     
-    problem = test_case(
+
+    if settings["test_case"] == "PulseGenerator":
+        if "reference" in settings:
+            Ref_pop = settings["reference"]
+        else:
+            Ref_pop = None
+        if "Z_matrix" in settings:
+            Z_mat = settings["Z_matrix"]
+        else:
+            Z_mat = Z_mat_list[0]
+        if "mean" in settings:
+            mean_ = settings["mean"]
+        else:
+            mean_ = "arithmetic"
+
+        problem = test_case(
+            promo_node=settings["promo_node"],
+            dose_specs=settings["dose_specs"],
+            max_part=settings["max_part"],
+            inhibitor=settings["inhibitor"],
+            DsRed_inhibitor=settings["DsRed_inhibitor"],
+            num_dict=settings["num_dict"],
+            n_gen=settings["n_gen"],
+            probability_crossover=settings["probability_crossover"],
+            probability_mutation=settings["probability_mutation"],
+            mutate_dose=settings["mutate_dose"],
+            pop=settings["pop"],
+            mean=mean_,
+            Z_mat=Z_mat,
+            Ref_pop=Ref_pop,
+            num_processes=settings["num_processes"],
+            obj_labels=settings["obj_labels"],
+            max_time=settings["max_time"],
+            single_cell_tracking=True
+    )
+
+    else:
+        problem = test_case(
         promo_node=settings["promo_node"],
         dose_specs=settings["dose_specs"],
         max_part=settings["max_part"],
@@ -210,7 +249,7 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
         for index, row in all_cell_results_df.iterrows():
             peak_cell_list = []
             prom_cell_list = []
-            for i in range(20):
+            for i in range(len(Z_mat)):
                 peak_cell = max(row["Rep_rel time series for each cell"][i])
                 peak_cell_list.append(peak_cell)
                 prom_cell =  test_case.calc_prominence_rel(row["Rep_rel time series for each cell"][i], peak_cell)

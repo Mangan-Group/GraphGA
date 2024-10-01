@@ -19,13 +19,16 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
             objs_list.append(objs)
 
         y_lower_lim = np.max(objs_list) - 0.1*np.max(objs_list)
+        y_ticks = [0, 20, 40, 60]
         figure_path = results_path+obj_labels[0]+"_progression.svg"
         plot_obj_progression_set(figure_path, ngens, 
-                                objs_list, "Maximum "+obj_labels[0])
+                                objs_list, "Maximum "+obj_labels[0],
+                                y_ticks = y_ticks)
         
         figure_path_zoomed = results_path+obj_labels[0]+"_progression_zoomed.svg"
         plot_obj_progression_set(figure_path_zoomed, ngens, 
-                                objs_list, "Maximum "+obj_labels[0], y_lower_lim)
+                                objs_list, "Maximum "+obj_labels[0], 
+                                y_lower_lim=y_lower_lim)
 
     else:
         (seed_unique_edge_combo_list, 
@@ -54,9 +57,8 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
                                 circuits_unique_to_seed_list
         )
 
-path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-path_pulse = "Pulse_seed_pop_DsRED_inhibitor/3_obj/Optimized_hyperparams_vary_pop_3obj_opt_stdev_ngen70/"
-results_runs = "2024-07-05_Pulse_pop_DsRED_inhibitor_3obj_vary_pop_opt_hp_stdev_ngen70_seed_"
+# path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+# path_pulse = "Pulse_seed_pop_DsRED_inhibitor/Original_hyperparams/t_pulse/Pulse_t_pulse_Z20_samples/"
+# results_runs = "2024-09-16_Pulse_pop_DsRED_inhibitor_t_pulse_Z20_"
 
-run_seed_results_comparisons(path_results+path_pulse, results_runs, 3, ["t_pulse", "peak_rel", "prominence_rel"])
-
+# run_seed_results_comparisons(path_results+path_pulse, results_runs, 2, ["t_pulse", "prominence_rel"])

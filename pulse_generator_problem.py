@@ -31,6 +31,7 @@ class PulseGenerator:
             probability_mutation: float,
             mutate_dose: bool=False,
             pop: bool=False,
+            mean: str="arithmetic",
             Z_mat: np.ndarray=Z_20,
             Ref_pop: dict=None, 
             num_processes: int=None,
@@ -79,7 +80,11 @@ class PulseGenerator:
             # set simulate function for population based on whether to track single cell
             # outputs
             if single_cell_tracking:
-                self.simulate = self.simulate_pop_single_cell_tracking
+                if mean == "arithmetic":
+                    self.simulate = self.simulate_pop_single_cell_tracking
+                else:
+                    self.simulate = self.simulate_pop_gmean_single_cell_tracking
+
                 if len(self.obj_labels) == 3:
                     self.func = self.func_single_cell_tracking_3obj
                 elif "t_pulse" in '\t'.join(self.obj_labels):
@@ -90,7 +95,11 @@ class PulseGenerator:
                     self.func = self.func_single_cell_tracking_frac_pulse
                     
             else:
-                self.simulate = self.simulate_pop
+                if mean == "arithmetic":
+                    self.simulate = self.simulate_pop
+                else:
+                    self.simulate = self.simulate_pop_gmean
+
                 if len(self.obj_labels) == 3:
                     self.func = self.func_obj_3obj
                 elif "t_pulse" in '\t'.join(self.obj_labels):
@@ -148,17 +157,43 @@ class PulseGenerator:
             topology, rep_on_ts_all
         )
         rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
-        # rep_on_ts_gmeans = [gmean(k) for k in list(zip(*rep_on_ts_all))[1:]]
-        # rep_on_ts_gmeans.insert(0, 0.0)
         rep_on_ts_rel_mean = self.calc_rep_rel(topology, rep_on_ts_means)
-        # rep_on_ts_rel_gmean = self.calc_rep_rel(topology, rep_on_ts_gmeans)
-
 
         all_cells_dict = {"Topology": topology, 
                           "Rep_rel time series for each cell": rep_on_ts_rel_all,
                           "Rep_rel time series mean": rep_on_ts_rel_mean}
 
         return t, rep_on_ts_means, all_cells_dict, rep_on_ts_all
+    
+
+    def simulate_pop_gmean_single_cell_tracking(
+        self, 
+        topology: object, 
+    ):
+        rep_on_ts_all = []
+        nc = len(self.Z)
+        zipped_args = list(zip([topology]*nc, self.Z))
+        for cell in range(0, nc):
+            t, rep_on_ts = self.simulate_cell(                
+                zipped_args[cell][0],
+                zipped_args[cell][1]
+            )
+            rep_on_ts_all.append(rep_on_ts)
+
+        rep_on_ts_rel_all = self.calc_all_cell_rep_rel(
+            topology, rep_on_ts_all
+        )
+        rep_on_ts_gmeans = [gmean(k) for k in list(zip(*rep_on_ts_all))[1:]]
+        rep_on_ts_gmeans.insert(0, 0.0)
+        rep_on_ts_rel_gmean = self.calc_rep_rel(topology, rep_on_ts_gmeans)
+
+
+        all_cells_dict = {"Topology": topology, 
+                          "Rep_rel time series for each cell": rep_on_ts_rel_all,
+                          "Rep_rel time series mean": rep_on_ts_rel_gmean}
+
+        return t, rep_on_ts_gmeans, all_cells_dict, rep_on_ts_all
+
     
     def simulate_pop(
         self, 
@@ -175,9 +210,28 @@ class PulseGenerator:
             rep_on_ts_all.append(rep_on_ts)
 
         rep_on_ts_means = [np.mean(k) for k in zip(*rep_on_ts_all)]
-        # rep_on_ts_gmeans = [gmean(k) for k in list(zip(*rep_on_ts_all))[1:]]
-        # rep_on_ts_gmeans.insert(0, 0.0)
-        return t, rep_on_ts_means #rep_on_ts_gmeans
+
+        return t, rep_on_ts_means
+    
+
+    def simulate_pop_gmean(
+        self, 
+        topology: object, 
+    ):
+        rep_on_ts_all = []
+        nc = len(self.Z)
+        zipped_args = list(zip([topology]*nc, self.Z))
+        for cell in range(0, nc):
+            t, rep_on_ts = self.simulate_cell(                
+                zipped_args[cell][0],
+                zipped_args[cell][1]
+            )
+            rep_on_ts_all.append(rep_on_ts)
+
+        rep_on_ts_gmeans = [gmean(k) for k in list(zip(*rep_on_ts_all))[1:]]
+        rep_on_ts_gmeans.insert(0, 0.0)
+        return t, rep_on_ts_gmeans
+
 
     def calc_rep_rel(self, topology, rep_on_ts):
         reference_on = self.ref[topology.promo_node]['on']
