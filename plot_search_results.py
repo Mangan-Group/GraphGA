@@ -90,7 +90,7 @@ def plot_hypervolumes_set(
 ):
     generations = np.arange(n_gens)
 
-    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+    fig, ax = plt.subplots(1, 1, figsize= (2, 2))
     for hv_list in hypervolumes_lists:
         ax.plot(generations, hv_list)
     ax.set_xlabel("Generation")

@@ -142,23 +142,23 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    # for seed in range(0, 1):
-    #     settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
-    #     np.random.seed(seed)
-    #     settings["seed"] = seed
-    #     settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
+    for seed in range(0, 10):
+        settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
+        np.random.seed(seed)
+        settings["seed"] = seed
+        settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
 
-    #     run(test_case, settings)
-    #     print("seed "+str(seed)+" complete")
-
-    seed = 0
-    np.random.seed(seed)
-    settings["seed"] = seed
-    for i, zmat in enumerate(Z_mat_list[1:]):
-        settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
-        settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)
-        Ref_pop = Ref_list[i+1]
-        settings["reference"] = Ref_pop
-        settings["Z_matrix"] = zmat
         run(test_case, settings)
+        print("seed "+str(seed)+" complete")
+
+    # seed = 0
+    # np.random.seed(seed)
+    # settings["seed"] = seed
+    # for i, zmat in enumerate(Z_mat_list[1:]):
+    #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
+    #     settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)
+    #     Ref_pop = Ref_list[i+1]
+    #     settings["reference"] = Ref_pop
+    #     settings["Z_matrix"] = zmat
+    #     run(test_case, settings)
         # print("Z_20 "+str(i+1)+" run complete")

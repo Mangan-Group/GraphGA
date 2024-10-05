@@ -99,7 +99,7 @@ settings = {
     "CI_metrics": [["ON_rel_range", "FI_rel_range"], ["ON_rel_std_error", "FI_rel_std_error"]],
     "CI_ylim": False,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/SC_seed_pop_DsRED_inhibitor/Original_hyperparams/2024-05-02_Signal_Cond_pop_DsRED_inhibitor_original_hp_seed_0/",
+    "results_path": "GA_results/SC_seed_pop_DsRED_inhibitor/Single_cell_model_opt_hyperparams/Fixed_pop_opt_hp_single_stdev_ngen50_not_converged/run2_ngen80_not_converged?/2024-06-01_Signal_cond_pop_DsRED_inhibitor_single_opt_hp_stdev_ngen50_run_ngen80_seed_0/",
     "folder_name": "Z_matrix_sampling"
 }
 

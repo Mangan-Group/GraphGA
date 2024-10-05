@@ -33,6 +33,7 @@ class Amplifier:
             pop: bool=False,
             CI: float=None,
             Z_mat: np.ndarray=Z_20,
+            Ref_pop: dict=None,
             num_processes: int=None,
             obj_labels: list=["ON_rel"],
             max_time: int=42,

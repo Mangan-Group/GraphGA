@@ -57,8 +57,8 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
                                 circuits_unique_to_seed_list
         )
 
-# path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
-# path_pulse = "Pulse_seed_pop_DsRED_inhibitor/Original_hyperparams/t_pulse/Pulse_t_pulse_Z20_samples/"
-# results_runs = "2024-09-16_Pulse_pop_DsRED_inhibitor_t_pulse_Z20_"
+path_results = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
+path_pulse = "SC_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_ngen50_max_hv/run2_ngen80/"
+results_runs = "2024-10-03_SignalCond_single_cell_DsRED_opt_hp_fixedpop_ngen50_seed_"
 
-# run_seed_results_comparisons(path_results+path_pulse, results_runs, 2, ["t_pulse", "prominence_rel"])
+run_seed_results_comparisons(path_results+path_pulse, results_runs, 2, ["ON_rel", "FI_rel"])

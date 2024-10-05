@@ -112,16 +112,17 @@ if __name__ == "__main__":
 #  "selected_results_name": "full_pareto", "obj_range": {"t_pulse": [0.0, 60.0]},
 #  "multi_obj": True, "plot_topologies": True, "plot_all_cell_results": True}
 #/Users/kdreyer/Documents/Github/GraphGA/GA_results/2024-09-11_Pulse_pop_DsRED_inhibitor_3_obj_80gens_gmean_seed_0_seed_0
-    results_path_pulse = "Pulse_seed_pop_DsRED_inhibitor/frac_pulse/2024-09-16_Pulse_pop_DsRED_inhibitor_frac_pulse_pop200/"
+    results_path_pulse = "SC_seed_single_cell_DsRED_inhibitor/Original_hyperparams/run2_ngen80/SignalCond_single_cell_DsRED_original_hp_seed_3/"
     pulse_results_name = "full_pareto_front"
     results_analysis_settings = {
         "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
         "results_path": results_path_pulse,
         "selected_results_name": pulse_results_name,
-        "obj_range": {"prominence_rel": [0.0, 70.0]},
+        "obj_range": {"FI_rel": [0.0, 2.0]},
         "multi_obj": True,
         "plot_topologies": True,
-        "plot_all_cell_results": True
+        "plot_all_cell_results": False
     }
 
     run_results_analysis(results_analysis_settings)
+#SC_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_ngen50/run1_ngen50/2024-10-03_SignalCond_single_cell_DsRED_opt_hp_fixedpop_ngen50_seed_6
