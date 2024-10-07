@@ -88,41 +88,17 @@ def run_results_analysis(results_analysis_settings: dict):
 
 
 if __name__ == "__main__":
-    repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 
-    #amplifier vary dose
-    # results_path_amp_vary_dose = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/"
-    # amp_vary_dose_results_name = "ON_rel_full_CI"
-    # amp_vary_dose_obj_range = [63.11786016]
-
-
-
-    # results_analysis_settings = {
-    #     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
-    #     "results_path": results_path_amp_vary_dose,
-    #     "selected_results_name": amp_vary_dose_results_name,
-    #     "obj_range": amp_vary_dose_obj_range,
-    #     "multi_obj": False,
-    #     "plot_topologies": True,
-    #     "plot_all_cell_results": True
-    # }
-
-#     results_analysis_settings = {"repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/", 
-#  "results_path": "Pulse_seed_pop_DsRED_inhibitor/t_pulse/2024-03-07_Pulse_pop_DsRED_inhibitor_t_pulse_126h_ngen80_new_dose_terms_seed_0/", 
-#  "selected_results_name": "full_pareto", "obj_range": {"t_pulse": [0.0, 60.0]},
-#  "multi_obj": True, "plot_topologies": True, "plot_all_cell_results": True}
-#/Users/kdreyer/Documents/Github/GraphGA/GA_results/2024-09-11_Pulse_pop_DsRED_inhibitor_3_obj_80gens_gmean_seed_0_seed_0
-    results_path_pulse = "SC_seed_single_cell_DsRED_inhibitor/Original_hyperparams/run2_ngen80/SignalCond_single_cell_DsRED_original_hp_seed_3/"
-    pulse_results_name = "full_pareto_front"
+    results_path = "Pulse_pop/Optimized_hyperparams/Single_cell_model_opt_hyperparams_max_hv/run2_ngen130/2024-10-06_Pulse_pop_DsRED_t_pulse_single_opt_hp_ngen130_seed_2/"
+    results_name = "full_pareto_front"
     results_analysis_settings = {
-        "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
-        "results_path": results_path_pulse,
-        "selected_results_name": pulse_results_name,
-        "obj_range": {"FI_rel": [0.0, 2.0]},
+        "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
+        "results_path": results_path,
+        "selected_results_name": results_name,
+        "obj_range": {"t_pulse": [0.0, 80.0]},
         "multi_obj": True,
         "plot_topologies": True,
         "plot_all_cell_results": False
     }
 
     run_results_analysis(results_analysis_settings)
-#SC_seed_single_cell_DsRED_inhibitor/Optimized_hyperparams_fixed_pop_ngen50/run1_ngen50/2024-10-03_SignalCond_single_cell_DsRED_opt_hp_fixedpop_ngen50_seed_6

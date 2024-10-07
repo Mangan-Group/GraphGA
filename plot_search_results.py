@@ -89,15 +89,42 @@ def plot_hypervolumes_set(
         y_lower_lim: float=None
 ):
     generations = np.arange(n_gens)
-
+    max_hv = max(np.array(hypervolumes_lists).flatten())
     fig, ax = plt.subplots(1, 1, figsize= (2, 2))
     for hv_list in hypervolumes_lists:
         ax.plot(generations, hv_list)
     ax.set_xlabel("Generation")
     ax.set_ylabel("Hypervolume")
+    ax.axhline(max_hv, xmin=0, xmax=generations[-1], linestyle="dashed", color="grey", label="max hv="+str(round(max_hv, 3)))
     if y_lower_lim:
         ax.set_ylim(bottom=y_lower_lim)
     # plt.show()
+    ax.legend()
+    plt.savefig(figure_path, bbox_inches="tight")
+
+def plot_hypervolumes_set_vs_combo(
+        figure_path: str,
+        n_gens: int,
+        hypervolumes_lists: np.ndarray,
+        opt_combo_hv:float,
+        selected_seed: int,
+        y_lower_lim: float=None
+):
+    generations = np.arange(n_gens)
+    fig, ax = plt.subplots(1, 1, figsize= (2, 2))
+    for i, hv_list in enumerate(hypervolumes_lists):
+        if i == selected_seed:
+            color_="k"
+        else:
+            color_="grey"
+        ax.plot(generations, hv_list, color=color_)
+    ax.set_xlabel("Generation in GA")
+    ax.set_ylabel("Hypervolume")
+    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], linestyle="dashed", color="grey", label="opt hv="+str(round(opt_combo_hv, 3)))
+    if y_lower_lim:
+        ax.set_ylim(bottom=y_lower_lim)
+    # plt.show()
+    ax.legend()
     plt.savefig(figure_path, bbox_inches="tight")
 
 
@@ -215,7 +242,7 @@ def plot_1D_obj_confidence_interval(
     ax.plot(jittered_x, unique_objectives, linestyle="None",
              marker="o", markersize=1, color="black", zorder=1) #markersize=1
     jittered_x.sort()
-    ax.fill_between(jittered_x, lower_bound, upper_bound, alpha=0.4, color=sky_blue, zorder=2)
+    ax.fill_between(jittered_x, lower_bound, upper_bound, alpha=0.4, color="grey", zorder=2)
     ax.set_xticklabels([])
     ax.set_xticks([])
     ax.set_ylabel(obj_labels[0])
@@ -282,71 +309,6 @@ def plot_2D_obj_confidence_interval(
         ax.set_ylim(bottom=0)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
-
-
-### not currently executable 
-# def plot_3D_obj_confidence_interval(
-#         objectives: pd.DataFrame,
-#         results_path: str,
-#         figure_path: str,
-#         CI_metric_maxes: list,
-#         obj_labels: list,
-# ):
-#     all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")
-    
-#     obj1_CI = CI_metric_maxes[0]
-#     obj2_CI = CI_metric_maxes[1]
-#     obj3_CI = CI_metric_maxes[2]
-
-#     upper_obj1 = np.array(objectives[obj_labels[0]])
-#     sorted_upper_idx = np.argsort(upper_obj1)
-#     sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
-#     lower_obj1 = np.array([i-obj1_CI for i in (objectives[obj_labels[0]])])
-#     sorted_lower_idx = np.argsort(lower_obj1)
-#     sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
-
-#     upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
-#     sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
-#     lower_obj2 = np.array([i-obj2_CI for i in (objectives[obj_labels[1]]*-1)])
-#     sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
-
-#     upper_obj3 = np.array(objectives[obj_labels[2]]*-1)
-#     sorted_upper_obj3 = upper_obj3[sorted_upper_idx]
-#     lower_obj3 = np.array([i-obj3_CI for i in (objectives[obj_labels[2]]*-1)])
-#     sorted_lower_obj3 = lower_obj3[sorted_lower_idx]
-
-#     # obj1_obj1_upper, obj2_obj2_upper = np.meshgrid(sorted_upper_obj1, sorted_upper_obj2)
-#     # obj3_obj3_upper = np.array(sorted_upper_obj3*len(sorted_upper_obj3)).reshape(len(sorted_upper_obj3), len(sorted_upper_obj3))
-#     # obj_3_upper_interpolation = interp2d(obj1_obj1_upper, obj2_obj2_upper, obj3_obj3_upper)
-#     all_obj1_vals = np.sort(np.concatenate([upper_obj1, lower_obj1]))
-#     all_obj2_vals = np.sort(np.concatenate([upper_obj2, lower_obj2]))
-
-#     # obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
-#     obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, sorted_upper_obj3)
-#     obj_3_upper_interpolation = obj_3_upper_function(all_obj1_vals, all_obj2_vals)[0, :]
-
-#     # obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
-#     obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, sorted_lower_obj3)
-#     obj_3_lower_interpolation = obj_3_lower_function(all_obj1_vals, all_obj2_vals)[0, :]
-
-#     upper_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_upper_interpolation)]
-#     lower_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_lower_interpolation)]
-#     all_vertices = [upper_vertices]+[lower_vertices]
-#     print(all_vertices)
-#     fig = plt.figure(figsize= (2.25, 2.25))
-#     ax = fig.add_subplot(projection='3d', computed_zorder=False)
-#     ax.scatter(
-#         xs=all_objectives[:, 0], ys=all_objectives[:, 1]*-1,
-#         zs=all_objectives[:, 2]*-1, color="black", zorder=1#marker="o", markersize=1,
-#         # color="black", zorder=1
-#     )
-#     ax.add_collection3d(Poly3DCollection(all_vertices, alpha=0.4, facecolors=sky_blue, zorder=2))
-#     ax.view_init(elev=10, azim=-115)
-#     ax.set_xlabel(obj_labels[0])
-#     ax.set_ylabel(obj_labels[1])
-#     ax.set_zlabel(obj_labels[2])
-#     plt.show()
-    # plt.savefig(figure_path, bbox_inches="tight")
 
 
 def plot_1D_all_cell_obj(

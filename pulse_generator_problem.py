@@ -253,9 +253,9 @@ class PulseGenerator:
             prominence_rel = prominence_rep_list[0]
         return prominence_rel
     
-    @staticmethod
+
     def calc_t_pulse(
-        t, rep_on_ts_rel, peak_rel, prominence_rel
+        self, t, rep_on_ts_rel, peak_rel, prominence_rel
     ):
 
         if prominence_rel != 0:
@@ -265,7 +265,7 @@ class PulseGenerator:
             #     t_pulse = 0
         
         else:
-            t_pulse = 0
+            t_pulse = self.max_time
         
         return t_pulse
 
