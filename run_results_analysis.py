@@ -89,16 +89,17 @@ def run_results_analysis(results_analysis_settings: dict):
 
 if __name__ == "__main__":
 
-    results_path = "Pulse_pop/Optimized_hyperparams/Single_cell_model_opt_hyperparams_max_hv/run2_ngen130/2024-10-06_Pulse_pop_DsRED_t_pulse_single_opt_hp_ngen130_seed_2/"
+    results_path = "2024-10-08_Pulse_pop_DsRED_frac_pulse_ZF1_ZF2_seed_0/"
     results_name = "full_pareto_front"
     results_analysis_settings = {
-        "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
+        # "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
+        "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
         "results_path": results_path,
         "selected_results_name": results_name,
-        "obj_range": {"t_pulse": [0.0, 80.0]},
+        "obj_range": {"frac_pulse": [0.0, 1.0]},
         "multi_obj": True,
         "plot_topologies": True,
-        "plot_all_cell_results": False
+        "plot_all_cell_results": True
     }
 
     run_results_analysis(results_analysis_settings)

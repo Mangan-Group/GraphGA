@@ -18,12 +18,12 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
                 objs = np.abs(pickle.load(fid))
             objs_list.append(objs)
 
-        y_lower_lim = np.max(objs_list) - 0.1*np.max(objs_list)
+        y_lower_lim = np.max(objs_list) - 0.5*np.max(objs_list)
         y_ticks = [0, 20, 40, 60]
         figure_path = results_path+obj_labels[0]+"_progression.svg"
-        plot_obj_progression_set(figure_path, ngens, 
-                                objs_list, "Maximum "+obj_labels[0],
-                                y_ticks = y_ticks)
+        # plot_obj_progression_set(figure_path, ngens, 
+        #                         objs_list, "Maximum "+obj_labels[0],
+        #                         y_ticks = y_ticks)
         
         figure_path_zoomed = results_path+obj_labels[0]+"_progression_zoomed.svg"
         plot_obj_progression_set(figure_path_zoomed, ngens, 
@@ -58,7 +58,7 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
         )
 
 
-path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/Pulse_pop/Optimized_hyperparams/Single_cell_model_opt_hyperparams_max_hv/run2_ngen130/"
-results_runs = "2024-10-06_Pulse_pop_DsRED_t_pulse_single_opt_hp_ngen130_seed_"
+# path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/Original_hyperparams/t_pulse/run1_ngen130/"
+# results_runs = "2024-10-08_Pulse_single_cell_DsRED_new_t_pulse_original_hp_seed_"
 
-run_seed_results_comparisons(path, results_runs, 2, ["t_pulse", "prominence_rel"])
+# run_seed_results_comparisons(path, results_runs, 2, ["t_pulse", "prominence_rel"])

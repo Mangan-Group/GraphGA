@@ -6,6 +6,7 @@ from multiprocessing import Pool
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
+from load_files_pop import Z_200
 from load_Z_mat_samples import Z_mat_list, Ref_list
 from saving import make_main_directory
 from GA import sampling
@@ -38,6 +39,28 @@ def run(
     else:
         Z_mat = Z_mat_list[0]
 
+    # if "mean" in settings:
+    #     problem = testcase(
+    #         promo_node=settings["promo_node"],
+    #         dose_specs=settings["dose_specs"],
+    #         max_part=settings["max_part"],
+    #         inhibitor=settings["inhibitor"],
+    #         DsRed_inhibitor=settings["DsRed_inhibitor"],
+    #         num_dict=settings["num_dict"],
+    #         n_gen=settings["n_gen"],
+    #         probability_crossover=settings["probability_crossover"],
+    #         probability_mutation=settings["probability_mutation"],
+    #         mutate_dose=settings["mutate_dose"],
+    #         pop=settings["pop"],
+    #         mean=settings["mean"],
+    #         Z_mat=Z_mat,
+    #         Ref_pop=Ref_pop,
+    #         num_processes=settings["num_processes"],
+    #         obj_labels=settings["obj_labels"],
+    #         max_time=settings["max_time"]
+    # )
+
+    # else:
     problem = testcase(
         promo_node=settings["promo_node"],
         dose_specs=settings["dose_specs"],
@@ -55,8 +78,8 @@ def run(
         num_processes=settings["num_processes"],
         obj_labels=settings["obj_labels"],
         max_time=settings["max_time"]
-    )
-
+)
+    print(problem.simulate)
     population = sampling(
         problem.promo_node,
         problem.num_dict,
@@ -142,17 +165,17 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    for seed in range(0, 10):
-        settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
-        np.random.seed(seed)
-        settings["seed"] = seed
-        settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
+    # for seed in range(5, 10):
+    #     settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
+    #     np.random.seed(seed)
+    #     settings["seed"] = seed
+    #     settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
 
-        run(test_case, settings)
-        print("seed "+str(seed)+" complete")
+    #     run(test_case, settings)
+    #     print("seed "+str(seed)+" complete")
 
-    # seed = 0
-    # np.random.seed(seed)
+    seed = 0
+    np.random.seed(seed)
     # settings["seed"] = seed
     # for i, zmat in enumerate(Z_mat_list[1:]):
     #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
@@ -162,3 +185,6 @@ if __name__ == "__main__":
     #     settings["Z_matrix"] = zmat
     #     run(test_case, settings)
         # print("Z_20 "+str(i+1)+" run complete")
+
+    # settings["Z_matrix"] = Z_200
+    run(test_case, settings)

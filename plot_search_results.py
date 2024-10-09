@@ -3,10 +3,12 @@ import networkx as nx
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import seaborn as sns
 from scipy.interpolate import interp2d
 from math import ceil, floor
+from brokenaxes import brokenaxes
 from load_files_pop import Z_20, Ref_pop20
 # from Reference_pop import simulate_reference_time_series
 
@@ -115,12 +117,14 @@ def plot_hypervolumes_set_vs_combo(
     for i, hv_list in enumerate(hypervolumes_lists):
         if i == selected_seed:
             color_="k"
+            zorder_=i*100
         else:
             color_="grey"
-        ax.plot(generations, hv_list, color=color_)
+            zorder_=i
+        ax.plot(generations, hv_list, color=color_, zorder=zorder_)
     ax.set_xlabel("Generation in GA")
     ax.set_ylabel("Hypervolume")
-    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], linestyle="dashed", color="grey", label="opt hv="+str(round(opt_combo_hv, 3)))
+    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], linestyle="dashed", color="red", label="opt hv="+str(round(opt_combo_hv, 3)))
     if y_lower_lim:
         ax.set_ylim(bottom=y_lower_lim)
     # plt.show()
@@ -394,7 +398,7 @@ def plot_all_cell_time_series(
     axs[1].plot(t[:43], rep_rel_mean[:43], color="k",
              label="population mean", lw="2"
     )
-    axs[0].legend()
+    # axs[0].legend()
     axs[0].set_xlabel("time (hours)")
     axs[1].set_xlabel("time (hours)")
     axs[0].set_ylabel("Reporter_rel")
@@ -512,26 +516,52 @@ def plot_obj_progression_set(
         n_gens: int,
         objectives_lists: np.ndarray,
         obj_label: str,
+        y_lower_lim: float,
         y_ticks: list=None,
-        y_lower_lim: float=None
+        # y_lower_lim: float=None
 ):
     generations = np.arange(n_gens+1)
 
     cmap = plt.get_cmap("plasma_r", len(objectives_lists))
-    fig, ax = plt.subplots(1, 1, figsize= (1.9, 1.75))
+    mpl.rcParams["figure.autolayout"] = False
+    fig = plt.figure(figsize= (3, 3))#(1.9, 1.75),
+                            #        gridspec_kw={'height_ratios': [2, 0.1]
+                            #    }, sharex=True)
+    # fig.subplots_adjust(hspace=-10)  # adjust space between Axes
+    bax = brokenaxes(ylims=((0, 2.5), (42.5, 64)), hspace=0.1)
     for i, obj_list in enumerate(objectives_lists):
-        ax.plot(generations, obj_list, color=cmap(i), label="seed"+str(i))
-    ax.set_xlabel("Generation")
-    ax.set_xticks(np.arange(0, n_gens+1, 10))
-    ax.set_xlim(left=0)
-    ax.set_ylabel(obj_label)
-    if y_lower_lim:
-        ax.set_ylim(bottom=y_lower_lim)
-    else:
-        ax.set_ylim(bottom=0)
-    # plt.show()
-    plt.legend()
-    plt.savefig(figure_path, bbox_inches="tight")
+        bax.plot(generations, obj_list, color=cmap(i), label="seed"+str(i))
+        bax.plot(generations, obj_list, color=cmap(i), label="seed"+str(i))
+    # axt.set_ylim([55, 64])
+    # axb.set_ylim([0, 10])
+    bax.set_xlim([0, 50])
+    bax.axs[1].set_yticks([0])
+    bax.axs[0].set_yticks([45, 50, 55, 60, 65])
+    # bax.draw_diags()
+    bax.set_xlabel("Generation in GA")
+    # axt.spines.bottom.set_visible(False)
+    # axb.spines.top.set_visible(False)
+    # axt.xaxis.tick_top()
+    # axt.tick_params(labeltop=False)  # don't put tick labels at the top
+    # axb.xaxis.tick_bottom()
+    # d = .5  # proportion of vertical to horizontal extent of the slanted line
+    # kwargs = dict(marker=[(-1, -d), (1, d)], markersize=5,
+    #             linestyle="none", color='k', mec='k', mew=1, clip_on=False)
+
+    # axt.plot([0, 1], [0, 0], transform=axt.transAxes, **kwargs)
+    # axb.plot([0, 1], [1, 1], transform=axb.transAxes, **kwargs)
+
+
+    # ax.set_xticks(np.arange(0, n_gens+1, 10))
+    # ax.set_xlim(left=0)
+    # ax.set_ylabel(obj_label)
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom=y_lower_lim)
+    # else:
+    #     ax.set_ylim(bottom=0)
+    plt.show()
+    # plt.legend()
+    # plt.savefig(figure_path, bbox_inches="tight")
 
 
 def plot_pareto_front_set(

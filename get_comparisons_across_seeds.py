@@ -4,6 +4,7 @@ import pandas as pd
 from copy import deepcopy
 from plot_search_results import (
     plot_hypervolumes_set,
+    plot_hypervolumes_set_vs_combo,
     plot_pareto_front_set,
     plot_pareto_front_set_3D
 )
@@ -270,6 +271,10 @@ def compare_hypervolumes(results_path, seed_folder):
     hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
     plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
                           n_gens, hypervolume_lists, y_lower_lim)
+    hypervolumes_vs_combo = "all_hvs_vs_combo.svg"
+    plot_hypervolumes_set_vs_combo(results_path+hypervolumes_vs_combo,
+                                  n_gens, hypervolume_lists, 45.89854218733082,
+                                  4, y_lower_lim=0)
     
     return final_hypervolumes
 

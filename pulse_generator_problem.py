@@ -54,11 +54,12 @@ class PulseGenerator:
         self.prob_mutation = probability_mutation
         self.mutate_dose = mutate_dose
         self.pop = pop
+        self.mean = mean,
         self.num_processes = num_processes
         self.obj_labels = obj_labels
         self.max_time = max_time
         self.system_eqs = system_equations_pop
-        
+
         if inhibitor:
             if DsRed_inhibitor:
                 self.system_eqs = system_equations_DsRed_pop
@@ -80,10 +81,10 @@ class PulseGenerator:
             # set simulate function for population based on whether to track single cell
             # outputs
             if single_cell_tracking:
-                if mean == "arithmetic":
-                    self.simulate = self.simulate_pop_single_cell_tracking
-                else:
-                    self.simulate = self.simulate_pop_gmean_single_cell_tracking
+                # if self.mean == "arithmetic":
+                self.simulate = self.simulate_pop_single_cell_tracking
+                # else:
+                #     self.simulate = self.simulate_pop_gmean_single_cell_tracking
 
                 if len(self.obj_labels) == 3:
                     self.func = self.func_single_cell_tracking_3obj
@@ -95,10 +96,10 @@ class PulseGenerator:
                     self.func = self.func_single_cell_tracking_frac_pulse
                     
             else:
-                if mean == "arithmetic":
-                    self.simulate = self.simulate_pop
-                else:
-                    self.simulate = self.simulate_pop_gmean
+                # if self.mean == "arithmetic":
+                self.simulate = self.simulate_pop
+                # else:
+                #     self.simulate = self.simulate_pop_gmean
 
                 if len(self.obj_labels) == 3:
                     self.func = self.func_obj_3obj
