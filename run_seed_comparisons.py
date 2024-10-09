@@ -20,14 +20,16 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
 
         y_lower_lim = np.max(objs_list) - 0.5*np.max(objs_list)
         y_ticks = [0, 20, 40, 60]
-        figure_path = results_path+obj_labels[0]+"_progression.svg"
+        # figure_path = results_path+obj_labels[0]+"_progression.svg"
         # plot_obj_progression_set(figure_path, ngens, 
         #                         objs_list, "Maximum "+obj_labels[0],
         #                         y_ticks = y_ticks)
         
-        figure_path_zoomed = results_path+obj_labels[0]+"_progression_zoomed.svg"
+        figure_path_zoomed = results_path+obj_labels[0]+"_progression_zoomed_paper.svg"
         plot_obj_progression_set(figure_path_zoomed, ngens, 
-                                objs_list, "Maximum "+obj_labels[0], 
+                                objs_list, obj_labels[0],
+                                selected_seed=0, 
+                                opt_obj=max(objs_list[0]),
                                 y_lower_lim=y_lower_lim)
 
     else:

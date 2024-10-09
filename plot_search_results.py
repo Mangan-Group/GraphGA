@@ -19,6 +19,7 @@ pink_ = [i/255 for i in [204, 121, 167]]
 bluish_green = [i/255 for i in [0, 158, 115]]
 vermillion = [i/255 for i in [213, 94, 0]]
 yellow_ = [i/255 for i in [240, 228, 66]]
+grey_ = [(i/255) for i in [150, 150, 150]]
 
 def plot_graph(
         figure_path: str,
@@ -231,31 +232,35 @@ def plot_1D_obj_confidence_interval(
         figure_path: str,
         CI_metric_max: float,
         obj_labels: list,
-        y_lim: int=False
+        y_lim_bottom: float=None 
 ):
     unique_objectives = pd.read_pickle(results_path+"unique_objectives.pkl")
     unique_objectives = unique_objectives.flatten()*-1
     max_objective = max(unique_objectives)
-
+    np.random.seed(0)
     x_vals = [1]*len(unique_objectives)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    lower_bound = [max_objective-CI_metric_max]*len(unique_objectives)
-    upper_bound = [max_objective]*len(unique_objectives)
-    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    print(min(jittered_x),max(jittered_x))
+    lower_bound = [max_objective-CI_metric_max]*(len(unique_objectives)+2)
+    upper_bound = [max_objective+CI_metric_max]*(len(unique_objectives)+2)
+    fig, ax = plt.subplots(1, 1, figsize= (1.75, 1.5))
     ax.plot(jittered_x, unique_objectives, linestyle="None",
-             marker="o", markersize=1, color="black", zorder=1) #markersize=1
-    jittered_x.sort()
-    ax.fill_between(jittered_x, lower_bound, upper_bound, alpha=0.4, color="grey", zorder=2)
+             marker="o", markersize=1, color="black", zorder=1)
+    x_CI_fill = np.append(jittered_x, [0.995, 1.105])
+    x_CI_fill.sort()
+    ax.fill_between(x_CI_fill, lower_bound, upper_bound, alpha=0.3, color=grey_, zorder=2,
+                    linewidth=0.25)
     ax.set_xticklabels([])
     ax.set_xticks([])
+    ax.set_xlim([0.995, 1.105])
     ax.set_ylabel(obj_labels[0])
-    if y_lim:
-        # if CI_metric_max <= 0.5:
-        #     y_lim = [floor(max_objective)-0.5, ceil(max_objective)]
-        # else:
-        y_lim = [floor(max_objective)-CI_metric_max, ceil(max_objective)]
-        ax.set_ylim(y_lim)
+    if y_lim_bottom is not None:
+        y_lim = [y_lim_bottom, round(max_objective+CI_metric_max, 1)]
+    else:
+        y_lim = [round(max_objective-CI_metric_max, 1), round(max_objective+0.05, 2)]
+        print(y_lim)
+    ax.set_ylim(y_lim)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -516,52 +521,51 @@ def plot_obj_progression_set(
         n_gens: int,
         objectives_lists: np.ndarray,
         obj_label: str,
+        selected_seed: int,
+        opt_obj: float,
         y_lower_lim: float,
         y_ticks: list=None,
         # y_lower_lim: float=None
 ):
     generations = np.arange(n_gens+1)
 
-    cmap = plt.get_cmap("plasma_r", len(objectives_lists))
     mpl.rcParams["figure.autolayout"] = False
-    fig = plt.figure(figsize= (3, 3))#(1.9, 1.75),
-                            #        gridspec_kw={'height_ratios': [2, 0.1]
-                            #    }, sharex=True)
-    # fig.subplots_adjust(hspace=-10)  # adjust space between Axes
-    bax = brokenaxes(ylims=((0, 2.5), (42.5, 64)), hspace=0.1)
+    fig = plt.figure(figsize= (1.585, 1.6))
+    bax = brokenaxes(ylims=((0, 1), (47, 64)), hspace=0.1)
     for i, obj_list in enumerate(objectives_lists):
-        bax.plot(generations, obj_list, color=cmap(i), label="seed"+str(i))
-        bax.plot(generations, obj_list, color=cmap(i), label="seed"+str(i))
+        if i == selected_seed:
+            color_="k"
+            zorder_=(i+1)*100
+            linewidth_="0.75"
+        else:
+            color_=grey_
+            zorder_=i
+            linewidth_="0.5"
+        bax.plot(generations, obj_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
+    bax.axhline(opt_obj, xmin=0, xmax=generations[-1]+5,
+                linestyle="dashed", linewidth="0.75", color="black", 
+                label="opt obj="+str(round(opt_obj, 3)),
+                zorder=20)
     # axt.set_ylim([55, 64])
     # axb.set_ylim([0, 10])
-    bax.set_xlim([0, 50])
+    bax.set_xlim([0, 55])
     bax.axs[1].set_yticks([0])
-    bax.axs[0].set_yticks([45, 50, 55, 60, 65])
+    bax.axs[0].set_yticks([50, 55, 60, 65])
     # bax.draw_diags()
     bax.set_xlabel("Generation in GA")
-    # axt.spines.bottom.set_visible(False)
-    # axb.spines.top.set_visible(False)
-    # axt.xaxis.tick_top()
-    # axt.tick_params(labeltop=False)  # don't put tick labels at the top
-    # axb.xaxis.tick_bottom()
-    # d = .5  # proportion of vertical to horizontal extent of the slanted line
-    # kwargs = dict(marker=[(-1, -d), (1, d)], markersize=5,
-    #             linestyle="none", color='k', mec='k', mew=1, clip_on=False)
 
-    # axt.plot([0, 1], [0, 0], transform=axt.transAxes, **kwargs)
-    # axb.plot([0, 1], [1, 1], transform=axb.transAxes, **kwargs)
-
-
-    # ax.set_xticks(np.arange(0, n_gens+1, 10))
+    bax.set_xticks(np.arange(0, n_gens+1, 10))
     # ax.set_xlim(left=0)
-    # ax.set_ylabel(obj_label)
+    bax.set_ylabel("objective ("+obj_label+")")
+    # bax.axs[0].set_box_aspect(1)
     # if y_lower_lim:
     #     ax.set_ylim(bottom=y_lower_lim)
     # else:
     #     ax.set_ylim(bottom=0)
-    plt.show()
-    # plt.legend()
-    # plt.savefig(figure_path, bbox_inches="tight")
+    # plt.show()
+    bax.legend()
+    plt.savefig(figure_path, bbox_inches="tight")
 
 
 def plot_pareto_front_set(

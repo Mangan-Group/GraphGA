@@ -4,7 +4,7 @@ axes.spines.right: False
 axes.labelpad: 10
 
 #lines and markers
-lines.linewidth: 0.75
+lines.linewidth: 0.5
 lines.markersize: 5
 
 #fonts, labels, and titles
