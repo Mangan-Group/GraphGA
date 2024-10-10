@@ -165,17 +165,17 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    # for seed in range(5, 10):
-    #     settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
-    #     np.random.seed(seed)
-    #     settings["seed"] = seed
-    #     settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
+    for seed in range(0, 10):
+        settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
+        np.random.seed(seed)
+        settings["seed"] = seed
+        settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
 
-    #     run(test_case, settings)
-    #     print("seed "+str(seed)+" complete")
+        run(test_case, settings)
+        print("seed "+str(seed)+" complete")
 
-    seed = 0
-    np.random.seed(seed)
+    # seed = 0
+    # np.random.seed(seed)
     # settings["seed"] = seed
     # for i, zmat in enumerate(Z_mat_list[1:]):
     #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
@@ -187,4 +187,4 @@ if __name__ == "__main__":
         # print("Z_20 "+str(i+1)+" run complete")
 
     # settings["Z_matrix"] = Z_200
-    run(test_case, settings)
+    # run(test_case, settings)

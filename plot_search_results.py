@@ -114,22 +114,35 @@ def plot_hypervolumes_set_vs_combo(
         y_lower_lim: float=None
 ):
     generations = np.arange(n_gens)
-    fig, ax = plt.subplots(1, 1, figsize= (2, 2))
+    mpl.rcParams["figure.autolayout"] = False
+    fig = plt.figure(figsize= (1.585, 1.6))
+    bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1)
     for i, hv_list in enumerate(hypervolumes_lists):
         if i == selected_seed:
             color_="k"
-            zorder_=i*100
+            zorder_=(i+1)*100
+            linewidth_="0.75"
         else:
-            color_="grey"
+            color_=grey_
             zorder_=i
-        ax.plot(generations, hv_list, color=color_, zorder=zorder_)
-    ax.set_xlabel("Generation in GA")
-    ax.set_ylabel("Hypervolume")
-    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], linestyle="dashed", color="red", label="opt hv="+str(round(opt_combo_hv, 3)))
-    if y_lower_lim:
-        ax.set_ylim(bottom=y_lower_lim)
+            linewidth_="0.5"
+        bax.plot(generations, hv_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
+
+    bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
+                linestyle="dashed", linewidth="0.75", color="k",
+                label="opt hv="+str(round(opt_combo_hv, 3)),
+                zorder=20)
+    bax.set_xlim([0, generations[-1]+5])
+    bax.axs[1].set_yticks([0])
+    bax.axs[0].set_yticks([36, 38, 40, 42, 44])
+    bax.set_xlabel("Generation in GA")
+    bax.set_xticks(np.arange(0, n_gens+1, 20))
+    bax.set_ylabel("Hypervolume")
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom=y_lower_lim)
+    bax.legend()
     # plt.show()
-    ax.legend()
     plt.savefig(figure_path, bbox_inches="tight")
 
 
@@ -155,16 +168,20 @@ def plot_pareto_front(
             plt.legend(fontsize="8")
             
         else:
-            fig, ax = plt.subplots(1, 1, figsize= (2.25, 2.25))
+            fig, ax = plt.subplots(1, 1, figsize= (1.955, 1.955))
             sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
                             y= obj_df[obj_labels[1]], 
-                            color="black", ax=ax, s=8)
+                            color="black", ax=ax, s=6)
 
         plt.xlabel(obj_labels[0])
         plt.ylabel(obj_labels[1])
         # plt.xticks([0, 20, 40, 60])
         # plt.yticks([0, 1, 2, 3])
+        plt.xlim(left=0)
+        plt.ylim(bottom=0)
+        plt.yticks([0, 0.5, 1.0, 1.5])
         # plt.show()
+        ax.set_box_aspect(1)
         plt.savefig(figure_path, bbox_inches="tight")
 
 

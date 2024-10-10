@@ -8,7 +8,7 @@ from get_comparisons_across_seeds import (
 )
 from plot_search_results import plot_obj_progression_set
 
-def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=list, ngens=None):
+def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels, ngens, selected_seed):
 
     if num_obj == 1:
         objs_list = []
@@ -18,7 +18,7 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
                 objs = np.abs(pickle.load(fid))
             objs_list.append(objs)
 
-        y_lower_lim = np.max(objs_list) - 0.5*np.max(objs_list)
+        # y_lower_lim = np.max(objs_list) - 0.5*np.max(objs_list)
         y_ticks = [0, 20, 40, 60]
         # figure_path = results_path+obj_labels[0]+"_progression.svg"
         # plot_obj_progression_set(figure_path, ngens, 
@@ -28,9 +28,9 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
         figure_path_zoomed = results_path+obj_labels[0]+"_progression_zoomed_paper.svg"
         plot_obj_progression_set(figure_path_zoomed, ngens, 
                                 objs_list, obj_labels[0],
-                                selected_seed=0, 
-                                opt_obj=max(objs_list[0]),
-                                y_lower_lim=y_lower_lim)
+                                selected_seed, 
+                                opt_obj=max(objs_list[0])
+        )
 
     else:
         (seed_unique_edge_combo_list, 
@@ -40,7 +40,7 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels=
         circuits_unique_to_seed_list,
         dose_varied_common_edge_combo_list, 
         dose_varied_common_circuits) = compare_pareto_circuits_across_seeds(
-            results_path, seed_folder
+            results_path, seed_folder, selected_seed
         )
 
         compare_parteo_fronts(results_path, seed_folder,

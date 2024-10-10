@@ -191,7 +191,7 @@ def get_dose_varied_common_circuits(
 
     return dose_varied_common_edge_combo_list, dose_varied_common_circuits
 
-def compare_pareto_circuits_across_seeds(results_path, seed_folder):
+def compare_pareto_circuits_across_seeds(results_path, seed_folder, selected_seed):
 
     (seen_list, seed_unique_edge_combo_list, 
      seed_unique_circuits_list) = get_unique_in_each_seed_pareto_circuits(results_path, seed_folder)
@@ -216,7 +216,7 @@ def compare_pareto_circuits_across_seeds(results_path, seed_folder):
          circuits_unique_to_seed_list
      )
     
-    compare_hypervolumes(results_path, seed_folder)
+    compare_hypervolumes(results_path, seed_folder, selected_seed)
 
 
     return (seed_unique_edge_combo_list, seed_unique_circuits_list,
@@ -250,7 +250,7 @@ def compare_parteo_fronts(results_path=str, seed_folder=str,
             obj_labels
         )
 
-def compare_hypervolumes(results_path, seed_folder):
+def compare_hypervolumes(results_path, seed_folder, selected_seed):
 
     final_hypervolumes = []
     hypervolume_lists = []
@@ -263,18 +263,18 @@ def compare_hypervolumes(results_path, seed_folder):
         hypervolume_lists.append(hypervolumes)
 
     n_gens = len(hypervolume_lists[0])
-    hypervolumes_plot = "all_hypervolume_progressions.svg"
-    plot_hypervolumes_set(results_path + hypervolumes_plot, 
-                          n_gens, hypervolume_lists)
+    # hypervolumes_plot = "all_hypervolume_progressions.svg"
+    # plot_hypervolumes_set(results_path + hypervolumes_plot, 
+    #                       n_gens, hypervolume_lists)
     
-    y_lower_lim = min(final_hypervolumes) - min(final_hypervolumes)*0.05
-    hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
-    plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
-                          n_gens, hypervolume_lists, y_lower_lim)
-    hypervolumes_vs_combo = "all_hvs_vs_combo.svg"
+    # y_lower_lim = min(final_hypervolumes) - min(final_hypervolumes)*0.05
+    # hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
+    # plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
+    #                       n_gens, hypervolume_lists, y_lower_lim)
+    hypervolumes_vs_combo = "all_hvs_vs_combo_paper.svg"
     plot_hypervolumes_set_vs_combo(results_path+hypervolumes_vs_combo,
-                                  n_gens, hypervolume_lists, 45.89854218733082,
-                                  4, y_lower_lim=0)
+                                  n_gens, hypervolume_lists, 45.899,
+                                  selected_seed, y_lower_lim=0)
     
     return final_hypervolumes
 
