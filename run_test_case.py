@@ -79,7 +79,7 @@ def run(
         obj_labels=settings["obj_labels"],
         max_time=settings["max_time"]
 )
-    print(problem.simulate)
+
     population = sampling(
         problem.promo_node,
         problem.num_dict,
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    for seed in range(0, 10):
+    for seed in range(0, 1):
         settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
         np.random.seed(seed)
         settings["seed"] = seed

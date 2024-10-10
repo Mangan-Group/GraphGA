@@ -179,9 +179,9 @@ def plot_pareto_front(
         # plt.yticks([0, 1, 2, 3])
         plt.xlim(left=0)
         plt.ylim(bottom=0)
-        plt.yticks([0, 0.5, 1.0, 1.5])
-        # plt.show()
+        # plt.yticks([0, 0.5, 1.0, 1.5])
         ax.set_box_aspect(1)
+        # plt.show()
         plt.savefig(figure_path, bbox_inches="tight")
 
 

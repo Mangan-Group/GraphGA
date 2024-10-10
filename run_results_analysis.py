@@ -35,13 +35,18 @@ def run_results_analysis(results_analysis_settings: dict):
             results_analysis_settings["obj_range"]
         )
     else:
+        if "objs_to_analyze" in results_analysis_settings:
+            objs_ = results_analysis_settings["objs_to_analyze"]
+        else:
+            objs_ = "pareto"
         (
             settings,
             pareto_unique_obj, 
             pareto_unique_circuits
         ) = import_multi_obj_GA_files(
             results_analysis_settings["repository_path"],
-            results_analysis_settings["results_path"]
+            results_analysis_settings["results_path"],
+            objs=objs_
         )
         selected_results_df = get_multi_obj_selected_results(
             settings, pareto_unique_obj,
@@ -89,17 +94,19 @@ def run_results_analysis(results_analysis_settings: dict):
 
 if __name__ == "__main__":
 
-    results_path = "2024-10-08_Pulse_pop_DsRED_frac_pulse_ZF1_ZF2_seed_0/"
-    results_name = "full_pareto_front"
+    results_path = "2024-10-10_Pulse_pop_DsRED_t_pulse_frac_pulse_original_hps_Z1_Z2_ngen50_seed_0/"
+    results_name = "results_sub_opt"
     results_analysis_settings = {
         # "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
         "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
         "results_path": results_path,
         "selected_results_name": results_name,
-        "obj_range": {"frac_pulse": [0.0, 1.0]},
+        "obj_range": {"t_pulse": [25.0, 35.0]},
         "multi_obj": True,
+        "objs_to_analyze": "sub_opt",
         "plot_topologies": True,
         "plot_all_cell_results": True
+
     }
 
     run_results_analysis(results_analysis_settings)

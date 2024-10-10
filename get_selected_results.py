@@ -36,37 +36,46 @@ def import_single_obj_GA_files(repository_path, results_path):
 
     return settings, unique_obj, unique_circuits
 
-def import_multi_obj_GA_files(repository_path, results_path):
+def import_multi_obj_GA_files(repository_path, results_path, objs="pareto"):
 
     #import settings
     with open(repository_path + results_path + 
               "settings.json", "rb") as fid:
         settings = json.load(fid)
 
-    #import final pareto front obj
-    pareto_obj = pd.read_pickle(repository_path + results_path +
-                                "final_objectives_df.pkl")
-    #get unique pareto front obj
-    pareto_unique_obj = pareto_obj.drop_duplicates()
-    pareto_unique_obj = pareto_unique_obj.copy()
-    #convert obj column values to abs values
-    for column in pareto_unique_obj.columns:
-        if column != "type":
-            pareto_unique_obj[column] = pareto_unique_obj[column].abs()
-    #get indices with unique objs
-    pareto_unique_obj_idx = pareto_unique_obj.index.tolist()
-    # print(pareto_unique_obj_idx)
-    #import final population circuits
-    with open(repository_path + results_path + 
-              "final_population.pkl", "rb") as fid:
-        pareto_circuits = pickle.load(fid)
-    #get unique pareto front circuits
-    pareto_unique_circuits = pareto_circuits[pareto_unique_obj_idx]
+    if objs == "pareto":
+        #import final pareto front obj
+        pareto_obj = pd.read_pickle(repository_path + results_path +
+                                    "final_objectives_df.pkl")
+        #get unique pareto front obj
+        unique_obj = pareto_obj.drop_duplicates()
+        unique_obj = unique_obj.copy()
+        #convert obj column values to abs values
+        for column in unique_obj.columns:
+            if column != "type":
+                unique_obj[column] = unique_obj[column].abs()
+        #get indices with unique objs
+        unique_obj_idx = unique_obj.index.tolist()
+        # print(pareto_unique_obj_idx)
+        #import final population circuits
+        with open(repository_path + results_path + 
+                "final_population.pkl", "rb") as fid:
+            circuits = pickle.load(fid)
+        #get unique pareto front circuits
+        unique_circuits = circuits[unique_obj_idx]
+        #reset index for future code selecting by index in obj and unique circuits
+        unique_obj.reset_index(inplace=True)
 
-    #reset index for future code selecting by index in obj and unique circuits
-    pareto_unique_obj.reset_index(inplace=True)
+    else:
+        unique_obj = pd.read_pickle(repository_path + results_path +
+                                    "unique_objectives_df.pkl")
+        for column in unique_obj.columns:
+            unique_obj[column] = unique_obj[column].abs()
+        with open(repository_path + results_path + 
+                "unique_circuits.pkl", "rb") as fid:
+            unique_circuits = pickle.load(fid)
 
-    return settings, pareto_unique_obj, pareto_unique_circuits
+    return settings, unique_obj, unique_circuits
 
 def get_single_obj_selected_results(
         settings, unique_obj, unique_circuits, obj_range

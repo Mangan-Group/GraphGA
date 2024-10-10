@@ -279,11 +279,22 @@ def multi_obj_GA(
     # front and
     # define reference point and class
     # instance of hypervolume calculator
-    if "t_pulse" in '\t'.join(problem.obj_labels):
-        if len(problem.obj_labels) == 3:
-            problem.pareto_plot = plot_pareto_front3D
-            ref_point = np.array([problem.max_time, 0, 0])
-        else:
+    if (len(problem.obj_labels) == 3 and 
+        "peak_rel" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front3D
+        ref_point = np.array([problem.max_time, 0, 0])
+    
+    elif ("frac_pulse" in '\t'.join(problem.obj_labels) and
+        len(problem.obj_labels) == 3):
+        problem.pareto_plot = plot_pareto_front3D
+
+    elif ("t_pulse" in '\t'.join(problem.obj_labels)  and
+            "frac_pulse" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front
+        ref_point = np.array([1, problem.max_time])
+
+    elif ("t_pulse" in '\t'.join(problem.obj_labels) and
+            "prominence_rel" in '\t'.join(problem.obj_labels)):
             problem.pareto_plot = plot_pareto_front
             ref_point = np.array([problem.max_time, 0])
     else:
