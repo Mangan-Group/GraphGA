@@ -94,14 +94,14 @@ def run_results_analysis(results_analysis_settings: dict):
 
 if __name__ == "__main__":
 
-    results_path = "2024-10-10_Pulse_pop_DsRED_t_pulse_frac_pulse_original_hps_Z1_Z2_ngen50_seed_0/"
-    results_name = "results_sub_opt"
+    results_path = "2024-10-10_Pulse_pop_DsRED_inhibitor_t_frac_pulse_pop200/"
+    results_name = "sub_opt"
     results_analysis_settings = {
         # "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
         "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
         "results_path": results_path,
         "selected_results_name": results_name,
-        "obj_range": {"t_pulse": [25.0, 35.0]},
+        "obj_range": {"frac_pulse": [0.7, 1.0]},
         "multi_obj": True,
         "objs_to_analyze": "sub_opt",
         "plot_topologies": True,

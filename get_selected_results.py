@@ -165,7 +165,6 @@ def get_multi_obj_selected_results(
         selected_results_dict[obj] = sorted_selected_pareto_obj[obj].tolist()
     
     selected_results_df = pd.DataFrame.from_dict(selected_results_dict)
-
     return selected_results_df
 
 
@@ -190,10 +189,6 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
             Z_mat = settings["Z_matrix"]
         else:
             Z_mat = Z_mat_list[0]
-        if "mean" in settings:
-            mean_ = settings["mean"]
-        else:
-            mean_ = "arithmetic"
 
         problem = test_case(
             promo_node=settings["promo_node"],
@@ -207,7 +202,6 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
             probability_mutation=settings["probability_mutation"],
             mutate_dose=settings["mutate_dose"],
             pop=settings["pop"],
-            mean=mean_,
             Z_mat=Z_mat,
             Ref_pop=Ref_pop,
             num_processes=settings["num_processes"],
@@ -243,6 +237,7 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
         pool.join()
     obj_all_cells_dict_list = list(obj_all_cells_dict_list)
     obj_all_cells_dict_list = np.asarray(obj_all_cells_dict_list, dtype=object)
+
     # extract list of all_cells_dfs from output list
     all_cells_dict_list = obj_all_cells_dict_list[:,1].tolist()
     all_cell_results_df = pd.DataFrame.from_dict(all_cells_dict_list)

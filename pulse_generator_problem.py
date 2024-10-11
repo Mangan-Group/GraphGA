@@ -118,15 +118,15 @@ class PulseGenerator:
                     "peak_rel" in '\t'.join(self.obj_labels)):
                     self.func = self.func_obj_3obj
 
-                elif ("t_pulse" in '\t'.join(self.obj_labels)  and
-                      "frac_pulse" in '\t'.join(self.obj_labels)):
-                    self.simulate = self.simulate_pop_single_cell_tracking
-                    self.func = self.func_obj_frac_t_pulse
-
                 elif ("frac_pulse" in '\t'.join(self.obj_labels) and
                       len(self.obj_labels) == 3):
                     self.simulate = self.simulate_pop_single_cell_tracking
                     self.func = self.func_obj_frac_pulse_3obj
+
+                elif ("t_pulse" in '\t'.join(self.obj_labels)  and
+                      "frac_pulse" in '\t'.join(self.obj_labels)):
+                    self.simulate = self.simulate_pop_single_cell_tracking
+                    self.func = self.func_obj_frac_t_pulse
 
                 elif ("t_pulse" in '\t'.join(self.obj_labels) and
                       "prominence_rel" in '\t'.join(self.obj_labels)):
@@ -403,9 +403,9 @@ class PulseGenerator:
         t, rep_on_ts_means, _, rep_on_ts_all = self.simulate(topology)
         frac_pulse, pulse_cell_ts_means = self.calc_frac_pulse(topology, rep_on_ts_all)
         if len(pulse_cell_ts_means) > 0:
-            pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
-            pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
-            pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
+            # pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
+            # pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
+            # pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
             # t_pulse = self.calc_t_pulse(
             #     t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
             rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts_means)
@@ -418,7 +418,7 @@ class PulseGenerator:
             pulse_prom_rel = 0
             t_pulse = 126
 
-        return [-frac_pulse, t_pulse, -pulse_prom_rel]
+        return [-frac_pulse, t_pulse, -prominence_rel]
 
     def func_single_cell_tracking_peak_rel(
         self,
@@ -481,21 +481,26 @@ class PulseGenerator:
 
         return [[-frac_pulse, -pulse_prom_rel], all_cells_dict]
 
-    # def func_single_cell_tracking_frac_t_pulse(self, topology):
+    def func_single_cell_tracking_frac_t_pulse(self, topology):
         
-    #     t, _, all_cells_dict, rep_on_ts_all = self.simulate(topology)
-    #     frac_pulse, pulse_cell_ts_means = self.calc_frac_pulse(topology, rep_on_ts_all)
-    #     if len(pulse_cell_ts_means) > 0:
-    #         pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
-    #         pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
-    #         pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
-    #     else:
-    #         pulse_prom_rel = 0
+        t, rep_on_ts_means, all_cells_dict, rep_on_ts_all  = self.simulate(topology)
+        frac_pulse, pulse_cell_ts_means = self.calc_frac_pulse(topology, rep_on_ts_all)
+        if len(pulse_cell_ts_means) > 0:
+            pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
+            pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
+            pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
+            # t_pulse = self.calc_t_pulse(
+            #     t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
+            rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts_means)
+            peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+            prominence_rel = self.calc_prominence_rel(rep_on_ts_means, peak_rel)
+            t_pulse = self.calc_t_pulse(
+                t, rep_on_ts_rel, peak_rel, prominence_rel)
+        else:
+            pulse_prom_rel = 0
+            t_pulse = 126
 
-    #     t_pulse = self.calc_t_pulse(
-    #         t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
-
-    #     return [[-frac_pulse, t_pulse], all_cells_dict]
+        return [[-frac_pulse, t_pulse], all_cells_dict]
 
     # def func_single_cell_tracking_frac_pulse_3obj(self, topology):
     #     t, _, all_cells_dict, rep_on_ts_all = self.simulate(topology)

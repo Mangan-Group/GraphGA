@@ -174,9 +174,9 @@ if __name__ == "__main__":
 
     #     run(test_case, settings)
     #     print("seed "+str(seed)+" complete")
-    # seed = 0
-    # np.random.seed(seed)
-    # settings["seed"] = seed
+    seed = 0
+    np.random.seed(seed)
+    settings["seed"] = seed
     # for i, zmat in enumerate(Z_mat_list[1:]):
     #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
     #     settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)

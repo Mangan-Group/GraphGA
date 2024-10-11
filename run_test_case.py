@@ -79,7 +79,7 @@ def run(
         obj_labels=settings["obj_labels"],
         max_time=settings["max_time"]
 )
-
+    # print(problem.func)
     population = sampling(
         problem.promo_node,
         problem.num_dict,
