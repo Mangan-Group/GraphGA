@@ -56,7 +56,9 @@ def run_results_analysis(results_analysis_settings: dict):
 
     
     if settings["pop"]:
-        all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, selected_results_df)
+        all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, 
+                                                                                 selected_results_df,
+                                                                                 folder_path)
     else:
         all_cell_results_df = None
         all_cell_metrics_df = None
@@ -94,18 +96,18 @@ def run_results_analysis(results_analysis_settings: dict):
 
 if __name__ == "__main__":
 
-    results_path = "2024-10-10_Pulse_pop_DsRED_inhibitor_t_frac_pulse_pop200/"
-    results_name = "sub_opt"
+    results_path = "Pulse_seed_pop_DsRED_inhibitor/frac_pulse/Pulse_pop_DsRED_inhibitor_3obj_frac_pulse_pop200_ngen100/2024-10-13_Pulse_pop_DsRED_inhibitor_3obj_frac_pulse_pop200_ngen100/"
+    results_name = "low_frac_p"
     results_analysis_settings = {
         # "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
         "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
         "results_path": results_path,
         "selected_results_name": results_name,
-        "obj_range": {"frac_pulse": [0.7, 1.0]},
+        "obj_range": {"frac_pulse": [0, 0.24]},
         "multi_obj": True,
-        "objs_to_analyze": "sub_opt",
+        # "objs_to_analyze": "sub_opt",
         "plot_topologies": True,
-        "plot_all_cell_results": True
+        "plot_all_cell_results": False
 
     }
 

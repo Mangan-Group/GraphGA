@@ -60,7 +60,7 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels,
         )
 
 
-# path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/Pulse_seed_single_cell_DsRED_inhibitor/Original_hyperparams/t_pulse/run1_ngen130/"
-# results_runs = "2024-10-08_Pulse_single_cell_DsRED_new_t_pulse_original_hp_seed_"
+path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/Pulse_single_cell/Optimized_hyperparams/t_pulse/Optimized_hyperparams_fixed_pop_max_hv/"
+results_runs = "2024-10-09_Pulse_single_DsRED_t_pulse_opt_hps_ngen80_seed_"
 
-# run_seed_results_comparisons(path, results_runs, 2, ["t_pulse", "prominence_rel"])
+# run_seed_results_comparisons(path, results_runs, 2, ["t_pulse", "prominence_rel"], 80, 6)

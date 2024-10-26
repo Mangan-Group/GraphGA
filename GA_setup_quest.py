@@ -284,16 +284,17 @@ def multi_obj_GA(
     elif ("frac_pulse" in '\t'.join(problem.obj_labels) and
         len(problem.obj_labels) == 3):
         problem.pareto_plot = plot_pareto_front3D
+        ref_point = np.array([0, problem.max_time, 0])
 
     elif ("t_pulse" in '\t'.join(problem.obj_labels)  and
             "frac_pulse" in '\t'.join(problem.obj_labels)):
         problem.pareto_plot = plot_pareto_front
-        ref_point = np.array([1, problem.max_time])
+        ref_point = np.array([0, problem.max_time])
 
     elif ("t_pulse" in '\t'.join(problem.obj_labels) and
             "prominence_rel" in '\t'.join(problem.obj_labels)):
-            problem.pareto_plot = plot_pareto_front
-            ref_point = np.array([problem.max_time, 0])
+        problem.pareto_plot = plot_pareto_front
+        ref_point = np.array([problem.max_time, 0])
     else:
         problem.pareto_plot = plot_pareto_front
         ref_point = np.array([0, 0])

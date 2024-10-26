@@ -21,6 +21,8 @@ vermillion = [i/255 for i in [213, 94, 0]]
 yellow_ = [i/255 for i in [240, 228, 66]]
 grey_ = [(i/255) for i in [150, 150, 150]]
 
+combinatorial_yellow = [(i/255) for i in [221, 204, 119]]
+
 def plot_graph(
         figure_path: str,
         topology: object
@@ -115,8 +117,9 @@ def plot_hypervolumes_set_vs_combo(
 ):
     generations = np.arange(n_gens)
     mpl.rcParams["figure.autolayout"] = False
-    fig = plt.figure(figsize= (1.585, 1.6))
-    bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1)
+    # fig = plt.figure(figsize= (1.585, 1.6))
+    fig, ax = plt.subplots(1, 1, figsize= (1.585, 1.6))
+    # bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1)
     for i, hv_list in enumerate(hypervolumes_lists):
         if i == selected_seed:
             color_="k"
@@ -126,22 +129,37 @@ def plot_hypervolumes_set_vs_combo(
             color_=grey_
             zorder_=i
             linewidth_="0.5"
-        bax.plot(generations, hv_list, linewidth=linewidth_,
-                 color=color_, zorder=zorder_)
 
-    bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
-                linestyle="dashed", linewidth="0.75", color="k",
-                label="opt hv="+str(round(opt_combo_hv, 3)),
-                zorder=20)
-    bax.set_xlim([0, generations[-1]+5])
-    bax.axs[1].set_yticks([0])
-    bax.axs[0].set_yticks([36, 38, 40, 42, 44])
-    bax.set_xlabel("Generation in GA")
-    bax.set_xticks(np.arange(0, n_gens+1, 20))
-    bax.set_ylabel("Hypervolume")
+        ax.plot(generations, hv_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
+    ax.set_xlabel("Generation")
+    ax.set_ylabel("Hypervolume")
+    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], 
+               linestyle="dashed", color="k", label="opt hv="+str(round(opt_combo_hv, 3)))
+    if y_lower_lim:
+        ax.set_ylim(bottom=y_lower_lim)
+    # plt.show()
+    ax.legend()
+    ax.set_xticks(np.arange(0, n_gens+1, 20))
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=0)
+    plt.savefig(figure_path, bbox_inches="tight")
+    #     bax.plot(generations, hv_list, linewidth=linewidth_,
+    #              color=color_, zorder=zorder_)
+
+    # bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
+    #             linestyle="dashed", linewidth="0.75", color="k",
+    #             label="opt hv="+str(round(opt_combo_hv, 3)),
+    #             zorder=20)
+    # bax.set_xlim([0, generations[-1]+5])
+    # bax.axs[1].set_yticks([0])
+    # bax.axs[0].set_yticks([36, 38, 40, 42, 44])
+    # bax.set_xlabel("Generation in GA")
+    # bax.set_xticks(np.arange(0, n_gens+1, 20))
+    # bax.set_ylabel("Hypervolume")
     # if y_lower_lim:
     #     ax.set_ylim(bottom=y_lower_lim)
-    bax.legend()
+    # bax.legend()
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -201,15 +219,36 @@ def plot_pareto_front3D(
         obj_df[obj_labels[2]] = obj_df[
             obj_labels[2]]*-1
             
+    prom_rel_exp = [2.345337964907094, 2.0821875761716178, 2.681593101318251, 2.681593101318251, 2.0640874964172617, 2.1908287355337963]
+
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[0]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[1]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[2]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[3]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[4]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[5]].index, inplace=True, axis=0)
+    # obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[1]], inplace=True)
     # print(obj_df.tail(n=50))
-    fig = plt.figure(figsize= (4, 4))
+    # fig = plt.figure(figsize= (4, 4))
+    fig = plt.figure(figsize= (1.955, 1.955))
     ax = fig.add_subplot(projection='3d')
+
 
     ax.scatter(
         xs=obj_df[obj_labels[0]], ys=obj_df[obj_labels[1]],
-        zs=obj_df[obj_labels[2]], color="k", 
+        zs=obj_df[obj_labels[2]], color="grey", s=2,
     )
-    ax.view_init(elev=10, azim=-115)
+
+    pulse_blue = [(i/255) for i in [51, 34, 136]]
+    frac_p_exp = [0.45, 0.45, 0.4, 0.35, 0.45, 0.45]
+    t_p_exp = [13, 11, 13, 13, 14, 13]
+    ax.scatter(
+        xs=frac_p_exp, ys=t_p_exp,
+        zs=prom_rel_exp, color=pulse_blue, s=10,
+    )
+
+    ax.view_init(elev=15, azim=-60)
+    # ax.view_init(elev=10, azim=-115)
     ax.set_xlabel(obj_labels[0])
     ax.set_ylabel(obj_labels[1])
     ax.set_zlabel(obj_labels[2])
@@ -226,19 +265,21 @@ def plot_1D_obj_scatter(
     if obj_vals.flatten()[0] < 0:
         obj_vals = obj_vals*-1
     x_vals = [1]*len(obj_vals)
+    np.random.seed(0)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    fig, ax = plt.subplots(1, 1, figsize= (1.9, 1.75))
+    fig, ax = plt.subplots(1, 1, figsize= (2, 1.75))
     ax.plot(jittered_x, obj_vals, linestyle="None",
              marker="o", markersize=1, color="k",zorder=1)
     ax.plot(1.05, max(obj_vals), linestyle="none", marker="o",
-            markersize=1.25, color=yellow_, zorder=2)
+            markersize=2.5, color=combinatorial_yellow, zorder=2)
     ax.set_xticklabels([])
     ax.set_xticks([])
     ax.set_ylabel(obj_labels[0])
-    if y_lower_lim:
-        ax.set_ylim(lower = y_lower_lim)
-    # ax.set_yticks([0, 20, 40, 60])
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom = y_lower_lim)
+    ax.set_ylim(bottom = 0)
+    ax.set_yticks([0, 20, 40, 60])
     ax.set_box_aspect(1)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
@@ -261,12 +302,12 @@ def plot_1D_obj_confidence_interval(
     print(min(jittered_x),max(jittered_x))
     lower_bound = [max_objective-CI_metric_max]*(len(unique_objectives)+2)
     upper_bound = [max_objective+CI_metric_max]*(len(unique_objectives)+2)
-    fig, ax = plt.subplots(1, 1, figsize= (1.75, 1.5))
+    fig, ax = plt.subplots(1, 1, figsize= (2, 1.75))
     ax.plot(jittered_x, unique_objectives, linestyle="None",
              marker="o", markersize=1, color="black", zorder=1)
     x_CI_fill = np.append(jittered_x, [0.995, 1.105])
     x_CI_fill.sort()
-    ax.fill_between(x_CI_fill, lower_bound, upper_bound, alpha=0.3, color=grey_, zorder=2,
+    ax.fill_between(x_CI_fill, lower_bound, upper_bound, alpha=0.75, color=grey_, zorder=2,
                     linewidth=0.25)
     ax.set_xticklabels([])
     ax.set_xticks([])
@@ -440,7 +481,7 @@ def plot_pulse_ensemble_time_series(
         "Rep_rel time series for each cell"
     ]
     time_points = [14, 18, 22, 26, 38, 42, 46]
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
+    fig, ax = plt.subplots(1, 1, figsize= (2, 2))
     for i in range(len(all_cells_rep_rel)):
         rep_rel_t_exp = [all_cells_rep_rel[i][t] for t in time_points]
         ax.plot(time_points, rep_rel_t_exp, linestyle="none", marker="o", markersize=4, color="k")
@@ -448,7 +489,7 @@ def plot_pulse_ensemble_time_series(
         ax.set_ylabel("Rep_rel")
         ax.set_title("Pulse exp " + str(condition))
         ax.set_box_aspect(1)
-    plt.savefig(figure_path+"pulse_"+str(condition)+"_time_series.svg")
+    plt.savefig(figure_path+"pulse_"+str(condition)+"_time_series_paper.svg")
 
 
 def plot_pulse_ensemble_violin(

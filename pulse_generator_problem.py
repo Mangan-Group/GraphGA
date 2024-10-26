@@ -60,7 +60,7 @@ class PulseGenerator:
         self.max_time = max_time
         self.system_eqs = system_equations_pop
 
-        print(self.obj_labels)
+        # print(self.obj_labels)
         if inhibitor:
             if DsRed_inhibitor:
                 self.system_eqs = system_equations_DsRed_pop
@@ -386,15 +386,18 @@ class PulseGenerator:
             pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
             pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
             pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
-            # t_pulse = self.calc_t_pulse(
-            #     t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
-            rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts_means)
-            peak_rel = self.calc_peak_rel(rep_on_ts_rel)
-            prominence_rel = self.calc_prominence_rel(rep_on_ts_means, peak_rel)
+            # t_pulse for PULSE cells
             t_pulse = self.calc_t_pulse(
-                t, rep_on_ts_rel, peak_rel, prominence_rel)
+                t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
+            
+            # rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts_means)
+            # peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+            # prominence_rel = self.calc_prominence_rel(rep_on_ts_rel , peak_rel)
+            #### t_pulse for ALL cells ###
+            # t_pulse = self.calc_t_pulse(
+            #     t, rep_on_ts_rel, peak_rel, prominence_rel)
         else:
-            pulse_prom_rel = 0
+            # prominence_rel = 0
             t_pulse = 126
 
         return [-frac_pulse, t_pulse]
@@ -403,22 +406,26 @@ class PulseGenerator:
         t, rep_on_ts_means, _, rep_on_ts_all = self.simulate(topology)
         frac_pulse, pulse_cell_ts_means = self.calc_frac_pulse(topology, rep_on_ts_all)
         if len(pulse_cell_ts_means) > 0:
-            # pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
-            # pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
-            # pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
-            # t_pulse = self.calc_t_pulse(
-            #     t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
-            rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts_means)
-            peak_rel = self.calc_peak_rel(rep_on_ts_rel)
-            prominence_rel = self.calc_prominence_rel(rep_on_ts_means, peak_rel)
+            pulse_rep_ts_rel = self.calc_rep_rel(topology, pulse_cell_ts_means)
+            pulse_peak_rel = self.calc_peak_rel(pulse_rep_ts_rel)
+            pulse_prom_rel = self.calc_prominence_rel(pulse_rep_ts_rel, pulse_peak_rel)
+            # t_pulse for PULSE cells
             t_pulse = self.calc_t_pulse(
-                t, rep_on_ts_rel, peak_rel, prominence_rel)
+                t, pulse_rep_ts_rel, pulse_peak_rel, pulse_prom_rel)
+            
+            # rep_on_ts_rel = self.calc_rep_rel(topology, rep_on_ts_means)
+            # peak_rel = self.calc_peak_rel(rep_on_ts_rel)
+            # prominence_rel = self.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+            # ### t_pulse for ALL cells
+            # t_pulse = self.calc_t_pulse(
+            #     t, rep_on_ts_rel, peak_rel, prominence_rel)
 
         else:
+            # prominence_rel = 0
             pulse_prom_rel = 0
             t_pulse = 126
 
-        return [-frac_pulse, t_pulse, -prominence_rel]
+        return [-frac_pulse, t_pulse, -pulse_prom_rel]
 
     def func_single_cell_tracking_peak_rel(
         self,

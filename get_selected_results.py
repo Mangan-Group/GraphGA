@@ -168,7 +168,7 @@ def get_multi_obj_selected_results(
     return selected_results_df
 
 
-def get_selected_all_cell_metrics(settings, selected_results_df):
+def get_selected_all_cell_metrics(settings, selected_results_df, folder_path):
 
     if settings["test_case"] == "Amplifier":
         test_case = Amplifier
@@ -262,6 +262,23 @@ def get_selected_all_cell_metrics(settings, selected_results_df):
             all_cell_results_df.at[index, "single_cell_prominence"] = prom_cell_list
 
         all_cell_metrics_df = all_cell_results_df.copy().drop(['Rep_rel time series for each cell', 'Rep_rel time series mean'], axis=1)
+        
+        if "frac_pulse" in '\t'.join(problem.obj_labels):
+            t_pulse_avg_list = []
+            prom_rel_avg_list = []
+            for topology in selected_results_df["Topology"]:
+                t, rep_on_ts, _, _ = problem.simulate(topology)
+                rep_on_ts_rel = problem.calc_rep_rel(topology, rep_on_ts)
+                peak_rel = problem.calc_peak_rel(rep_on_ts_rel)
+                prom_rel_avg = problem.calc_prominence_rel(rep_on_ts_rel, peak_rel)
+                prom_rel_avg_list.append(prom_rel_avg)
+
+                t_pulse_avg = problem.calc_t_pulse(t, rep_on_ts_rel, peak_rel, prom_rel_avg)
+                t_pulse_avg_list.append(t_pulse_avg)
+            
+            selected_results_df["t_pulse_avg"] = t_pulse_avg_list
+            selected_results_df["prom_rel_avg"] = prom_rel_avg_list
+            selected_results_df.to_csv(folder_path+"selected_results_avg_metrics.csv")
 
     else:
         all_cell_metrics_df = None
