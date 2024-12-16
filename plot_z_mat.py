@@ -16,7 +16,7 @@ results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhi
 file_name = "all_cell_metrics_low_t_pulse.csv"
 path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/Pulse_pop/Experiment_synTF1&2/200_cell_all_cell_results_df.pkl"
 pulse_exp_200 = pd.read_pickle(path)
-print(pulse_exp_200)
+# print(pulse_exp_200)
 Z_20_df = pd.DataFrame(data = Z_20, columns = ["plasmid_" + str(i) for i in range(5)])
 Z_200_df = pd.DataFrame(data = Z_200, columns = ["plasmid_" + str(i) for i in range(9)])
 Z_200_df = Z_200_df.drop(labels=["plasmid_" + str(i) for i in range(5,9)], axis=1)
@@ -171,44 +171,44 @@ def plot_all_plasmid_uptake(Z_mat1, Z_mat2, path_save):
 
 
 #### percentile average plasmid uptake vs. % cells that pulse
-# Z_200_df["average"] = np.mean(Z_200_df, axis=1)
-# # print(Z_200_df)
-# all_cell_prom_list = pulse_exp_200["single_cell_prominence"].tolist()[4]
-# percentile = np.arange(10, 100, 10).tolist()
-# percentile_fractions = [round(i/100, 2) for i in percentile]
-# # fraction_included = [round(1.0-i, 2) for i in percentile_fractions]
-# # # print(fraction_included)
+Z_200_df["average"] = np.mean(Z_200_df, axis=1)
+# print(Z_200_df)
+all_cell_prom_list = pulse_exp_200["single_cell_prominence"].tolist()[4]
+percentile = np.arange(10, 100, 10).tolist()
+percentile_fractions = [round(i/100, 2) for i in percentile]
+# fraction_included = [round(1.0-i, 2) for i in percentile_fractions]
+# # print(fraction_included)
 
-# plasmid_uptake_list = Z_200_df["average"].tolist()
-# plasmid_uptake_arr = np.array(plasmid_uptake_list)
-# # print("full list: ", plasmid_uptake_arr)
-# max_uptake = max(Z_200_df["average"])
-# threshold_percent = 70
-# # print("threshold percent : ", threshold_percent)
-# percent_pulse_cells_list = []
-# for percent in percentile_fractions:
-#     print(percent, ": ")
-#     uptake_min = max_uptake*percent
-#     print("threshold: ", uptake_min)
-#     idx_uptake_included = np.where(plasmid_uptake_arr >= uptake_min)[0]
-#     print("cells included: ", idx_uptake_included)
-#     uptake_included = plasmid_uptake_arr[idx_uptake_included]
-#     prom_included = [all_cell_prom_list[i] for i in idx_uptake_included]
-#     # print("prom_rel cells included: ", prom_included)
-#     pulse_cell_prom = [prom for prom in prom_included if prom > 0]
-#     percent_pulse_cells = (len(pulse_cell_prom)/len(prom_included))*100
-#     print("percent pulse cells", percent_pulse_cells, "%")
-#     percent_pulse_cells_list.append(percent_pulse_cells)
-# fig, ax = plt.subplots(1, 1, figsize=(1.4, 1.4))
+plasmid_uptake_list = Z_200_df["average"].tolist()
+plasmid_uptake_arr = np.array(plasmid_uptake_list)
+# print("full list: ", plasmid_uptake_arr)
+max_uptake = max(Z_200_df["average"])
+threshold_percent = 70
+# print("threshold percent : ", threshold_percent)
+percent_pulse_cells_list = []
+for percent in percentile_fractions:
+    print(percent, ": ")
+    uptake_min = max_uptake*percent
+    print("threshold: ", uptake_min)
+    idx_uptake_included = np.where(plasmid_uptake_arr >= uptake_min)[0]
+    print("cells included: ", idx_uptake_included)
+    uptake_included = plasmid_uptake_arr[idx_uptake_included]
+    prom_included = [all_cell_prom_list[i] for i in idx_uptake_included]
+    # print("prom_rel cells included: ", prom_included)
+    pulse_cell_prom = [prom for prom in prom_included if prom > 0]
+    percent_pulse_cells = (len(pulse_cell_prom)/len(prom_included))*100
+    print("percent pulse cells", percent_pulse_cells, "%")
+    percent_pulse_cells_list.append(percent_pulse_cells)
+fig, ax = plt.subplots(1, 1, figsize=(2.25, 2.25))
 
-# ax.plot(percentile, percent_pulse_cells_list, color="k")
-# ax.axvline(x=threshold_percent, color="k",linestyle="dashed", label="selected threshold")
-# # plt.legend()
-# ax.set_xlabel("pct avg plasmid uptake")
-# ax.set_xticks([0, 20, 40, 60, 80])
-# ax.set_ylabel("% cells with a pulse")
-# ax.set_ylim(bottom=0)
-# ax.set_yticks([0, 20, 40, 60, 80, 100])
-# ax.set_box_aspect(1)
-# # plt.show()
-# plt.savefig("/Users/kdreyer/Desktop/200_cell_plasmid_pct_paper.svg")
+ax.plot(percentile, percent_pulse_cells_list, color="k")
+ax.axvline(x=threshold_percent, ymax=150, color="k",linestyle="dashed", label="selected threshold")
+# plt.legend()
+ax.set_xlabel("pct avg plasmid uptake")
+ax.set_xticks([0, 20, 40, 60, 80])
+ax.set_ylabel("% cells with a pulse")
+ax.set_ylim(bottom=0)
+ax.set_yticks([0, 20, 40, 60, 80, 100])
+ax.set_box_aspect(1)
+# plt.show()
+plt.savefig("/Users/kdreyer/Desktop/200_cell_plasmid_pct_paper.svg")
