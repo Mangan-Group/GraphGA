@@ -60,7 +60,9 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels,
         )
 
 
-path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/Pulse_single_cell/Optimized_hyperparams/t_pulse/Optimized_hyperparams_fixed_pop_max_hv/"
-results_runs = "2024-10-09_Pulse_single_DsRED_t_pulse_opt_hps_ngen80_seed_"
+path_GA_results = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/"
+test_case_dir = "Signal_conditioner_single_cell/synTF-R-DsR/Optimized_hyperparams_fixed_pop_max_hv_ngen50/run7_ngen5000/"
+results_runs = "2025-01-09_Signal_cond_single_DsRED_opt_hps0_ngen5000_seed_"
+path = path_GA_results + test_case_dir
 
-# run_seed_results_comparisons(path, results_runs, 2, ["t_pulse", "prominence_rel"], 80, 6)
+run_seed_results_comparisons(path, results_runs, 2, ["ON_rel", "FI_rel"], 5000, 3)

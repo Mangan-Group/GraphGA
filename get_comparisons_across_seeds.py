@@ -263,17 +263,17 @@ def compare_hypervolumes(results_path, seed_folder, selected_seed):
         hypervolume_lists.append(hypervolumes)
 
     n_gens = len(hypervolume_lists[0])
-    # hypervolumes_plot = "all_hypervolume_progressions.svg"
-    # plot_hypervolumes_set(results_path + hypervolumes_plot, 
-    #                       n_gens, hypervolume_lists)
+    hypervolumes_plot = "all_hypervolume_progressions.svg"
+    plot_hypervolumes_set(results_path + hypervolumes_plot, 
+                          n_gens, hypervolume_lists)
     
-    # y_lower_lim = min(final_hypervolumes) - min(final_hypervolumes)*0.05
-    # hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
-    # plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
-    #                       n_gens, hypervolume_lists, y_lower_lim)
+    y_lower_lim = min(final_hypervolumes) - min(final_hypervolumes)*0.05
+    hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
+    plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
+                          n_gens, hypervolume_lists, y_lower_lim)
     hypervolumes_vs_combo = "all_hvs_vs_combo_paper.svg"
     plot_hypervolumes_set_vs_combo(results_path+hypervolumes_vs_combo,
-                                  n_gens, hypervolume_lists, 2892.284,
+                                  n_gens, hypervolume_lists, 45.89854218733082,
                                   selected_seed, y_lower_lim=0)
     
     return final_hypervolumes

@@ -117,9 +117,9 @@ def plot_hypervolumes_set_vs_combo(
 ):
     generations = np.arange(n_gens)
     mpl.rcParams["figure.autolayout"] = False
-    # fig = plt.figure(figsize= (1.585, 1.6))
-    fig, ax = plt.subplots(1, 1, figsize= (1.585, 1.6))
-    # bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1)
+    fig = plt.figure(figsize= (1.585, 1.6))
+    # fig, ax = plt.subplots(1, 1, figsize= (1.585, 1.6))
+    bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1)
     for i, hv_list in enumerate(hypervolumes_lists):
         if i == selected_seed:
             color_="k"
@@ -130,33 +130,33 @@ def plot_hypervolumes_set_vs_combo(
             zorder_=i
             linewidth_="0.5"
 
-        ax.plot(generations, hv_list, linewidth=linewidth_,
-                 color=color_, zorder=zorder_)
-    ax.set_xlabel("Generation")
-    ax.set_ylabel("Hypervolume")
-    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], 
-               linestyle="dashed", color="k", label="opt hv="+str(round(opt_combo_hv, 3)))
-    if y_lower_lim:
-        ax.set_ylim(bottom=y_lower_lim)
-    # plt.show()
-    ax.legend()
-    ax.set_xticks(np.arange(0, n_gens+1, 20))
-    ax.set_ylim(bottom=0)
-    ax.set_xlim(left=0)
-    plt.savefig(figure_path, bbox_inches="tight")
-    #     bax.plot(generations, hv_list, linewidth=linewidth_,
+    #     ax.plot(generations, hv_list, linewidth=linewidth_,
     #              color=color_, zorder=zorder_)
+    # ax.set_xlabel("Generation")
+    # ax.set_ylabel("Hypervolume")
+    # ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], 
+    #            linestyle="dashed", color="k", label="opt hv="+str(round(opt_combo_hv, 3)))
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom=y_lower_lim)
+    # # plt.show()
+    # ax.legend()
+    # ax.set_xticks(np.arange(0, n_gens+1, 200))
+    # ax.set_ylim(bottom=0)
+    # ax.set_xlim(left=0)
+    # plt.savefig(figure_path, bbox_inches="tight")
+        bax.plot(generations, hv_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
 
-    # bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
-    #             linestyle="dashed", linewidth="0.75", color="k",
-    #             label="opt hv="+str(round(opt_combo_hv, 3)),
-    #             zorder=20)
-    # bax.set_xlim([0, generations[-1]+5])
-    # bax.axs[1].set_yticks([0])
-    # bax.axs[0].set_yticks([36, 38, 40, 42, 44])
-    # bax.set_xlabel("Generation in GA")
-    # bax.set_xticks(np.arange(0, n_gens+1, 20))
-    # bax.set_ylabel("Hypervolume")
+    bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
+                linestyle="dashed", linewidth="0.75", color="k",
+                label="opt hv="+str(round(opt_combo_hv, 3)),
+                zorder=20)
+    bax.set_xlim([0, generations[-1]+5])
+    bax.axs[1].set_yticks([0])
+    bax.axs[0].set_yticks([36, 38, 40, 42, 44])
+    bax.set_xlabel("Generation in GA")
+    bax.set_xticks(np.arange(0, n_gens+1, 1000))
+    bax.set_ylabel("Hypervolume")
     # if y_lower_lim:
     #     ax.set_ylim(bottom=y_lower_lim)
     # bax.legend()
@@ -492,39 +492,6 @@ def plot_pulse_ensemble_time_series(
     plt.savefig(figure_path+"pulse_"+str(condition)+"_time_series_paper.svg")
 
 
-def plot_pulse_ensemble_violin(
-        figure_path:str,
-        all_cell_results_df_row:pd.Series,
-        condition:int
-):
-    
-    all_cells_rep_rel = all_cell_results_df_row[
-        "Rep_rel time series for each cell"
-    ]
-    time_points = [14, 18, 22, 26, 38, 42, 46]
-    pulse_rel_all_cells = []
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
-    for i in range(len(all_cells_rep_rel)):
-        pulse_rep_rel = all_cells_rep_rel[i]
-        rep_rel_t_exp = [pulse_rep_rel[t] for t in time_points]
-        pulse_rel_all_cells.append(rep_rel_t_exp)
-    pulse_rel_t_exp_df = pd.DataFrame(pulse_rel_all_cells, columns = [str(i) + "h" for i in time_points])
-    pulse_rel_t_exp_df_T = pulse_rel_t_exp_df.transpose().copy()
-    pulse_rel_t_exp_df_T["Time (h)"] = pulse_rel_t_exp_df_T.index
-    pulse_rel_t_exp_df_T_plot = pd.melt(frame=pulse_rel_t_exp_df_T,
-                                      id_vars="Time (h)",
-                                      var_name="column_name",
-                                      value_name="Rep_rel")
-    plot = sns.violinplot(data=pulse_rel_t_exp_df_T_plot, x="Time (h)", y="Rep_rel", ax=ax)
-    plot.set_xticks(range(len(pulse_rel_t_exp_df_T.index)))
-    plot.set_xticklabels(time_points)
-    ax.set_xlabel("Time(h)")
-    ax.set_ylabel("Rep_rel")
-    ax.set_title("Pulse exp " + str(condition))
-    ax.set_box_aspect(1)
-    plt.savefig(figure_path+"pulse_"+str(condition)+"_violin_plot.svg")
-
-
 def plot_ref_ensemble_time_series(
         figure_path:str,
         ref_all_cell_time_series:np.ndarray
@@ -543,35 +510,6 @@ def plot_ref_ensemble_time_series(
         ax.set_title("Reference")
         ax.set_box_aspect(1)
     plt.savefig(figure_path+"reference_time_series.svg")
-
-
-def plot_ref_ensemble_violin(
-        figure_path:str,
-        ref_all_cell_time_series:np.ndarray
-):
-    ref_on = Ref_pop20["P1"]["on"]
-    time_points = [14, 18, 22, 26, 38, 42, 46]
-    ref_rel_all_cells = []
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
-    for i in range(len(ref_all_cell_time_series)):
-        ref_rep_rel = ref_all_cell_time_series[i]/ref_on
-        rep_rel_t_exp = [ref_rep_rel[t] for t in time_points]
-        ref_rel_all_cells.append(rep_rel_t_exp)
-    ref_rel_t_exp_df = pd.DataFrame(ref_rel_all_cells, columns = [str(i) + "h" for i in time_points])
-    ref_rel_t_exp_df_T = ref_rel_t_exp_df.transpose().copy()
-    ref_rel_t_exp_df_T["Time (h)"] = ref_rel_t_exp_df_T.index
-    ref_rel_t_exp_df_T_plot = pd.melt(frame=ref_rel_t_exp_df_T,
-                                      id_vars="Time (h)",
-                                      var_name="column_name",
-                                      value_name="Rep_rel")
-    plot = sns.violinplot(data=ref_rel_t_exp_df_T_plot, x="Time (h)", y="Rep_rel", ax=ax)
-    plot.set_xticks(range(len(ref_rel_t_exp_df_T.index)))
-    plot.set_xticklabels(time_points)
-    ax.set_xlabel("Time(h)")
-    ax.set_ylabel("Rep_rel")
-    ax.set_title("Reference")
-    ax.set_box_aspect(1)
-    plt.savefig(figure_path+"reference_violin_plot.svg")
 
 
 def plot_obj_progression_set(

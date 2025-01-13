@@ -174,9 +174,11 @@ if __name__ == "__main__":
 
     #     run(test_case, settings)
     #     print("seed "+str(seed)+" complete")
-    seed = 0
+    seed = int(sys.argv[2])
+    print(seed)
     np.random.seed(seed)
     settings["seed"] = seed
+    settings["folder_name"] = settings["folder_name"] + "_seed_" + str(seed)
     # for i, zmat in enumerate(Z_mat_list[1:]):
     #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
     #     settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)
@@ -185,5 +187,6 @@ if __name__ == "__main__":
     #     settings["Z_matrix"] = zmat
     #     run(test_case, settings)
 
-    settings["Z_matrix"] = Z_200
+    # settings["Z_matrix"] = Z_200
+
     run(test_case, settings)
