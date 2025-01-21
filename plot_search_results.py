@@ -155,7 +155,7 @@ def plot_hypervolumes_set_vs_combo(
     bax.axs[1].set_yticks([0])
     bax.axs[0].set_yticks([36, 38, 40, 42, 44])
     bax.set_xlabel("Generation in GA")
-    bax.set_xticks(np.arange(0, n_gens+1, 1000))
+    bax.set_xticks(np.arange(0, n_gens+1, 2000))
     bax.set_ylabel("Hypervolume")
     # if y_lower_lim:
     #     ax.set_ylim(bottom=y_lower_lim)

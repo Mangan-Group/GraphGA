@@ -61,8 +61,8 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels,
 
 
 path_GA_results = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/"
-test_case_dir = "Signal_conditioner_single_cell/synTF-R-DsR/Optimized_hyperparams_fixed_pop_max_hv_ngen50/run7_ngen5000/"
-results_runs = "2025-01-09_Signal_cond_single_DsRED_opt_hps0_ngen5000_seed_"
+test_case_dir = "Signal_conditioner_single_cell/synTF-R-DsR/Optimized_hyperparams_fixed_pop_max_hv_ngen50/run8_ngen10000/"
+results_runs = "2025-01-14_Signal_cond_single_DsRED_opt_hps0_ngen10000_seed_"
 path = path_GA_results + test_case_dir
 
-run_seed_results_comparisons(path, results_runs, 2, ["ON_rel", "FI_rel"], 5000, 3)
+run_seed_results_comparisons(path, results_runs, 2, ["ON_rel", "FI_rel"], 10000, 3)
