@@ -314,12 +314,14 @@ def multi_obj_GA(
     all_circuits.append(population)
 
     # create lists to store top objs
-    # for initial population and all 
-    # generations, and rank_dict from
+    # and circuits for initial population 
+    # and each generation, and rank_dict from
     # non-dominated sorting (does not include
     # initial population)
     top_obj = []
     top_obj.extend([obj])
+    top_circuits = []
+    top_circuits.extend([population])
     rank_dict_list = []
 
     # create class instance of non-dominated
@@ -407,8 +409,10 @@ def multi_obj_GA(
             # append hypervolume to list
             hypervolumes.append(hv(obj))
 
-            # append top 200 objs from population to list
+            # append top objs and circuits from population
+            # to lists
             top_obj.extend([obj])
+            top_circuits.extend([population])
 
             bar()
 
@@ -467,6 +471,10 @@ def multi_obj_GA(
     file_name = "top_objs_all.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(top_obj, fid)
+
+    file_name = "top_circuits_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_circuits, fid)
 
     file_name = "rank_dicts_all.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:

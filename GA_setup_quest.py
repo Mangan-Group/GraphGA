@@ -311,6 +311,17 @@ def multi_obj_GA(
     all_circuits = []
     all_circuits.append(population)
     # all_cells_dict_list = []
+
+    # create lists to store top objs
+    # and circuits for initial population 
+    # and each generation, and rank_dict from
+    # non-dominated sorting (does not include
+    # initial population)
+    top_obj = []
+    top_obj.extend([obj])
+    top_circuits = []
+    top_circuits.extend([population])
+
     # create class instance of non-dominated
     # sorting class (to sort multi-objective
     # and determine pareto front)
@@ -388,6 +399,11 @@ def multi_obj_GA(
         # append hypervolume to list
         hypervolumes.append(hv(obj))
 
+        # append top objs and circuits from population
+        # to lists
+        top_obj.extend([obj])
+        top_circuits.extend([population])
+
         # print("generation "+ str(gen) + " complete")
 
     # print in which gen the min obj first appeared
@@ -441,6 +457,14 @@ def multi_obj_GA(
     file_name = "hypervolumes.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(hypervolumes, fid)
+
+    file_name = "top_objs_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_obj, fid)
+
+    file_name = "top_circuits_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_circuits, fid)
 
     graph_file_name = "final_population_pareto_front.svg"
     problem.pareto_plot(
