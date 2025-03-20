@@ -273,7 +273,7 @@ def compare_hypervolumes(results_path, seed_folder, selected_seed):
                           n_gens, hypervolume_lists, y_lower_lim)
     hypervolumes_vs_combo = "all_hvs_vs_combo_paper.svg"
     plot_hypervolumes_set_vs_combo(results_path+hypervolumes_vs_combo,
-                                  n_gens, hypervolume_lists, 45.89854218733082,
+                                  n_gens, hypervolume_lists, 2892.284,#pulse, #45.89854218733082 signal conditioner
                                   selected_seed, y_lower_lim=0)
     
     return final_hypervolumes

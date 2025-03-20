@@ -450,9 +450,9 @@ def multi_obj_GA(
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(all_obj, fid)
 
-    file_name = "all_circuits.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(all_circuits, fid)
+    # file_name = "all_circuits.pkl"
+    # with open(folder_path + "/" + file_name, "wb") as fid:
+    #     pickle.dump(all_circuits, fid)
 
     file_name = "hypervolumes.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
