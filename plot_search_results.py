@@ -140,7 +140,7 @@ def plot_hypervolumes_set_vs_combo(
         ax.set_ylim(bottom=y_lower_lim)
     # plt.show()
     ax.legend()
-    ax.set_xticks(np.arange(0, n_gens+1, 2000))
+    ax.set_xticks(np.arange(0, n_gens+1, 25))
     ax.set_ylim(bottom=0)
     ax.set_xlim(left=0)
     plt.savefig(figure_path, bbox_inches="tight")
@@ -219,20 +219,15 @@ def plot_pareto_front3D(
         obj_df[obj_labels[2]] = obj_df[
             obj_labels[2]]*-1
             
-    prom_rel_exp = [2.345337964907094, 2.0821875761716178, 2.681593101318251, 2.681593101318251, 2.0640874964172617, 2.1908287355337963]
+    prom_rel_exp = [2.345337964907094, 2.0821875761716178, 2.681593101318251, 3.053945976792732]
 
     obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[0]].index, inplace=True, axis=0)
     obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[1]].index, inplace=True, axis=0)
     obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[2]].index, inplace=True, axis=0)
     obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[3]].index, inplace=True, axis=0)
-    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[4]].index, inplace=True, axis=0)
-    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[5]].index, inplace=True, axis=0)
-    # obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[1]], inplace=True)
-    # print(obj_df.tail(n=50))
-    # fig = plt.figure(figsize= (4, 4))
+
     fig = plt.figure(figsize= (1.955, 1.955))
     ax = fig.add_subplot(projection='3d')
-
 
     ax.scatter(
         xs=obj_df[obj_labels[0]], ys=obj_df[obj_labels[1]],
@@ -240,18 +235,20 @@ def plot_pareto_front3D(
     )
 
     pulse_blue = [(i/255) for i in [51, 34, 136]]
-    frac_p_exp = [0.45, 0.45, 0.4, 0.35, 0.45, 0.45]
-    t_p_exp = [13, 11, 13, 13, 14, 13]
+    frac_p_exp = [0.45, 0.45, 0.4, 0.35]
+    t_p_exp = [13, 11, 13, 13]
     ax.scatter(
         xs=frac_p_exp, ys=t_p_exp,
         zs=prom_rel_exp, color=pulse_blue, s=10,
     )
 
-    ax.view_init(elev=15, azim=-60)
-    # ax.view_init(elev=10, azim=-115)
+    # ax.view_init(elev=15, azim=-60)
+    ax.view_init(elev=10, azim=-115)
     ax.set_xlabel(obj_labels[0])
     ax.set_ylabel(obj_labels[1])
     ax.set_zlabel(obj_labels[2])
+    ax.set_xticks([0, 0.2, 0.4, 0.6])
+    ax.set_yticks([0, 20, 40, 60])
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -299,9 +296,8 @@ def plot_1D_obj_confidence_interval(
     x_vals = [1]*len(unique_objectives)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    print(min(jittered_x),max(jittered_x))
     lower_bound = [max_objective-CI_metric_max]*(len(unique_objectives)+2)
-    upper_bound = [max_objective+CI_metric_max]*(len(unique_objectives)+2)
+    upper_bound = [max_objective]*(len(unique_objectives)+2)
     fig, ax = plt.subplots(1, 1, figsize= (2, 1.75))
     ax.plot(jittered_x, unique_objectives, linestyle="None",
              marker="o", markersize=1, color="black", zorder=1)

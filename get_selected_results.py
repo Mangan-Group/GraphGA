@@ -4,7 +4,7 @@ import json
 import pickle
 from multiprocessing import Pool
 from load_files_pop import Z_200
-from load_Z_mat_samples import Z_mat_list, Ref_list
+from load_Z_mat_samples import Z_mat_list_20
 from typing import Union
 from plot_search_results import (
     plot_1D_all_cell_obj,
@@ -188,7 +188,7 @@ def get_selected_all_cell_metrics(settings, selected_results_df, folder_path):
         if "Z_matrix" in settings:
             Z_mat = settings["Z_matrix"]
         else:
-            Z_mat = Z_mat_list[0]
+            Z_mat = Z_mat_list_20[0]
 
         problem = test_case(
             promo_node=settings["promo_node"],

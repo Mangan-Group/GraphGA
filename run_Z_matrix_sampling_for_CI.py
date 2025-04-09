@@ -1,7 +1,10 @@
 import numpy as np
 import pickle
 from saving import make_main_directory
-from load_Z_mat_samples import Z_mat_list
+from load_Z_mat_samples import (
+    Z_mat_list_20, Ref_list_20,
+    Z_mat_list_200, Ref_list_200
+)
 from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
@@ -19,6 +22,7 @@ def run_Z_matrix_sampling(
         testcase: object,
         settings: dict,
         Z_mat_list: list,
+        Ref_list: list
 ):
     custom_path = (settings["repository_path"] +
                    settings["results_path"]
@@ -53,7 +57,7 @@ def run_Z_matrix_sampling(
     )
 
     Z_matrix_sampling = solve_all_topology_objectives(
-        problem, topologies, Z_mat_list
+        problem, topologies, Z_mat_list, Ref_list
     )
 
     Z_matrix_sampling_file_name = "Z_matrix_sampling_for_CI.pkl"
@@ -77,30 +81,23 @@ def run_Z_matrix_sampling(
                 figure_path, CI_metric_maxes, settings["obj_labels"]
             )
 
-        # elif len(CI_metric_maxes) == 3:
-        #     figure_path = folder_path + "/" + settings["CI_metrics"][i][0]+"_"+settings["CI_metrics"][i][1]+"_"+settings["CI_metrics"][i][2]+"_CI.svg"
-        #     plot_3D_obj_confidence_interval(
-        #         objectives, settings["repository_path"]+settings["results_path"],
-        #         figure_path, CI_metric_maxes, settings["obj_labels"]
-        #     )
-
     return Z_matrix_sampling
 
 settings = {
-    "test_case": "SignalConditioner",
+    "test_case": "Amplifier",
     "promo_node": "P1",
     "inhibitor": True,
-    "DsRed_inhibitor": True,
+    "DsRed_inhibitor": False,
     "pop": True,
     "num_processes": 8,
-    "obj_labels": ["ON_rel", "FI_rel"],
-    "objective_threshold": None,
+    "obj_labels": ["ON_rel"],
+    "objective_threshold": 62.6,
     "max_time": 42,
-    "CI_metrics": [["ON_rel_range", "FI_rel_range"], ["ON_rel_std_error", "FI_rel_std_error"]],
-    "CI_ylim": False,
-    "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "results_path": "GA_results/SC_seed_pop_DsRED_inhibitor/Single_cell_model_opt_hyperparams/Fixed_pop_opt_hp_single_stdev_ngen50_not_converged/run2_ngen80_not_converged?/2024-06-01_Signal_cond_pop_DsRED_inhibitor_single_opt_hp_stdev_ngen50_run_ngen80_seed_0/",
-    "folder_name": "Z_matrix_sampling"
+    "CI_metrics": [["ON_rel_range"], ["ON_rel_std_error"]],
+    "CI_ylim": None,
+    "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
+    "results_path": "Amplifier_pop/Original_hyperparams_vary_dose/Amplifier_pop_vary_dose_original_hp_seed_0/",
+    "folder_name": "Z_matrix_sampling_200_ref"
 }
 
 if __name__ == "__main__":
@@ -114,4 +111,4 @@ if __name__ == "__main__":
         raise Exception("Error: test case not defined")
     
 
-    Z_matrix_sampling = run_Z_matrix_sampling(test_case, settings, Z_mat_list)
+    Z_matrix_sampling = run_Z_matrix_sampling(test_case, settings, Z_mat_list_200, Ref_list_200)
