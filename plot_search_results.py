@@ -3,14 +3,25 @@ import networkx as nx
 import pandas as pd
 import pickle
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import seaborn as sns
 from scipy.interpolate import interp2d
 from math import ceil, floor
-from Reference_pop import Z_20, Ref_20, simulate_reference_time_series
+from brokenaxes import brokenaxes
+from load_files_pop import Z_20, Ref_pop20
+# from Reference_pop import simulate_reference_time_series
 
 plt.style.use('/Users/kdreyer/Documents/Github/GraphGA/paper.mplstyle.py')
+orange_ = [i/255 for i in [230, 159, 0]]
 sky_blue = [i/255 for i in [86, 180, 233]]
+pink_ = [i/255 for i in [204, 121, 167]]
+bluish_green = [i/255 for i in [0, 158, 115]]
+vermillion = [i/255 for i in [213, 94, 0]]
+yellow_ = [i/255 for i in [240, 228, 66]]
+grey_ = [(i/255) for i in [150, 150, 150]]
+
+combinatorial_yellow = [(i/255) for i in [221, 204, 119]]
 
 def plot_graph(
         figure_path: str,
@@ -83,14 +94,72 @@ def plot_hypervolumes_set(
         y_lower_lim: float=None
 ):
     generations = np.arange(n_gens)
-
-    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
+    max_hv = max(np.array(hypervolumes_lists).flatten())
+    fig, ax = plt.subplots(1, 1, figsize= (2, 2))
     for hv_list in hypervolumes_lists:
         ax.plot(generations, hv_list)
     ax.set_xlabel("Generation")
     ax.set_ylabel("Hypervolume")
+    ax.axhline(max_hv, xmin=0, xmax=generations[-1], linestyle="dashed", color="grey", label="max hv="+str(round(max_hv, 3)))
     if y_lower_lim:
         ax.set_ylim(bottom=y_lower_lim)
+    # plt.show()
+    ax.legend()
+    plt.savefig(figure_path, bbox_inches="tight")
+
+def plot_hypervolumes_set_vs_combo(
+        figure_path: str,
+        n_gens: int,
+        hypervolumes_lists: np.ndarray,
+        opt_combo_hv:float,
+        selected_seed: int,
+        y_lower_lim: float=None
+):
+    generations = np.arange(n_gens)
+    mpl.rcParams["figure.autolayout"] = False
+    # fig = plt.figure(figsize= (1.585, 1.6))
+    fig, ax = plt.subplots(1, 1, figsize= (1.585, 1.6))
+    # bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1) #signal conditioner
+    for i, hv_list in enumerate(hypervolumes_lists):
+        if i == selected_seed:
+            color_="k"
+            zorder_=(i+1)*100
+            linewidth_="0.75"
+        else:
+            color_=grey_
+            zorder_=i
+            linewidth_="0.5"
+
+        ax.plot(generations, hv_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
+    ax.set_xlabel("Generation")
+    ax.set_ylabel("Hypervolume")
+    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], 
+               linestyle="dashed", color="k", label="opt hv="+str(round(opt_combo_hv, 3)))
+    if y_lower_lim:
+        ax.set_ylim(bottom=y_lower_lim)
+    # plt.show()
+    ax.legend()
+    ax.set_xticks(np.arange(0, n_gens+1, 25))
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=0)
+    plt.savefig(figure_path, bbox_inches="tight")
+        # bax.plot(generations, hv_list, linewidth=linewidth_,
+        #          color=color_, zorder=zorder_)
+
+    # bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
+    #             linestyle="dashed", linewidth="0.75", color="k",
+    #             label="opt hv="+str(round(opt_combo_hv, 3)),
+    #             zorder=20)
+    # bax.set_xlim([0, generations[-1]+5])
+    # bax.axs[1].set_yticks([0])
+    # bax.axs[0].set_yticks([36, 38, 40, 42, 44])
+    # bax.set_xlabel("Generation in GA")
+    # bax.set_xticks(np.arange(0, n_gens+1, 2000))
+    # bax.set_ylabel("Hypervolume")
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom=y_lower_lim)
+    # bax.legend()
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -117,15 +186,19 @@ def plot_pareto_front(
             plt.legend(fontsize="8")
             
         else:
-            fig, ax = plt.subplots(1, 1, figsize= (2.25, 2.25))
+            fig, ax = plt.subplots(1, 1, figsize= (1.955, 1.955))
             sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
                             y= obj_df[obj_labels[1]], 
-                            color="black", ax=ax, s=8)
+                            color="black", ax=ax, s=6)
 
         plt.xlabel(obj_labels[0])
         plt.ylabel(obj_labels[1])
-        # plt.xticks([0, 20, 40, 60])
+        plt.xticks([0, 20, 40, 60])
         # plt.yticks([0, 1, 2, 3])
+        plt.xlim(left=0)
+        plt.ylim(bottom=0, top=1.75)
+        plt.yticks([0, 0.5, 1.0, 1.5])
+        ax.set_box_aspect(1)
         # plt.show()
         plt.savefig(figure_path, bbox_inches="tight")
 
@@ -146,18 +219,36 @@ def plot_pareto_front3D(
         obj_df[obj_labels[2]] = obj_df[
             obj_labels[2]]*-1
             
-    # print(obj_df.tail(n=50))
-    fig = plt.figure(figsize= (4, 4))
+    prom_rel_exp = [2.345337964907094, 2.0821875761716178, 2.681593101318251, 3.053945976792732]
+
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[0]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[1]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[2]].index, inplace=True, axis=0)
+    obj_df.drop(obj_df[obj_df["prominence_rel"] == prom_rel_exp[3]].index, inplace=True, axis=0)
+
+    fig = plt.figure(figsize= (1.955, 1.955))
     ax = fig.add_subplot(projection='3d')
 
     ax.scatter(
         xs=obj_df[obj_labels[0]], ys=obj_df[obj_labels[1]],
-        zs=obj_df[obj_labels[2]], color="k", 
+        zs=obj_df[obj_labels[2]], color="grey", s=2,
     )
+
+    pulse_blue = [(i/255) for i in [51, 34, 136]]
+    frac_p_exp = [0.45, 0.45, 0.4, 0.35]
+    t_p_exp = [13, 11, 13, 13]
+    ax.scatter(
+        xs=frac_p_exp, ys=t_p_exp,
+        zs=prom_rel_exp, color=pulse_blue, s=10,
+    )
+
+    # ax.view_init(elev=15, azim=-60)
     ax.view_init(elev=10, azim=-115)
     ax.set_xlabel(obj_labels[0])
     ax.set_ylabel(obj_labels[1])
     ax.set_zlabel(obj_labels[2])
+    ax.set_xticks([0, 0.2, 0.4, 0.6])
+    ax.set_yticks([0, 20, 40, 60])
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -171,16 +262,22 @@ def plot_1D_obj_scatter(
     if obj_vals.flatten()[0] < 0:
         obj_vals = obj_vals*-1
     x_vals = [1]*len(obj_vals)
+    np.random.seed(0)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    fig, ax = plt.subplots(1, 1, figsize= (2, 1.75))
     ax.plot(jittered_x, obj_vals, linestyle="None",
-             marker="o", markersize=1, color="gray")
+             marker="o", markersize=1, color="k",zorder=1)
+    ax.plot(1.05, max(obj_vals), linestyle="none", marker="o",
+            markersize=2.5, color=combinatorial_yellow, zorder=2)
     ax.set_xticklabels([])
     ax.set_xticks([])
     ax.set_ylabel(obj_labels[0])
-    if y_lower_lim:
-        ax.set_ylim(lower = y_lower_lim)
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom = y_lower_lim)
+    ax.set_ylim(bottom = 0)
+    ax.set_yticks([0, 20, 40, 60])
+    ax.set_box_aspect(1)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -190,31 +287,34 @@ def plot_1D_obj_confidence_interval(
         figure_path: str,
         CI_metric_max: float,
         obj_labels: list,
-        y_lim: int=False
+        y_lim_bottom: float=None 
 ):
     unique_objectives = pd.read_pickle(results_path+"unique_objectives.pkl")
     unique_objectives = unique_objectives.flatten()*-1
     max_objective = max(unique_objectives)
-
+    np.random.seed(0)
     x_vals = [1]*len(unique_objectives)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    lower_bound = [max_objective-CI_metric_max]*len(unique_objectives)
-    upper_bound = [max_objective]*len(unique_objectives)
-    fig, ax = plt.subplots(1, 1, figsize= (2.25, 2))
+    lower_bound = [max_objective-CI_metric_max]*(len(unique_objectives)+2)
+    upper_bound = [max_objective]*(len(unique_objectives)+2)
+    fig, ax = plt.subplots(1, 1, figsize= (2, 1.75))
     ax.plot(jittered_x, unique_objectives, linestyle="None",
-             marker="o", markersize=1, color="black", zorder=1) #markersize=1
-    jittered_x.sort()
-    ax.fill_between(jittered_x, lower_bound, upper_bound, alpha=0.4, color=sky_blue, zorder=2)
+             marker="o", markersize=1, color="black", zorder=1)
+    x_CI_fill = np.append(jittered_x, [0.995, 1.105])
+    x_CI_fill.sort()
+    ax.fill_between(x_CI_fill, lower_bound, upper_bound, alpha=0.75, color=grey_, zorder=2,
+                    linewidth=0.25)
     ax.set_xticklabels([])
     ax.set_xticks([])
+    ax.set_xlim([0.995, 1.105])
     ax.set_ylabel(obj_labels[0])
-    if y_lim:
-        # if CI_metric_max <= 0.5:
-        #     y_lim = [floor(max_objective)-0.5, ceil(max_objective)]
-        # else:
-        y_lim = [floor(max_objective)-CI_metric_max, ceil(max_objective)]
-        ax.set_ylim(y_lim)
+    if y_lim_bottom is not None:
+        y_lim = [y_lim_bottom, round(max_objective+CI_metric_max, 1)]
+    else:
+        y_lim = [round(max_objective-CI_metric_max, 1), round(max_objective+0.05, 2)]
+        print(y_lim)
+    ax.set_ylim(y_lim)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -272,71 +372,6 @@ def plot_2D_obj_confidence_interval(
         ax.set_ylim(bottom=0)
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
-
-
-### not currently executable 
-# def plot_3D_obj_confidence_interval(
-#         objectives: pd.DataFrame,
-#         results_path: str,
-#         figure_path: str,
-#         CI_metric_maxes: list,
-#         obj_labels: list,
-# ):
-#     all_objectives = pd.read_pickle(results_path+"all_objectives.pkl")
-    
-#     obj1_CI = CI_metric_maxes[0]
-#     obj2_CI = CI_metric_maxes[1]
-#     obj3_CI = CI_metric_maxes[2]
-
-#     upper_obj1 = np.array(objectives[obj_labels[0]])
-#     sorted_upper_idx = np.argsort(upper_obj1)
-#     sorted_upper_obj1 = upper_obj1[sorted_upper_idx]
-#     lower_obj1 = np.array([i-obj1_CI for i in (objectives[obj_labels[0]])])
-#     sorted_lower_idx = np.argsort(lower_obj1)
-#     sorted_lower_obj1 = lower_obj1[sorted_lower_idx]
-
-#     upper_obj2 = np.array(objectives[obj_labels[1]]*-1)
-#     sorted_upper_obj2 = upper_obj2[sorted_upper_idx]
-#     lower_obj2 = np.array([i-obj2_CI for i in (objectives[obj_labels[1]]*-1)])
-#     sorted_lower_obj2 = lower_obj2[sorted_lower_idx]
-
-#     upper_obj3 = np.array(objectives[obj_labels[2]]*-1)
-#     sorted_upper_obj3 = upper_obj3[sorted_upper_idx]
-#     lower_obj3 = np.array([i-obj3_CI for i in (objectives[obj_labels[2]]*-1)])
-#     sorted_lower_obj3 = lower_obj3[sorted_lower_idx]
-
-#     # obj1_obj1_upper, obj2_obj2_upper = np.meshgrid(sorted_upper_obj1, sorted_upper_obj2)
-#     # obj3_obj3_upper = np.array(sorted_upper_obj3*len(sorted_upper_obj3)).reshape(len(sorted_upper_obj3), len(sorted_upper_obj3))
-#     # obj_3_upper_interpolation = interp2d(obj1_obj1_upper, obj2_obj2_upper, obj3_obj3_upper)
-#     all_obj1_vals = np.sort(np.concatenate([upper_obj1, lower_obj1]))
-#     all_obj2_vals = np.sort(np.concatenate([upper_obj2, lower_obj2]))
-
-#     # obj3_obj3_upper = np.repeat([sorted_upper_obj3], len(sorted_upper_obj3), axis=0)
-#     obj_3_upper_function = interp2d(sorted_upper_obj1, sorted_upper_obj2, sorted_upper_obj3)
-#     obj_3_upper_interpolation = obj_3_upper_function(all_obj1_vals, all_obj2_vals)[0, :]
-
-#     # obj3_obj3_lower = np.repeat([sorted_lower_obj3], len(sorted_lower_obj3), axis=0)
-#     obj_3_lower_function = interp2d(sorted_lower_obj1, sorted_lower_obj2, sorted_lower_obj3)
-#     obj_3_lower_interpolation = obj_3_lower_function(all_obj1_vals, all_obj2_vals)[0, :]
-
-#     upper_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_upper_interpolation)]
-#     lower_vertices = [[obj1_i, obj2_i, obj3_i] for obj1_i, obj2_i, obj3_i in zip(all_obj1_vals, all_obj2_vals, obj_3_lower_interpolation)]
-#     all_vertices = [upper_vertices]+[lower_vertices]
-#     print(all_vertices)
-#     fig = plt.figure(figsize= (2.25, 2.25))
-#     ax = fig.add_subplot(projection='3d', computed_zorder=False)
-#     ax.scatter(
-#         xs=all_objectives[:, 0], ys=all_objectives[:, 1]*-1,
-#         zs=all_objectives[:, 2]*-1, color="black", zorder=1#marker="o", markersize=1,
-#         # color="black", zorder=1
-#     )
-#     ax.add_collection3d(Poly3DCollection(all_vertices, alpha=0.4, facecolors=sky_blue, zorder=2))
-#     ax.view_init(elev=10, azim=-115)
-#     ax.set_xlabel(obj_labels[0])
-#     ax.set_ylabel(obj_labels[1])
-#     ax.set_zlabel(obj_labels[2])
-#     plt.show()
-    # plt.savefig(figure_path, bbox_inches="tight")
 
 
 def plot_1D_all_cell_obj(
@@ -422,7 +457,7 @@ def plot_all_cell_time_series(
     axs[1].plot(t[:43], rep_rel_mean[:43], color="k",
              label="population mean", lw="2"
     )
-    axs[0].legend()
+    # axs[0].legend()
     axs[0].set_xlabel("time (hours)")
     axs[1].set_xlabel("time (hours)")
     axs[0].set_ylabel("Reporter_rel")
@@ -442,7 +477,7 @@ def plot_pulse_ensemble_time_series(
         "Rep_rel time series for each cell"
     ]
     time_points = [14, 18, 22, 26, 38, 42, 46]
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
+    fig, ax = plt.subplots(1, 1, figsize= (2, 2))
     for i in range(len(all_cells_rep_rel)):
         rep_rel_t_exp = [all_cells_rep_rel[i][t] for t in time_points]
         ax.plot(time_points, rep_rel_t_exp, linestyle="none", marker="o", markersize=4, color="k")
@@ -450,47 +485,14 @@ def plot_pulse_ensemble_time_series(
         ax.set_ylabel("Rep_rel")
         ax.set_title("Pulse exp " + str(condition))
         ax.set_box_aspect(1)
-    plt.savefig(figure_path+"pulse_"+str(condition)+"_time_series.svg")
-
-
-def plot_pulse_ensemble_violin(
-        figure_path:str,
-        all_cell_results_df_row:pd.Series,
-        condition:int
-):
-    
-    all_cells_rep_rel = all_cell_results_df_row[
-        "Rep_rel time series for each cell"
-    ]
-    time_points = [14, 18, 22, 26, 38, 42, 46]
-    pulse_rel_all_cells = []
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
-    for i in range(len(all_cells_rep_rel)):
-        pulse_rep_rel = all_cells_rep_rel[i]
-        rep_rel_t_exp = [pulse_rep_rel[t] for t in time_points]
-        pulse_rel_all_cells.append(rep_rel_t_exp)
-    pulse_rel_t_exp_df = pd.DataFrame(pulse_rel_all_cells, columns = [str(i) + "h" for i in time_points])
-    pulse_rel_t_exp_df_T = pulse_rel_t_exp_df.transpose().copy()
-    pulse_rel_t_exp_df_T["Time (h)"] = pulse_rel_t_exp_df_T.index
-    pulse_rel_t_exp_df_T_plot = pd.melt(frame=pulse_rel_t_exp_df_T,
-                                      id_vars="Time (h)",
-                                      var_name="column_name",
-                                      value_name="Rep_rel")
-    plot = sns.violinplot(data=pulse_rel_t_exp_df_T_plot, x="Time (h)", y="Rep_rel", ax=ax)
-    plot.set_xticks(range(len(pulse_rel_t_exp_df_T.index)))
-    plot.set_xticklabels(time_points)
-    ax.set_xlabel("Time(h)")
-    ax.set_ylabel("Rep_rel")
-    ax.set_title("Pulse exp " + str(condition))
-    ax.set_box_aspect(1)
-    plt.savefig(figure_path+"pulse_"+str(condition)+"_violin_plot.svg")
+    plt.savefig(figure_path+"pulse_"+str(condition)+"_time_series_paper.svg")
 
 
 def plot_ref_ensemble_time_series(
         figure_path:str,
         ref_all_cell_time_series:np.ndarray
 ):
-    ref_on = Ref_20["P1"]["on"]
+    ref_on = Ref_pop20["P1"]["on"]
     time_points = [14, 18, 22, 26, 38, 42, 46]
     ref_rel_all_cells = []
     fig, ax = plt.subplots(1, 1, figsize= (3, 3))
@@ -506,52 +508,55 @@ def plot_ref_ensemble_time_series(
     plt.savefig(figure_path+"reference_time_series.svg")
 
 
-def plot_ref_ensemble_violin(
-        figure_path:str,
-        ref_all_cell_time_series:np.ndarray
-):
-    ref_on = Ref_20["P1"]["on"]
-    time_points = [14, 18, 22, 26, 38, 42, 46]
-    ref_rel_all_cells = []
-    fig, ax = plt.subplots(1, 1, figsize= (3, 3))
-    for i in range(len(ref_all_cell_time_series)):
-        ref_rep_rel = ref_all_cell_time_series[i]/ref_on
-        rep_rel_t_exp = [ref_rep_rel[t] for t in time_points]
-        ref_rel_all_cells.append(rep_rel_t_exp)
-    ref_rel_t_exp_df = pd.DataFrame(ref_rel_all_cells, columns = [str(i) + "h" for i in time_points])
-    ref_rel_t_exp_df_T = ref_rel_t_exp_df.transpose().copy()
-    ref_rel_t_exp_df_T["Time (h)"] = ref_rel_t_exp_df_T.index
-    ref_rel_t_exp_df_T_plot = pd.melt(frame=ref_rel_t_exp_df_T,
-                                      id_vars="Time (h)",
-                                      var_name="column_name",
-                                      value_name="Rep_rel")
-    plot = sns.violinplot(data=ref_rel_t_exp_df_T_plot, x="Time (h)", y="Rep_rel", ax=ax)
-    plot.set_xticks(range(len(ref_rel_t_exp_df_T.index)))
-    plot.set_xticklabels(time_points)
-    ax.set_xlabel("Time(h)")
-    ax.set_ylabel("Rep_rel")
-    ax.set_title("Reference")
-    ax.set_box_aspect(1)
-    plt.savefig(figure_path+"reference_violin_plot.svg")
-
-
 def plot_obj_progression_set(
         figure_path: str,
         n_gens: int,
         objectives_lists: np.ndarray,
         obj_label: str,
-        y_lower_lim: float=None
+        selected_seed: int,
+        opt_obj: float,
+        y_lower_lim: float,
+        y_ticks: list=None,
+        # y_lower_lim: float=None
 ):
     generations = np.arange(n_gens+1)
 
-    fig, ax = plt.subplots(1, 1, figsize= (4, 4))
-    for obj_list in objectives_lists:
-        ax.plot(generations, obj_list)
-    ax.set_xlabel("Generation")
-    ax.set_ylabel(obj_label)
-    if y_lower_lim:
-        ax.set_ylim(bottom=y_lower_lim)
+    mpl.rcParams["figure.autolayout"] = False
+    fig = plt.figure(figsize= (1.585, 1.6))
+    bax = brokenaxes(ylims=((0, 1), (47, 64)), hspace=0.1)
+    for i, obj_list in enumerate(objectives_lists):
+        if i == selected_seed:
+            color_="k"
+            zorder_=(i+1)*100
+            linewidth_="0.75"
+        else:
+            color_=grey_
+            zorder_=i
+            linewidth_="0.5"
+        bax.plot(generations, obj_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
+    bax.axhline(opt_obj, xmin=0, xmax=generations[-1]+5,
+                linestyle="dashed", linewidth="0.75", color="black", 
+                label="opt obj="+str(round(opt_obj, 3)),
+                zorder=20)
+    # axt.set_ylim([55, 64])
+    # axb.set_ylim([0, 10])
+    bax.set_xlim([0, 55])
+    bax.axs[1].set_yticks([0])
+    bax.axs[0].set_yticks([50, 55, 60, 65])
+    # bax.draw_diags()
+    bax.set_xlabel("Generation in GA")
+
+    bax.set_xticks(np.arange(0, n_gens+1, 10))
+    # ax.set_xlim(left=0)
+    bax.set_ylabel("objective ("+obj_label+")")
+    # bax.axs[0].set_box_aspect(1)
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom=y_lower_lim)
+    # else:
+    #     ax.set_ylim(bottom=0)
     # plt.show()
+    bax.legend()
     plt.savefig(figure_path, bbox_inches="tight")
 
 
@@ -616,46 +621,3 @@ def plot_pareto_front_set_3D(
     ax.set_zlabel(obj_labels[2])
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
-
-
-
-Ref_all_cells = simulate_reference_time_series(["P1"], Z_20)
-ref_all_cell_time_series = Ref_all_cells["P1"]["on all cells"]
-# pulse_cells = [10, 13, 16, 18]
-ref_pulse_cells_time_series = ref_all_cell_time_series #[ref_all_cell_time_series[i] for i in pulse_cells]
-
-repo_path = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/GA_results/"
-#3 obj
-# results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_3obj_126h_ZF1_ZF2_seed_0/Results_analysis/"
-# file_name = "all_cell_selected_results_low_t_pulse.csv"
-
-#t pulse
-results_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/Pulse_pop_DsRED_inhibitor_t_pulse_126h_ZF1_ZF2_seed_0/Results_analysis_sub_opt/"
-file_name = "all_cell_selected_results_sub_opt.csv"
-
-save_path = "Pulse_seed_pop_DsRED_inhibitor/ZF1_ZF2_only/"
-# t_pulse results are index 0 only; 3obj are indices 0-4
-all_cell_results = pd.read_csv(repo_path+results_path+file_name)
-all_cell_time_series_opt = all_cell_results.copy().iloc[1:2]
-# print(all_cell_time_series_opt["t_pulse_mean"])
-conditions = [3]
-# conditions = [1, 2, 4, 6, 5]
-drop_labels_3obj = ["Topology","Rep_rel time series mean", "t_pulse_mean", "peak_rel_mean", "prominence_rel_mean"]
-drop_labels_t_pulse = ["Topology","Rep_rel time series mean", "t_pulse_mean", "prominence_rel_mean"]
-all_cell_time_series_opt = all_cell_time_series_opt.drop(drop_labels_t_pulse, axis=1)
-all_cell_time_series_opt["Rep_rel time series for each cell"] = all_cell_time_series_opt["Rep_rel time series for each cell"].astype(object)
-# pulse_cells = [10, 13, 16, 18]
-
-for index, row in all_cell_time_series_opt.iterrows():
-        all_cell_list = eval(row["Rep_rel time series for each cell"])
-        pulse_cell_time_series_opt = all_cell_list #[all_cell_list[i] for i in pulse_cells]
-        all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = pulse_cell_time_series_opt
-        # all_cell_time_series_opt.at[index, "Rep_rel time series for each cell"] = eval(row["Rep_rel time series for each cell"])
-        row_as_list = all_cell_time_series_opt.loc[index]
-        # plot_pulse_ensemble_time_series(repo_path+save_path, row_as_list, conditions[index])
-        # plot_pulse_ensemble_violin(repo_path+save_path, row_as_list, conditions[index])
-        # plot_split_ensemble_violin(repo_path+save_path, row_as_list, ref_pulse_cells_time_series, conditions[index]) 
-
-# plot_ref_ensemble_time_series(repo_path+save_path, ref_pulse_cells_time_series)
-# plot_ref_ensemble_violin(repo_path+save_path, ref_pulse_cells_time_series)
-# plot_ref_ensemble_time_series("", ref_all_cell_time_series)

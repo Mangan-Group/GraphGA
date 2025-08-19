@@ -279,29 +279,51 @@ def multi_obj_GA(
     # front and
     # define reference point and class
     # instance of hypervolume calculator
-    if "t_pulse" in '\t'.join(problem.obj_labels):
-        if len(problem.obj_labels) == 3:
-            problem.pareto_plot = plot_pareto_front3D
-            ref_point = np.array([problem.max_time, 0, 0])
-        else:
-            problem.pareto_plot = plot_pareto_front
-            ref_point = np.array([problem.max_time, 0])
+    if (len(problem.obj_labels) == 3 and 
+        "peak_rel" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front3D
+        ref_point = np.array([problem.max_time, 0, 0])
+    
+    elif ("frac_pulse" in '\t'.join(problem.obj_labels) and
+        len(problem.obj_labels) == 3):
+        problem.pareto_plot = plot_pareto_front3D
+        ref_point = np.array([0, problem.max_time, 0])
+
+    elif ("t_pulse" in '\t'.join(problem.obj_labels)  and
+            "frac_pulse" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front
+        ref_point = np.array([0, problem.max_time])
+
+    elif ("t_pulse" in '\t'.join(problem.obj_labels) and
+            "prominence_rel" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front
+        ref_point = np.array([problem.max_time, 0])
     else:
         problem.pareto_plot = plot_pareto_front
         ref_point = np.array([0, 0])
     hv = HV(ref_point=ref_point)
-
     # store the progression of hypervolumes
     hypervolumes = []
     
     # create list to store all obj functions 
-    # anbd circuits for initial population 
+    # and circuits for initial population 
     # and all generations 
     all_obj = []
     all_obj.append(obj)
     all_circuits = []
     all_circuits.append(population)
-    # all_cells_dict_list = []
+
+    # create lists to store top objs
+    # and circuits for initial population 
+    # and each generation, and rank_dict from
+    # non-dominated sorting (does not include
+    # initial population)
+    top_obj = []
+    top_obj.extend([obj])
+    top_circuits = []
+    top_circuits.extend([population])
+    rank_dict_list = []
+
     # create class instance of non-dominated
     # sorting class (to sort multi-objective
     # and determine pareto front)
@@ -368,8 +390,15 @@ def multi_obj_GA(
 
             # sort objectives using non-dominated
             # sorting algorithm and return indices
-            # of num_circuits highest rank
-            S = nds.do(obj, num_circuits)
+            # of num_circuits highest rank, along
+            # with rank_dict 
+            S, rank_dict = nds.do(obj, num_circuits, return_rank=True)
+            
+            # add corresponding obj values to rank_dict and
+            # append to list of rank_dicts
+            for key in rank_dict.keys():
+                rank_dict[key]["objs"] = obj[key]
+            rank_dict_list.append(rank_dict)
 
             # select top num_circuits obj from obj array 
             # and top num_circuits from population
@@ -380,7 +409,11 @@ def multi_obj_GA(
             # append hypervolume to list
             hypervolumes.append(hv(obj))
 
-            # print("generation "+ str(gen) + " complete")
+            # append top objs and circuits from population
+            # to lists
+            top_obj.extend([obj])
+            top_circuits.extend([population])
+
             bar()
 
     # print in which gen the min obj first appeared
@@ -434,6 +467,18 @@ def multi_obj_GA(
     file_name = "hypervolumes.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(hypervolumes, fid)
+
+    file_name = "top_objs_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_obj, fid)
+
+    file_name = "top_circuits_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_circuits, fid)
+
+    file_name = "rank_dicts_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(rank_dict_list, fid)
 
     graph_file_name = "final_population_pareto_front.svg"
     problem.pareto_plot(
@@ -506,7 +551,7 @@ def multi_obj_GA(
         # scatter plot of all obj values for all unique
         # circuits in GA run
         graph_file_name = "unique_obj_scatter_plot.svg"
-        plot_pareto_front(
+        problem.pareto_plot(
             folder_path + "/" + graph_file_name,
             unique_obj_df,
             problem.obj_labels,

@@ -276,13 +276,25 @@ def multi_obj_GA(
     # front and
     # define reference point and class
     # instance of hypervolume calculator
-    if "t_pulse" in '\t'.join(problem.obj_labels):
-        if len(problem.obj_labels) == 3:
-            problem.pareto_plot = plot_pareto_front3D
-            ref_point = np.array([problem.max_time, 0, 0])
-        else:
-            problem.pareto_plot = plot_pareto_front
-            ref_point = np.array([problem.max_time, 0])
+    if (len(problem.obj_labels) == 3 and 
+        "peak_rel" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front3D
+        ref_point = np.array([problem.max_time, 0, 0])
+    
+    elif ("frac_pulse" in '\t'.join(problem.obj_labels) and
+        len(problem.obj_labels) == 3):
+        problem.pareto_plot = plot_pareto_front3D
+        ref_point = np.array([0, problem.max_time, 0])
+
+    elif ("t_pulse" in '\t'.join(problem.obj_labels)  and
+            "frac_pulse" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front
+        ref_point = np.array([0, problem.max_time])
+
+    elif ("t_pulse" in '\t'.join(problem.obj_labels) and
+            "prominence_rel" in '\t'.join(problem.obj_labels)):
+        problem.pareto_plot = plot_pareto_front
+        ref_point = np.array([problem.max_time, 0])
     else:
         problem.pareto_plot = plot_pareto_front
         ref_point = np.array([0, 0])
@@ -299,6 +311,17 @@ def multi_obj_GA(
     all_circuits = []
     all_circuits.append(population)
     # all_cells_dict_list = []
+
+    # create lists to store top objs
+    # and circuits for initial population 
+    # and each generation, and rank_dict from
+    # non-dominated sorting (does not include
+    # initial population)
+    top_obj = []
+    top_obj.extend([obj])
+    top_circuits = []
+    top_circuits.extend([population])
+
     # create class instance of non-dominated
     # sorting class (to sort multi-objective
     # and determine pareto front)
@@ -376,6 +399,11 @@ def multi_obj_GA(
         # append hypervolume to list
         hypervolumes.append(hv(obj))
 
+        # append top objs and circuits from population
+        # to lists
+        top_obj.extend([obj])
+        top_circuits.extend([population])
+
         # print("generation "+ str(gen) + " complete")
 
     # print in which gen the min obj first appeared
@@ -422,13 +450,21 @@ def multi_obj_GA(
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(all_obj, fid)
 
-    file_name = "all_circuits.pkl"
-    with open(folder_path + "/" + file_name, "wb") as fid:
-        pickle.dump(all_circuits, fid)
+    # file_name = "all_circuits.pkl"
+    # with open(folder_path + "/" + file_name, "wb") as fid:
+    #     pickle.dump(all_circuits, fid)
 
     file_name = "hypervolumes.pkl"
     with open(folder_path + "/" + file_name, "wb") as fid:
         pickle.dump(hypervolumes, fid)
+
+    file_name = "top_objs_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_obj, fid)
+
+    file_name = "top_circuits_all.pkl"
+    with open(folder_path + "/" + file_name, "wb") as fid:
+        pickle.dump(top_circuits, fid)
 
     graph_file_name = "final_population_pareto_front.svg"
     problem.pareto_plot(

@@ -41,10 +41,11 @@ def select_Z_matrix_sampling_topologies(results_path: str, obj_threshold: str=No
 
     return selected_circuits, selected_objectives
 
-def solve_single_objective_for_topology(problem: object, topology: list, Z_mat_list: list, idx: np.ndarray):
+def solve_single_objective_for_topology(problem: object, topology: list, Z_mat_list: list, Ref_list: list, idx: np.ndarray):
     obj_list = []
-    for Z_mat in Z_mat_list:
+    for i, Z_mat in enumerate(Z_mat_list):
         problem.Z = Z_mat
+        problem.ref = Ref_list[i]
         obj = abs(problem.func(topology[0]))
         obj_list.append(obj)
 
@@ -81,14 +82,14 @@ def solve_multi_objective_for_topology(problem: object, topology: list, Z_mat_li
     print("topology "+str(idx[0])+" done")
     return topology_dict
 
-def solve_all_topology_objectives(problem, topologies, Z_mat_list):
+def solve_all_topology_objectives(problem, topologies, Z_mat_list, Ref_list):
     num_topologies = len(topologies)
     idx = np.arange(0, num_topologies, 1).reshape(-1, 1)
     if len(problem.obj_labels) == 1:
         solver = solve_single_objective_for_topology
     else:
         solver = solve_multi_objective_for_topology
-    zipped_args = list(zip([problem]*num_topologies, topologies, [Z_mat_list]*num_topologies, idx))
+    zipped_args = list(zip([problem]*num_topologies, topologies, [Z_mat_list]*num_topologies, [Ref_list]*num_topologies, idx))
     with Pool(problem.num_processes) as pool:
         topology_dict_list = pool.starmap(solver, zipped_args)
     

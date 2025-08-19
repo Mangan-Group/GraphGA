@@ -35,13 +35,18 @@ def run_results_analysis(results_analysis_settings: dict):
             results_analysis_settings["obj_range"]
         )
     else:
+        if "objs_to_analyze" in results_analysis_settings:
+            objs_ = results_analysis_settings["objs_to_analyze"]
+        else:
+            objs_ = "pareto"
         (
             settings,
             pareto_unique_obj, 
             pareto_unique_circuits
         ) = import_multi_obj_GA_files(
             results_analysis_settings["repository_path"],
-            results_analysis_settings["results_path"]
+            results_analysis_settings["results_path"],
+            objs=objs_
         )
         selected_results_df = get_multi_obj_selected_results(
             settings, pareto_unique_obj,
@@ -49,7 +54,14 @@ def run_results_analysis(results_analysis_settings: dict):
             results_analysis_settings["obj_range"]
         )
 
-    all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, selected_results_df)
+    
+    if settings["pop"]:
+        all_cell_results_df, all_cell_metrics_df = get_selected_all_cell_metrics(settings, 
+                                                                                 selected_results_df,
+                                                                                 folder_path)
+    else:
+        all_cell_results_df = None
+        all_cell_metrics_df = None
 
     if results_analysis_settings["plot_topologies"]:
         for i, circuit in enumerate(selected_results_df["Topology"].tolist()):
@@ -66,36 +78,39 @@ def run_results_analysis(results_analysis_settings: dict):
 
     selected_results_file_name = (
         "selected_results_" + 
-        results_analysis_settings["selected_results_name"] +
-        ".csv"
+        results_analysis_settings["selected_results_name"]
     )
-    selected_results_df.to_csv(folder_path + selected_results_file_name)
-    all_cell_results_file_name = "all_cell_" + selected_results_file_name
-    all_cell_results_df.to_csv(folder_path + all_cell_results_file_name)
-    if all_cell_metrics_df:
+    selected_results_df.to_csv(folder_path + selected_results_file_name + ".csv")
+    selected_results_df.to_pickle(folder_path + selected_results_file_name + ".pkl")
+    if all_cell_results_df is not None:
+        all_cell_results_file_name = "all_cell_" + selected_results_file_name
+        all_cell_results_df.to_csv(folder_path + all_cell_results_file_name + ".csv")
+        all_cell_results_df.to_pickle(folder_path + all_cell_results_file_name + ".pkl")
+    if all_cell_metrics_df is not None:
         all_cell_metrics_file_name = "all_cell_metrics_" + results_analysis_settings["selected_results_name"]
         all_cell_metrics_df.to_csv(folder_path + all_cell_metrics_file_name + ".csv")
+        all_cell_metrics_df.to_pickle(folder_path + all_cell_metrics_file_name + ".pkl")
+
 
 
 
 if __name__ == "__main__":
-    repo_path = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/"
 
-    #amplifier vary dose
-    results_path_amp_vary_dose = "Amp_seed_pop_vary_dose/Original_hyperparams_worked_well/2024-04-23_Amplifier_pop_vary_dose_original_hp_seed_0/"
-    amp_vary_dose_results_name = "high_ON_rel"
-    amp_vary_dose_obj_range = [63.11786016]
-
-
-
+    results_path = "Pulse_single_cell/Optimized_hyperparams/t_pulse_fixed_pop_max_hv/run1_ngen80/2024-10-09_Pulse_single_DsRED_t_pulse_opt_hps_ngen80_seed_2/"
+    results_name = "full_pareto"
     results_analysis_settings = {
-        "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
-        "results_path": results_path_amp_vary_dose,
-        "selected_results_name": amp_vary_dose_results_name,
-        "obj_range": amp_vary_dose_obj_range,
-        "multi_obj": False,
+        "repository_path": "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Selected_GA_results_paper/",
+        # "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/GA_results/",
+        "results_path": results_path,
+        "selected_results_name": results_name,
+        "obj_range": {"t_pulse": [0, 70.0]},
+        "multi_obj": True,
+        # "objs_to_analyze": "sub_opt",
         "plot_topologies": True,
-        "plot_all_cell_results": True
+        "plot_all_cell_results": False
+
     }
 
     run_results_analysis(results_analysis_settings)
+
+
