@@ -1,6 +1,5 @@
 import numpy as np
 import networkx as nx
-# from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from load_files_pop import *
 
@@ -43,10 +42,6 @@ class Topo():
         if 0 in list(self.pool.values()):
             raise Exception("Something's wrong. No activator in the circuit.")
 
-        # self.in_dict = dict(sorted(
-        #     self.in_dict.items(), key= lambda d: parts_order[d[0]]
-        # ))
-        # in_dict_keys_sorted = sorted(self.in_dict, key = lambda d: parts_order[d])
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
         self.valid = None
@@ -81,10 +76,6 @@ class Topo():
         if 0 in list(self.pool.values()):
             raise Exception("Something's wrong. No activator in the circuit.")
 
-        # self.in_dict = dict(sorted(
-        #     self.in_dict.items(), key= lambda d: parts_order[d[0]]
-        # ))
-        # in_dict_keys_sorted = sorted(self.in_dict, key= lambda d: parts_order[d])
         self.num_states = len(self.in_dict.keys())
         self.var_dict = dict(zip((self.in_dict.keys()), np.arange(self.num_states)))
 
