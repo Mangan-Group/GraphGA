@@ -1,12 +1,12 @@
 """
-This program is copied from pymoo github https://github.com/anyoptimization/pymoo/blob/main/pymoo/operators/survival/rank_and_crowding/classes.py.
+This program is copied from pymoo github 
+https://github.com/anyoptimization/pymoo/blob/main/pymoo/operators/survival/rank_and_crowding/classes.py.
 There were errors in importing the module, therefore I had to make a copy.
 """
 from rankcrowding_metrics import *
 from pymoo.util.randomized_argsort import randomized_argsort
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from pymoo.core.survival import Survival #, split_by_feasibility
-# from pymoo.core.population import Population
 
 
 class RankAndCrowding(Survival):
