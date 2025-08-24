@@ -15,7 +15,13 @@ from load_files_pop import (
     Z_2000,
     Ref_pop2000
 )
-pop_model_ref = {"20 cell": Ref_pop20, "200 cell": Ref_pop200, "2000 cell": Ref_pop2000}
+# create dictionary of reference simulations
+# for different population models for setting
+# ref attribute
+pop_model_ref = {"20 cell": Ref_pop20,
+                 "200 cell": Ref_pop200,
+                 "2000 cell": Ref_pop2000
+}
 
 class Amplifier:
     def __init__(
@@ -33,13 +39,16 @@ class Amplifier:
             pop: bool=False,
             CI: float=None,
             Z_mat: np.ndarray=Z_20,
-            Ref_pop: dict=None,
+            # this argument isn't used here but
+            # is set in run_test_case for the pulse 
+            Ref_pop: dict=None, 
             num_processes: int=None,
             obj_labels: list=["ON_rel"],
             max_time: int=42,
             single_cell_tracking: bool=False
-            ) -> None:
+    ) -> None:
         
+        # set attributes based on input arguments
         self.promo_node = promo_node
         self.min_dose = dose_specs[0]
         self.max_dose = dose_specs[1]
@@ -59,18 +68,19 @@ class Amplifier:
         self.system_eqs = system_equations_pop
         
         if inhibitor:
+            # change system equations if using DsRed
+            # inhibitors in design space
             if DsRed_inhibitor:
                 self.system_eqs = system_equations_DsRed_pop
 
         if pop:
-            # set ref = simulation for 20-cell population
-            # self.ref = Ref_pop20
-            # set Z = 20-cell population matrix np.array(20, 5) one row/cell, 1 columm/plasmid
+            # set Z matrix and reference simulation according
+            # to Z matrix
             self.Z = Z_mat
             self.ref = pop_model_ref[str(len(self.Z))+" cell"]
 
-            # set simulate function for population based on whether to track single cell
-            # outputs
+            # set simulate function for population based
+            # on whether to track single cell outputs
             if single_cell_tracking:
                 self.simulate = self.simulate_pop_single_cell_tracking
                 self.func = self.func_single_cell_tracking
@@ -85,14 +95,22 @@ class Amplifier:
             self.simulate = self.simulate_cell
             self.func = self.func_obj
 
+
     def simulate_cell(
         self,
         topology: object,
-        Z_row: np.ndarray =np.ones(5)
+        Z_row: np.ndarray=np.ones(5)
     ):
+        """Solves the ODEs for a given 
+        topology for a single cell."""
 
+        # set simulation time (h)
         max_time = self.max_time
         t = np.arange(0, max_time + 1, 1)
+        # solve ODEs in the ON state for
+        # pEnd to calculate amplifier objective
+        # funcion (save final time point reporter
+        # expression)
         rep_on = odeint(
             self.system_eqs,
             np.zeros(topology.num_states * 2),
@@ -101,20 +119,35 @@ class Amplifier:
         )[-1, -1]
         return rep_on
 
+
     def simulate_pop_single_cell_tracking(
         self, 
         topology: object, 
     ):
+        """Solves the ODEs for a given topology for
+        each cell in the population using simulate_cell(),
+        and calculates ON_rel metric for each cell in the 
+        population."""
+
         pop_rep_on = []
+        # get number of cells in population
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, self.Z))
+        # simulate each cell in the population with
+        # corresponding Z matrix row
         for cell in range(0, nc):
             rep_on = self.simulate_cell(
                 zipped_args[cell][0],
                 zipped_args[cell][1]
             )
+            # save simulation output (reporter
+            # expression) for each cell in
+            # pop_rep_on list
             pop_rep_on.append(rep_on)
 
+        # calculate ON_rel metric and add to
+        # dict along with reporter ON state
+        # for each cell in the population
         pop_ON_rel = self.calc_all_cell_metrics(
             topology, pop_rep_on
         )
@@ -122,67 +155,93 @@ class Amplifier:
                           "ON_rel for each cell": [pop_ON_rel],
                           "Rep ON state for each cell": [pop_rep_on]}
 
+        # calculate mean reporter expression
+        # across cells in the population
         rep_on_mean = np.mean(pop_rep_on)
-
         return rep_on_mean, all_cells_dict
     
+
     def simulate_pop(
         self, 
         topology: object, 
     ):
+        """Solves the ODEs for a given topology
+        for each cell in the population using 
+        simulate_cell()."""
+
         pop_rep_on = []
+        # get number of cells in population
         nc = len(self.Z)
         zipped_args = list(zip([topology]*nc, self.Z))
+        # simulate each cell in the population with
+        # corresponding Z matrix row
         for cell in range(0, nc):
             rep_on = self.simulate_cell(
                 zipped_args[cell][0],
                 zipped_args[cell][1]
             )
+            # save simulation output (reporter
+            # expression) for each cell in
+            # pop_rep_on list
             pop_rep_on.append(rep_on)
 
+        # calculate mean reporter expression
+        # across cells in the population
         rep_on_mean = np.mean(pop_rep_on)
         return rep_on_mean
 
-    def calc_ON_rel(self, topology, rep_on):
+
+    def calc_ON_rel(
+        self,
+        topology: object,
+        rep_on: float
+    ):
+        """Calculates ON_rel metric for the given
+        topology."""
+
         reference_on = self.ref[topology.promo_node]['on']
         ON_rel = rep_on/reference_on
         return ON_rel
 
-    @staticmethod
-    def calc_FI(off, on):
-        FI = on/off
-        return FI
-
-    @staticmethod
-    def calc_FI_rel(ref_FI, FI):
-        FI_rel = FI/ref_FI
-        return FI_rel
 
     def func_obj(
         self,
         topology: object
     ):
-        
+        """Simulates the given topology using specified
+        simulate function and calculates ON_rel metric."""
+
         rep_on = self.simulate(topology)
         ON_rel = self.calc_ON_rel(topology, rep_on)
-
+        # return negative ON_rel for minimization in GA
+        # (actually want to maximize ON_rel)
         return -ON_rel
     
+
     def func_single_cell_tracking(
         self,
         topology: object
     ):
-        
+        """Simulates the given topology using specified
+        simulate function, calculates ON_rel metric,
+        and saves dict of ON_rel and reporter ON state
+        for each cell in the population (relevant for
+        population model only)."""
+
         rep_on, all_cells_dict  = self.simulate(topology)
         ON_rel = self.calc_ON_rel(topology, rep_on)
 
         return [-ON_rel, all_cells_dict]
 
+
     def calc_all_cell_metrics(
-                self, topology,
-                pop_rep_on
+        self,
+        topology: object,
+        pop_rep_on: list
     ):
-        
+        """Calculates ON_rel metric for each cell in the
+        population (relevant for population model only)."""
+
         pop_ON_rel = []
         for i in range(len(pop_rep_on)):
             ON_rel = self.calc_ON_rel(topology, pop_rep_on[i])
