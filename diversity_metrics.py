@@ -19,13 +19,7 @@ def pheno_diversity(F, delta=0.5):
     n, bins = grouping(F, delta)
     return len(set(n))
 
-def grouping(F, delta=0.5):
-    bins = np.arange(np.min(F), np.max(F)+delta, delta)
-    n = np.full_like(F, 0)
-    for i in range(len(F)):
-        n[i] = np.argwhere(F[i] >= bins).flatten()[-1]
-    return n, bins
-
+# obtain when the optimal solution first appear
 def first_seen(progression):
 
     looking = True
@@ -35,7 +29,7 @@ def first_seen(progression):
     # of minimum objective function for
     # each generation
     for gen in reversed(progression):
-        # if the value does not equal the
+        # if the value is not equal the
         # final value in reversed list
         # return length of progression
         # (number of generations) - gen_num
