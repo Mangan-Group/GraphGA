@@ -176,27 +176,6 @@ def get_dose(min_dose=10, max_dose=75, dose_interval=5, num_part=1):
     return (np.random.choice(np.arange(min_dose, max_dose + 1, dose_interval),
                              size=num_part, replace=True))
 
-
-# def sample_circuit(promo_node, num_circuit, max_part, min_dose, max_dose, dose_interval, inhibitor):
-#     circuits = []
-#     if not inhibitor:
-#         for i in range(num_circuit):
-#             num_part = np.random.randint(1, max_part + 1)
-#             part_list = np.random.choice(tf_list, num_part, replace=False)
-#             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_part)))
-#             edge_list = get_edges(promo_node, part_list)
-#             circuits.append(Topo(edge_list, dose_list, promo_node))
-#     else:
-#         for i in range(num_circuit):
-#             num_tf = np.random.randint(1, max_part)
-#             num_in = np.random.randint(1, max_part - num_tf + 1)
-#             part_list = np.append(np.random.choice(tf_list, num_tf), np.random.choice(inhibitor_list, num_in))
-#             dose_list = dict(zip(part_list, get_dose(min_dose, max_dose, dose_interval, num_tf + num_in)))
-#             edge_list = get_edges(promo_node, part_list)
-#             circuits.append(Topo(edge_list, dose_list, promo_node))
-
-#     return circuits
-
 # generate population of circuits with specifications 
 # as args
 def sampling(promo_node, num_dict, min_dose, max_dose, dose_interval, inhibitor=False):
@@ -248,7 +227,7 @@ def sampling(promo_node, num_dict, min_dose, max_dose, dose_interval, inhibitor=
     return np.asarray(circuits)
 
 
-# Make the inputted graph valid
+# Repair operation: make the input graph valid
 def validate(g):
     circuit_tf_list = []
     same_list = []
@@ -327,7 +306,7 @@ def validate(g):
         g.update(list(g.graph.edges))
 
 
-# Check if the inputted graph is valid (doesn't 
+# Check if the input graph is valid (doesn't 
 # update if not valid)
 # based on validate function above so operations
 # are mostly the same
@@ -385,41 +364,7 @@ def check_valid(g, promo_node, part_list):
             return 0
     return 1
 
-
-# def check_valid(g, num_parts):
-#     graph_parts = [i[0] for i in g.nodes]
-#     if ('P' not in graph_parts) or ('R' not in graph_parts) or ('Z' not in graph_parts):
-#         return 0
-#     elif (len(graph_parts) - 2) < num_parts:
-#         return 0
-#
-#     for n in g.nodes:
-#         if n[0] == 'P':
-#             out_types = set([i[0] for i in list(g.successors(n))])
-#             if 'Z' not in out_types:
-#                 return 0
-#         elif n[0] == 'R':
-#             in_types = set([i[0] for i in list(g.predecessors(n))])
-#             if (not in_types) or (('I' in in_types) and ('Z' not in in_types)):
-#                 return 0
-#         else:
-#             if (n[0] == 'Z') and ('I' + n[1:] in g.nodes):
-#                 if list(g.successors(n)) != list(g.successors('I' + n[1:])):
-#                     return 0
-#             in_nodes = list(g.predecessors(n))
-#             if not in_nodes:
-#                 return 0
-#             elif in_nodes == [n]:
-#                 return 0
-#             else:
-#                 in_types = set([i[0] for i in in_nodes])
-#                 if ('I' in in_types) and ('Z' not in in_types):
-#                     return 0
-#             if len(list(nx.all_simple_paths(g, n, 'Rep'))) == 0:
-#                 return 0
-#     return 1
-
-# not used
+# Compare two circuits (not used in main procedure)
 def compare_circuit(g1, g2):
     ind = (set(g1.edge_list) == set(g2.edge_list)) & (g1.dose == g2.dose)
 
@@ -491,7 +436,7 @@ def switch_node(g, old_node, new_node):
 
     return child_edge
 
-# not used
+# node-based crossover (not used in any procedure)
 def crossover_node(g1, g2):
     pt1, pt2 = get_crosspt(g1.part_list, g2.part_list)
 
@@ -1011,28 +956,3 @@ def mutate(problem, X, prob, dose=False, **kwargs):
                 mutate_edge(X[i, 0], problem.inhibitor)
             else:
                 mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-
-
-            # r = np.random.uniform()
-            #
-            # if r < 0.52:
-            #     mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval,
-            #                             problem.inhibitor)
-            # elif r < 0.68:
-            #     mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-            # elif r < 0.74:
-            #     mutate_edge(X[i, 0], problem.inhibitor)
-            # else:
-            #     mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-
-            # r = np.random.uniform()
-            #
-            # if r < 0.4:
-            #     mutate_node_num(X[i, 0], problem.max_part, problem.min_dose, problem.max_dose, problem.dose_interval,
-            #                             problem.inhibitor)
-            # elif r < 0.6:
-            #     mutate_node_type(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
-            # elif r < 0.8:
-            #     mutate_edge(X[i, 0], problem.inhibitor)
-            # else:
-            #     mutate_dose(X[i, 0], problem.min_dose, problem.max_dose, problem.dose_interval)
