@@ -1,6 +1,8 @@
 import pickle
 import numpy as np
 
+## Define the kinetic parameters of promoters, activators, and repressors
+
 promo = {}
 
 promo['P0'] = {}
@@ -25,6 +27,8 @@ with open('promo.pkl', 'wb') as fid:
     pickle.dump(promo, fid)
 
 parts = {}
+# parameters (b, m, and w) 
+# i.e. (leaky activation, the maximum activation, and the steepness of the activation)
 parts['Z1'] = np.array([0.08, 33., 0.036])
 parts['Z2'] = np.array([2.5e-01, 5.4e+01, 1.8e-02])
 parts['Z6'] = np.array([2.0e-02, 5.8e+01, 4.3e-02])
@@ -50,5 +54,5 @@ parts['I13'] = np.array([0.012])
 parts['I14'] = np.array([0.069])
 parts['I15'] = np.array([0.007])
 
-# with open('parts.pkl', 'wb') as fid:
-#     pickle.dump(parts, fid)
+with open('parts.pkl', 'wb') as fid:
+    pickle.dump(parts, fid)
