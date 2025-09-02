@@ -209,6 +209,8 @@ def plot_pareto_front3D(
         obj_labels: list,
         types: bool
 ):
+    #set up to plot figure 4f specifically, but can be modified
+    #as indicated to plot 3D pareto front more generally
     if np.any(np.array(obj_df[obj_labels[0]].to_list()) < 0):
         obj_df[obj_labels[0]] = obj_df[
             obj_labels[0]]*-1

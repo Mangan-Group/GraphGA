@@ -69,5 +69,5 @@ def run_seed_results_comparisons(results_path, seed_folder, num_obj, obj_labels,
 
 path_test_case = "/Users/kdreyer/Documents/Github/GraphGA/GA_results/GA_results_quest/Pulse_single_DsRED_t_pulse_opt_hps_ngen10000/"
 results_runs = "2025-03-13_Pulse_single_DsRED_t_pulse_opt_hps_ngen10000_seed_"
-run_seed_results_comparisons(path_test_case, results_runs, 2, ["t_pulse", "prominence_rel"], 10000, 6)
+# run_seed_results_comparisons(path_test_case, results_runs, 2, ["t_pulse", "prominence_rel"], 10000, 6)
 
