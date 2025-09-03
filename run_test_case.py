@@ -7,7 +7,7 @@ from amplifier_problem import Amplifier
 from signal_conditioner_problem import SignalConditioner
 from pulse_generator_problem import PulseGenerator
 from load_files_pop import Z_200
-from load_Z_mat_samples import Z_mat_list, Ref_list
+from load_Z_mat_samples import Z_mat_list_20, Ref_list_20
 from saving import make_main_directory
 from GA import sampling
 from GA_setup import (
@@ -37,7 +37,7 @@ def run(
     if "Z_matrix" in settings:
         Z_mat = settings["Z_matrix"]
     else:
-        Z_mat = Z_mat_list[0]
+        Z_mat = Z_mat_list_20[0]
 
     # if "mean" in settings:
     #     problem = testcase(

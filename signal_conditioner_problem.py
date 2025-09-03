@@ -10,15 +10,12 @@ from load_files_pop import (
     Ref_pop20,
     Z_200,
     Ref_pop200,
-    Z_2000,
-    Ref_pop2000
 )
 # create dictionary of reference simulations
 # for different population models for setting
 # ref attribute
 pop_model_ref = {"20 cell": Ref_pop20,
                  "200 cell": Ref_pop200,
-                 "2000 cell": Ref_pop2000
 }
 
 class SignalConditioner:
