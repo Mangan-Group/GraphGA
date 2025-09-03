@@ -100,7 +100,7 @@ venv.bak/
 dmypy.json
 
 # Results folders
-outdated/Combinatorial_results
+outdated
 GA_results
 hyperparameter_optimization/Results
 combinatorial_search
