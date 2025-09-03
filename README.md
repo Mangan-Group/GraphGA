@@ -39,7 +39,7 @@ $ conda env create -f GCAD_environment.yml
 ```
 
 
-3. Within the code, some paths are hard-coded in a few files. These need to be updated to include the base path to the repository on your computer. Below is a list of these instances and how they should be updated:
+3. There are some hard-coded paths within the code, in the files listed below. These need to be updated to include the base path to the repository on your computer (<path_to_your_repository>). The following is a list of these instances and how they should be updated:
 
     - flow_cytometry_calculations.py (top of file):\
         plt.style.use("<path_to_your_repository>/paper.mplstyle.py")

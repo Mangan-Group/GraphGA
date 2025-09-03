@@ -7,16 +7,15 @@
     "DsRed_inhibitor": true,
     "pop_size": 100.0,
     "pop_ratio": 0.25,
-    "n_gen": 120,
-    "probability_mutation": 0.988811, 
+    "n_gen": 200,
+    "probability_mutation": 0.988811,  
     "probability_crossover": 0.063003,
     "mutate_dose": true,
     "pop": false,
     "num_processes": 8,
     "obj_labels": ["ON_rel", "FI_rel"],
     "max_time": 42,
-    "plot": true,
-    "seed": 0, 
+    "plot": false,
     "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
-    "folder_name": "Signal_cond_single_DsRED_opt_hps0_ngen120"
+    "folder_name": "SignalConditioner_single_cell_ngen200"
 }

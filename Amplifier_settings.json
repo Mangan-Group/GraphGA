@@ -1,0 +1,20 @@
+{
+    "test_case": "Amplifier",
+    "promo_node": "P1",
+    "dose_specs": [5, 75, 5],
+    "max_part": 2,
+    "inhibitor": true,
+    "DsRed_inhibitor": true,
+    "num_dict": {"1": 26, "2": 26},
+    "n_gen": 50,
+    "probability_mutation": 1.0,  
+    "probability_crossover": 0.554235,
+    "mutate_dose": true,
+    "pop": true,
+    "num_processes": 8,
+    "obj_labels": ["ON_rel"],
+    "max_time": 42,
+    "plot": false,
+    "repository_path": "/Users/kdreyer/Documents/Github/GraphGA/",
+    "folder_name": "Amplifier_20_cell_population_ngen50"
+}
