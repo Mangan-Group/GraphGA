@@ -11,15 +11,14 @@ from diversity_metrics import (
     first_seen
 )
 
-# set up GA for single objective
 def single_obj_GA(
         problem: object,
-        # population: np.ndarray,
-        # num_circuits: int, 
-        # obj: np.ndarray,
         seed: int
 ):
+    """Sets up the GA for single objective
+    optimization."""
 
+    #set seed and create initial population
     np.random.seed(seed)
     population = sampling(
         problem.promo_node,
@@ -100,12 +99,12 @@ def single_obj_GA(
 
 def multi_obj_GA(
         problem: object, 
-        # population: np.ndarray,
-        # num_circuits: int,
-        # obj: np.ndarray,
         seed: int
 ):
+    """Sets up the GA for single objective
+    optimization."""
 
+    #set seed and create initial population
     np.random.seed(seed)
     population = sampling(
         problem.promo_node,

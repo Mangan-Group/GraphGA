@@ -29,7 +29,6 @@ from plot_search_results import(
     plot_hypervolume
 )
 
-# set up GA for single objective
 def single_obj_GA(
         folder_path: str,
         problem: object,
@@ -38,6 +37,8 @@ def single_obj_GA(
         obj: np.ndarray,
         get_unique: bool=False
 ):
+    """Sets up the GA for single objective
+    optimization."""
     
     # create list to store min obj function, 
     # circuits with min obj function for each
@@ -143,9 +144,6 @@ def single_obj_GA(
     # print in which gen the min obj first appeared
     print(obj_min[-1])
     print(first_seen(obj_min))
-    # print doses and edge list for opt circuit
-    # print(circuit_min[-1][0].dose)
-    # print(circuit_min[-1][0].edge_list)
 
     # reshape all_obj and all_circuits to be 
     # 1 column arrays
@@ -274,6 +272,8 @@ def multi_obj_GA(
         get_unique: bool=False,
         plot: str=False
 ):
+    """Sets up the GA for multi-objective
+    optimization."""
     
     # set plotting function for pareto
     # front and
@@ -361,19 +361,11 @@ def multi_obj_GA(
                 child_topologies = [g[0] for g in children]
                 with Pool(problem.num_processes) as pool:
                     obj_list = pool.imap(problem.func, child_topologies)
-                    # obj_all_cells_dict_list = pool.imap(problem.func, child_topologies)
 
                     pool.close()
                     pool.join()
                 obj_list = list(obj_list)
                 obj_children = np.asarray(obj_list)
-                # obj_all_cells_dict_list = list(obj_all_cells_dict_list)
-                # obj_all_cells_dict_list = np.asarray(obj_all_cells_dict_list, dtype=object)
-                # # extract column of output list with objectives only
-                # obj_children = np.asarray(obj_all_cells_dict_list[:,0].tolist())
-                # # extract list of all_cells_dfs from output list
-                # all_cells_dict_children = obj_all_cells_dict_list[:,1].tolist()
-                # all_cells_dict_list.extend(all_cells_dict_children)
                 
             else:
                 obj_children = np.asarray(
@@ -495,13 +487,6 @@ def multi_obj_GA(
     )
 
     if problem.pop:
-        # # save all_cell results df (see problem class)
-        # all_cells_dict_list = problem.all_cells_dict_list_initial + all_cells_dict_list
-        # # print(all_cells_dict_list)
-        # problem.all_cells = pd.DataFrame.from_dict(all_cells_dict_list)
-        # file_name = "All_circuits_all_cell_results.pkl"
-        # problem.all_cells.to_pickle(folder_path + "/" + file_name)
-
         circuit_edge_lists = []
         for circuit in all_circuits:
             circuit_edges = circuit[0].edge_list
@@ -529,16 +514,7 @@ def multi_obj_GA(
         unique_obj = all_obj[index_list]
         unique_circuits = all_circuits[index_list]
 
-        # unique_types = []
-        # for topo in unique_circuits:
-        #     inhib = "Activators"
-        #     for part in topo[0].part_list:
-        #         if part[0] == "I":
-        #             inhib = "Inhibitors"
-        #     unique_types.append(inhib)
-
         unique_obj_df = pd.DataFrame(unique_obj, columns=problem.obj_labels)
-        # unique_obj_df["type"] = unique_types
 
         file_name = "unique_objectives_df.pkl"
         with open(folder_path + "/" + file_name, "wb") as fid:
