@@ -271,9 +271,10 @@ def compare_hypervolumes(results_path, seed_folder, selected_seed):
     hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
     plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
                           n_gens, hypervolume_lists, y_lower_lim)
-    hypervolumes_vs_combo = "all_hvs_vs_combo_paper.svg"
+    hypervolumes_vs_combo = "all_hvs_vs_combo_paper_v2.svg"
+    max_hv = max(hypervolume_lists[2]) #signal conditioner pop model
     plot_hypervolumes_set_vs_combo(results_path+hypervolumes_vs_combo,
-                                  n_gens, hypervolume_lists, 2892.284,#pulse, #45.89854218733082 signal conditioner
+                                  n_gens, hypervolume_lists, 45.89854218733082,# 2892.284 pulse, #45.89854218733082 signal conditioner single cell
                                   selected_seed, y_lower_lim=0)
     
     return final_hypervolumes

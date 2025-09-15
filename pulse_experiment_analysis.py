@@ -4,8 +4,7 @@ from flow_cytometry_calculations import (
 )
 
 path_data = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Experimental_data_&_planning/240806_Pulse_flow_cytometry/formatted_single_cell_data/FITC_PacBlue/"
-path_save = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Experimental_data_&_planning/240806_Pulse_flow_cytometry/results/all_data_paper/"#filtered_tfx70_paper_deg3/"
-# conditions = ["pulse1", "pulse2", "pulse3", "pulse4", "pulse5", "pulse6", "reference"]
+path_save = "/Users/kdreyer/Library/CloudStorage/OneDrive-NorthwesternUniversity/KatieD_LL/GCAD_Collab/Experimental_data_&_planning/240806_Pulse_flow_cytometry/results/all_cells_deg3_test/"#filtered_tfx70_paper_deg3/"
 times = ["14", "18", "22", "26", "38", "42", "46"]
 conditions = ["pulse1", "pulse3", "pulse4", "pulse5", "reference"]
 background_subtractions = [
@@ -54,8 +53,8 @@ run_flow_cytometry_calculations(
     background_subtractions_stderr,
     MEFL_conversions,
     MEFL_conversions_stderr,
-    percentile=None,#70, # 40, 60 works | 50 ref deriv decreases | 70 not for pulse 2 but yes for pulse 4? | 80 does not work | 90 works except pulse 5
-    save_data=True,#False,
+    percentile=None,#70 
+    save_data=False,#False,
     log_scale=False,
     split_plot=False
 )

@@ -117,9 +117,10 @@ def plot_hypervolumes_set_vs_combo(
 ):
     generations = np.arange(n_gens)
     mpl.rcParams["figure.autolayout"] = False
-    # fig = plt.figure(figsize= (1.585, 1.6))
-    fig, ax = plt.subplots(1, 1, figsize= (1.585, 1.6))
-    # bax = brokenaxes(ylims=((0, 1), (35, 46)), hspace=0.1) #signal conditioner
+    fig = plt.figure(figsize= (3, 3)) #(1.585, 1.6)
+    
+    # fig, ax = plt.subplots(1, 1, figsize= (1.585, 1.6))
+    bax = brokenaxes(ylims=((0, 0.25), (42.75, 46)), hspace=0.1) #signal conditioner single cell (42.75, 46) pop (38.75, 44)
     for i, hv_list in enumerate(hypervolumes_lists):
         if i == selected_seed:
             color_="k"
@@ -130,36 +131,37 @@ def plot_hypervolumes_set_vs_combo(
             zorder_=i
             linewidth_="0.5"
 
-        ax.plot(generations, hv_list, linewidth=linewidth_,
-                 color=color_, zorder=zorder_)
-    ax.set_xlabel("Generation")
-    ax.set_ylabel("Hypervolume")
-    ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], 
-               linestyle="dashed", color="k", label="opt hv="+str(round(opt_combo_hv, 3)))
-    if y_lower_lim:
-        ax.set_ylim(bottom=y_lower_lim)
-    # plt.show()
-    ax.legend()
-    ax.set_xticks(np.arange(0, n_gens+1, 25))
-    ax.set_ylim(bottom=0)
-    ax.set_xlim(left=0)
-    plt.savefig(figure_path, bbox_inches="tight")
-        # bax.plot(generations, hv_list, linewidth=linewidth_,
-        #          color=color_, zorder=zorder_)
-
-    # bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
-    #             linestyle="dashed", linewidth="0.75", color="k",
-    #             label="opt hv="+str(round(opt_combo_hv, 3)),
-    #             zorder=20)
-    # bax.set_xlim([0, generations[-1]+5])
-    # bax.axs[1].set_yticks([0])
-    # bax.axs[0].set_yticks([36, 38, 40, 42, 44])
-    # bax.set_xlabel("Generation in GA")
-    # bax.set_xticks(np.arange(0, n_gens+1, 2000))
-    # bax.set_ylabel("Hypervolume")
+    #     ax.plot(generations, hv_list, linewidth=linewidth_,
+    #              color=color_, zorder=zorder_)
+    # ax.set_xlabel("Generation")
+    # ax.set_ylabel("Hypervolume")
+    # ax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1], 
+    #            linestyle="dashed", color="k", label="opt hv="+str(round(opt_combo_hv, 3)))
     # if y_lower_lim:
     #     ax.set_ylim(bottom=y_lower_lim)
-    # bax.legend()
+    # # plt.show()
+    # ax.legend()
+    # ax.set_xticks(np.arange(0, n_gens+1, 25))
+    # ax.set_ylim(bottom=0)
+    # ax.set_xlim(left=0)
+    # plt.savefig(figure_path, bbox_inches="tight")
+        bax.plot(generations, hv_list, linewidth=linewidth_,
+                 color=color_, zorder=zorder_)
+
+    bax.axhline(opt_combo_hv, xmin=0, xmax=generations[-1]+5,
+                linestyle="dashed", linewidth="0.75", color="k",
+                label="opt hv="+str(round(opt_combo_hv, 3)),
+                zorder=20)
+    bax.set_xlim([0, generations[-1]+5])
+    bax.axs[1].set_yticks([0])
+    bax.axs[0].set_yticks([43, 44, 45, 46], labels=[43, 44, 45, 46]) #[43, 44, 45, 46] signal conditioner single cell, [40, 42, 44] pop
+    bax.set_xlabel("Generation in GA")
+    bax.set_xticks(np.arange(0, n_gens+1, 2000)) #signal conditioner single cell
+    # bax.set_xticks([0, 40, 80, 120]) #signal conditioner pop
+    bax.set_ylabel("Hypervolume")
+    # if y_lower_lim:
+    #     ax.set_ylim(bottom=y_lower_lim)
+    bax.legend()
     # plt.show()
     plt.savefig(figure_path, bbox_inches="tight")
 
@@ -186,10 +188,10 @@ def plot_pareto_front(
             plt.legend(fontsize="8")
             
         else:
-            fig, ax = plt.subplots(1, 1, figsize= (1.955, 1.955))
+            fig, ax = plt.subplots(1, 1, figsize= (3, 3)) #(1.955, 1.955)
             sns.scatterplot(data=obj_df, x= obj_df[obj_labels[0]],
                             y= obj_df[obj_labels[1]], 
-                            color="black", ax=ax, s=6)
+                            color="black", ax=ax, s=9) #s=6
 
         plt.xlabel(obj_labels[0])
         plt.ylabel(obj_labels[1])
@@ -236,12 +238,13 @@ def plot_pareto_front3D(
         zs=obj_df[obj_labels[2]], color="grey", s=2,
     )
 
-    pulse_blue = [(i/255) for i in [51, 34, 136]]
+    # pulse_blue = [(i/255) for i in [51, 34, 136]]
+    pulse_light_pink = [i/255 for i in [204, 102, 119]] # previously amp_pink
     frac_p_exp = [0.45, 0.45, 0.4, 0.35]
     t_p_exp = [13, 11, 13, 13]
     ax.scatter(
         xs=frac_p_exp, ys=t_p_exp,
-        zs=prom_rel_exp, color=pulse_blue, s=10,
+        zs=prom_rel_exp, color=pulse_light_pink, s=10,
     )
 
     # ax.view_init(elev=15, azim=-60)
@@ -267,11 +270,11 @@ def plot_1D_obj_scatter(
     np.random.seed(0)
     jittered_x = x_vals + 0.1*np.random.rand(
         len(x_vals))
-    fig, ax = plt.subplots(1, 1, figsize= (2, 1.75))
+    fig, ax = plt.subplots(1, 1, figsize= (3, 2.75)) #(2, 1.75)
     ax.plot(jittered_x, obj_vals, linestyle="None",
-             marker="o", markersize=1, color="k",zorder=1)
+             marker="o", markersize=2.5, color="k",zorder=1) #markersize=1
     ax.plot(1.05, max(obj_vals), linestyle="none", marker="o",
-            markersize=2.5, color=combinatorial_yellow, zorder=2)
+            markersize=4, color=combinatorial_yellow, zorder=2) #markersize=2.5
     ax.set_xticklabels([])
     ax.set_xticks([])
     ax.set_ylabel(obj_labels[0])

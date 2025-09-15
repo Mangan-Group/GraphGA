@@ -295,7 +295,7 @@ def plot_condition_combined(
         time_points,
         df_condition_MEFLs_series,
 ):
-    fig, ax = plt.subplots(1, 1, figsize=(3, 2.75))#, sharey=True)
+    fig, ax = plt.subplots(1, 1, figsize=(1.75, 1.75))# (3, 2.75)
     for time in time_points:
         condition_time_MEFLs = (df_condition_MEFLs_series["rep1_MEFLs_"+time+"h"].tolist() + 
                                 df_condition_MEFLs_series["rep2_MEFLs_"+time+"h"].tolist() +
@@ -303,15 +303,18 @@ def plot_condition_combined(
         )
         time_list = [time]*len(condition_time_MEFLs)
         time_list = [float(i) for i in time_list]
-
+        grey_ = [(i/255) for i in [150, 150, 150]]
         ax.plot(
             time_list, condition_time_MEFLs, linestyle="none", 
-            marker="o", markersize=4, color=orange_ #, fillstyle="none")
+            marker="o", markersize=1.5, color=grey_
         )
 
     ax.set_xlabel("Time (h)")
-    ax.set_xticks([float(i) for i in time_points])
+    ax.set_xticks([0, 20, 40])
+    ax.set_yticks([0, 0.5E9, 1E9]) #[0, 0.5E8, 1E8, 1.5E8]
     ax.set_ylabel("MEFLs")
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0, top=1.04E9)
     ax.set_box_aspect(1)
     # plt.show()
     plt.savefig(path_figure+"time_series_"+condition+"_combined.svg")
@@ -357,7 +360,7 @@ def plot_reference(
         time_points,
         reference_df
 ):
-    fig, ax = plt.subplots(1, 1, figsize=(3, 2.75))#, sharey=True)
+    fig, ax = plt.subplots(1, 1, figsize=(1.75, 1.75))#(3, 2.75)
     labels_reference = ["reference"] + [""]*(len(time_points)-1)
     for j, time in enumerate(time_points):
         reference_time_MEFLs = (reference_df["rep1_MEFLs_"+time+"h"].tolist() +
@@ -366,15 +369,18 @@ def plot_reference(
     )
         reference_time_list = [time]*len(reference_time_MEFLs)
         reference_time_list = [float(i) for i in reference_time_list]
+        grey_ = [(i/255) for i in [150, 150, 150]]
         ax.plot(
             reference_time_list, reference_time_MEFLs, linestyle="none",
-            marker="o", markersize=4, color=bluish_green, label=labels_reference[j]
+            marker="o", markersize=1.5, color=grey_
         )
 
         ax.set_xlabel("Time (h)")
-        ax.set_xticks([float(i) for i in time_points])
+        ax.set_xticks([0, 20, 40])
+        ax.set_yticks([0, 0.5E9, 1E9]) #[0, 0.5E8, 1E8, 1.5E8]
         ax.set_ylabel("MEFLs")
-        ax.set_title("Reference time series")
+        ax.set_xlim(left=0, right=48)
+        ax.set_ylim(bottom=0, top=1.04E9)
         ax.set_box_aspect(1)
     # plt.show()
     plt.savefig(path_figure+"time_series_reference.svg")
@@ -397,78 +403,6 @@ def plot_experiment(
         )
 
 
-def plot_violin_condition(
-        path_figure,
-        condition,
-        percentile,
-        df_condition_MEFLs_series,
-        reference_df,
-        log_scale_
-):
-    fig, ax = plt.subplots(1, 1, figsize=(3.5, 2.75))
-    if reference_df is not None:
-        df_condition_MEFLs_series_T = df_condition_MEFLs_series.transpose().copy()
-        df_condition_MEFLs_series_T["Time (h)"] = df_condition_MEFLs_series_T.index
-        df_condition_MEFLs_series_T["condition"] = [condition]*len(df_condition_MEFLs_series_T.index)
-        reference_df_T = reference_df.transpose().copy()
-        reference_df_T["Time (h)"] = reference_df_T.index
-        reference_df_T["condition"] = ["reference"]*len(reference_df_T.index)
-        df_plus_ref_MEFLs_series_T = pd.concat([df_condition_MEFLs_series_T, reference_df_T], axis=0)
-        df_condition_MEFLs_series_T_plot = pd.melt(
-            frame=df_plus_ref_MEFLs_series_T,
-            id_vars=["Time (h)", "condition"], 
-            var_name="column_name",
-            value_name="MEFLs")
-        sns.violinplot(data=df_condition_MEFLs_series_T_plot, x="Time (h)", y="MEFLs", hue="condition", ax=ax, log_scale=log_scale_, split=True)
-        ax.set_xlabel("Time (h)")
-        ax.set_ylabel("MEFLs")
-        ax.set_title(condition)
-    else:
-        df_condition_MEFLs_series_T = df_condition_MEFLs_series.transpose().copy()
-        df_condition_MEFLs_series_T.index = df_condition_MEFLs_series_T.index.str.strip('h')
-        df_condition_MEFLs_series_T["Time (h)"] = df_condition_MEFLs_series_T.index
-        df_condition_MEFLs_series_T_plot = pd.melt(
-            frame=df_condition_MEFLs_series_T,
-            id_vars="Time (h)",
-            var_name="column_name",
-            value_name="MEFLs")
-        df_condition_MEFLs_series_T_plot["Time (h)"] = df_condition_MEFLs_series_T_plot["Time (h)"].astype(float)
-        sns.violinplot(data=df_condition_MEFLs_series_T_plot, x="Time (h)", y="MEFLs", ax=ax, log_scale=log_scale_)
-        ax.set_xlabel("Time (h)")
-        ax.set_ylabel("MEFLs")
-        ax.set_title(condition)
-    if percentile:
-        plt.savefig(path_figure+"violin_plot_"+str(percentile)+"pct"+condition+".svg")
-    else:   
-        plt.savefig(path_figure+"violin_plot_"+condition+".svg")
-
-
-def plot_violin_experiment(
-        path_figure,
-        conditions,
-        percentile,
-        experiment_dfs_MEFLs_combined_dict,
-        log_scale=False,
-        split_plot=False
-):
-    for condition in conditions:
-        condition_df = experiment_dfs_MEFLs_combined_dict[condition]
-        if split_plot:
-            reference_df = experiment_dfs_MEFLs_combined_dict["reference"]
-            if condition == "reference":
-                break
-        else:
-            reference_df = None
-        plot_violin_condition(
-            path_figure,
-            condition,
-            percentile,
-            condition_df,
-            reference_df,
-            log_scale
-        )
-
-
 def fit_spline_condition(df_condition_MEFLs_series, condition):
     df_condition_MEFLs_series_T = df_condition_MEFLs_series.transpose().copy()
     df_condition_MEFLs_series_T.index = df_condition_MEFLs_series_T.index.str.strip('h')
@@ -483,7 +417,7 @@ def fit_spline_condition(df_condition_MEFLs_series, condition):
     df_condition_MEFLs_series_T_no_neg = df_condition_MEFLs_series_T_sorted[df_condition_MEFLs_series_T_sorted["MEFLs"] >=0]
     df_condition_sorted_no_nan = df_condition_MEFLs_series_T_no_neg.dropna()
     # print(df_condition_sorted_no_nan)
-    spline_condition = np.polyfit(df_condition_sorted_no_nan["Time (h)"].tolist(), df_condition_sorted_no_nan["MEFLs"].tolist(), deg=3) #3.5
+    spline_condition = np.polyfit(df_condition_sorted_no_nan["Time (h)"].tolist(), df_condition_sorted_no_nan["MEFLs"].tolist(), deg=3)
     poly_spline = np.poly1d(spline_condition)
     spline_derivative = poly_spline.deriv()
     # print(spline_condition)
@@ -646,14 +580,6 @@ def run_flow_cytometry_calculations(
         save_data
     )
 
-    # plot_violin_experiment(
-    #     path_save,
-    #     conditions,
-    #     percentile,
-    #     experiment_dfs_MEFLs_combined_dict,
-    #     log_scale,
-    #     split_plot
-    # )
 
     conditions_plot = [i for i in conditions if i != "reference"]
     plot_experiment(
