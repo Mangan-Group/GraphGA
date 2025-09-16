@@ -24,21 +24,35 @@ def run_Z_matrix_sampling(
         Z_mat_list: list,
         Ref_list: list
 ):
+    """Runs the full Z matrix sampling
+    pipeline for calculating the confidence
+    interval: selects topologies, solves
+    objectives for 10 manifestations of the
+    Z matrix, and calculates associated
+    metrics."""
+
+    # create a directory for saving results files
     custom_path = (settings["repository_path"] +
                    settings["results_path"]
     )
     folder_path = make_main_directory(settings, custom_path)
 
+    # select topologies based on whether defining objective 
+    # threshold (single objective optimization) or not (multi-
+    # objective optimization)
     topologies, objectives = select_Z_matrix_sampling_topologies(
         settings["repository_path"]+settings["results_path"],
         obj_threshold=settings["objective_threshold"]
     )
+    # save selected topologies
     selected_topologies_file_name = "Z_matrix_sampling_topologies.pkl"
     with open(
         folder_path + "/" + selected_topologies_file_name, "wb"
     ) as fid:
         pickle.dump(topologies, fid)
     
+    # define problem object based on test case
+    # parameters in settings
     problem = testcase(
         promo_node=settings["promo_node"],
         dose_specs=[None, None, None],
@@ -56,15 +70,21 @@ def run_Z_matrix_sampling(
         single_cell_tracking=False
     )
 
+    # solve objectives for 10 manifestations of the 
+    # Z matrix for all of the topologies
     Z_matrix_sampling = solve_all_topology_objectives(
         problem, topologies, Z_mat_list, Ref_list
     )
 
+    # save the df of the results
     Z_matrix_sampling_file_name = "Z_matrix_sampling_for_CI.pkl"
     Z_matrix_sampling.to_pickle(
         folder_path + "/" + Z_matrix_sampling_file_name
     )
 
+    # for each of the specified metrics, get the
+    # maximum value across topologies and plot the
+    # confidence interval
     for i in range(len(settings["CI_metrics"])):
         CI_metric_maxes = get_objective_errors(Z_matrix_sampling, settings["CI_metrics"][i])
         print("CI_metric_maxes:", CI_metric_maxes)
@@ -83,6 +103,10 @@ def run_Z_matrix_sampling(
 
     return Z_matrix_sampling
 
+
+# define settings for the Z matrix sampling run (could modify to 
+# use a settings.json file and import instead, with an analogous
+# set up to run_test_case.py)
 settings = {
     "test_case": "Amplifier",
     "promo_node": "P1",

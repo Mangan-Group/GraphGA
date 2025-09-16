@@ -19,7 +19,7 @@ def run(
         testcase: object,
         settings: dict,
     ):
-    '''Run the genetic algorithm for a given test case'''
+    """Run the genetic algorithm for a given test case."""
 
     folder_path = make_main_directory(settings)
     # if a reference needs to be specified for the
@@ -39,28 +39,6 @@ def run(
     else:
         Z_mat = Z_mat_list_20[0]
 
-    # if "mean" in settings:
-    #     problem = testcase(
-    #         promo_node=settings["promo_node"],
-    #         dose_specs=settings["dose_specs"],
-    #         max_part=settings["max_part"],
-    #         inhibitor=settings["inhibitor"],
-    #         DsRed_inhibitor=settings["DsRed_inhibitor"],
-    #         num_dict=settings["num_dict"],
-    #         n_gen=settings["n_gen"],
-    #         probability_crossover=settings["probability_crossover"],
-    #         probability_mutation=settings["probability_mutation"],
-    #         mutate_dose=settings["mutate_dose"],
-    #         pop=settings["pop"],
-    #         mean=settings["mean"],
-    #         Z_mat=Z_mat,
-    #         Ref_pop=Ref_pop,
-    #         num_processes=settings["num_processes"],
-    #         obj_labels=settings["obj_labels"],
-    #         max_time=settings["max_time"]
-    # )
-
-    # else:
     problem = testcase(
         promo_node=settings["promo_node"],
         dose_specs=settings["dose_specs"],
@@ -79,7 +57,7 @@ def run(
         obj_labels=settings["obj_labels"],
         max_time=settings["max_time"]
 )
-    # print(problem.func)
+    
     population = sampling(
         problem.promo_node,
         problem.num_dict,
@@ -165,7 +143,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Error: test case not defined")
 
-    for seed in range(0, 1):
+    for seed in range(0, 10):
         settings["folder_name"] = settings["folder_name"].removesuffix("_seed_" + str(seed-1))
         np.random.seed(seed)
         settings["seed"] = seed
@@ -174,17 +152,12 @@ if __name__ == "__main__":
         run(test_case, settings)
         print("seed "+str(seed)+" complete")
 
+    ###############################################################
+    ### to run the GA with a single seed, comment the above for ###
+    ### loop and uncomment the below lines. Set the seed with   ###
+    ### seed = X                                                ###
+    ###############################################################
     # seed = 0
     # np.random.seed(seed)
     # settings["seed"] = seed
-    # for i, zmat in enumerate(Z_mat_list[1:]):
-    #     settings["folder_name"] = settings["folder_name"].removesuffix("_Z20_" + str(i))
-    #     settings["folder_name"] = settings["folder_name"] + "_Z20_" + str(i+1)
-    #     Ref_pop = Ref_list[i+1]
-    #     settings["reference"] = Ref_pop
-    #     settings["Z_matrix"] = zmat
-    #     run(test_case, settings)
-        # print("Z_20 "+str(i+1)+" run complete")
-
-    # settings["Z_matrix"] = Z_200
     # run(test_case, settings)
