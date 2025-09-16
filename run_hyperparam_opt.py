@@ -23,8 +23,14 @@ from pymoo.config import Config
 Config.warnings['not_compiled'] = False
 
 _, is_manager, _, _ = parse_args()
+# define seed for reproducibility
+# (the code will run the test case
+# for this seed and seed+1 and take
+# the average of the metrics for the
+# two results)
 seed = 20
 
+# define settings for test case run
 settings = {
 "test_case": "SignalConditioner",
 "DsRed_inhibitor": False,
@@ -35,12 +41,14 @@ settings = {
 "seeds": [seed, seed+1],
 "folder_path": "./Amplifier_single_cell/"
 }
+# save the run settings
 with open(settings["folder_path"] + "settings.json", "w") as fid:
     json.dump(settings, fid)
 
 def run(x:dict):
-    '''Run the genetic algorithm for a given test case'''
+    """Runs the genetic algorithm for a given test case."""
     
+    # define the test_case class to use
     if settings["test_case"] == "Amplifier":
         test_case = Amplifier
     elif settings["test_case"] == "SignalConditioner":
@@ -48,6 +56,9 @@ def run(x:dict):
     elif settings["test_case"] == "PulseGenerator":
         test_case = PulseGenerator
 
+    # define the number of 1- and 2-part circuits
+    # based on the hyperparameter values in x
+    # for this run
     num_circuits = x["population_size"]*2
     num_one_part_circuits = int(
         num_circuits*x["population_ratio"]
@@ -60,6 +71,11 @@ def run(x:dict):
         2: num_two_part_circuits
     }
     
+    # define the problem object (test_case
+    # class instance)
+    # probability_crossover and probability_mutation
+    # are defined by the hyperparameter values in x
+    # for this run
     problem = test_case(
         promo_node="P1",
         dose_specs=[5, 75, 5],
@@ -79,23 +95,39 @@ def run(x:dict):
     seeds = [seed, seed+1]
     fitness = []
     convergence = []
+    # loop through seeds
     for seed_val in seeds:
+        # if multiple objectives, run
+        # the multi_obj_GA() function
         if len(problem.obj_labels) > 1:
             [pareto_objs, gen_converged] = multi_obj_GA(
                 problem,
                 seed_val
             )
+            # add the fitness value from this run to
+            # the list (this is actually the hypervolume)
             fitness.append(pareto_objs)
+            # add the generation the GA converged in this
+            # run to the list
             convergence.append(gen_converged)
-            
+
+        # if one objective, run single_obj_GA()
+        # function  
         else:
             [final_obj, gen_converged] = single_obj_GA(
                 problem,
                 seed_val
             )
+            # add the fitness value from this run to
+            # the list (final objective value)
             fitness.append(final_obj)
+            # add the generation the GA converged in this
+            # run to the list
             convergence.append(gen_converged)
 
+    # calculate the average fitness and convergence
+    # (these will be used to assess the performance
+    # for the set of hyperparameters)
     average_fitness = np.mean(fitness)
     average_convergence = np.mean(convergence)
 
