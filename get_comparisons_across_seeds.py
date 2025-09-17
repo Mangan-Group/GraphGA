@@ -9,7 +9,13 @@ from plot_search_results import (
     plot_pareto_front_set_3D
 )
 
-def get_unique_in_a_seed_pareto_circuits(pareto_circuits):
+def get_unique_in_a_seed_pareto_circuits(
+    pareto_circuits: np.ndarray
+):
+    """Subset the unique circuits on the 
+    pareto front from the full final population
+    for the GA run for a specific seed (for
+    multi-objective GA.)"""
 
     #add (part, dose) to circuit edges
     circuit_edge_lists = []
@@ -41,37 +47,62 @@ def get_unique_in_a_seed_pareto_circuits(pareto_circuits):
             index_list.append(i)
             seed_unique_edge_combo.append(combo_list)
 
+    #select unique circuits from pareto_circuits
     seed_unique_circuits = pareto_circuits[index_list]
-    # print(index_list)
 
     return seed_unique_edge_combo, seed_unique_circuits, seen
 
-def get_unique_in_each_seed_pareto_circuits(results_path, seed_folder):
+
+def get_unique_in_each_seed_pareto_circuits(
+        results_path: str,
+        seed_folder: str
+):
+    """For each seed in the GA runs (seeds 0-9),
+    subset the unique circuits on the pareto 
+    front from the full final population."""
     
     seed_unique_edge_combo_list = []
     seed_unique_circuits_list = []
     seen_list = []
+    # loop through seeds
     for seed in range(0, 10):
         #import final population circuits
         full_path = results_path + seed_folder + str(seed) + "/"
         with open(full_path + "final_population.pkl", "rb") as fid:
             pareto_circuits = pickle.load(fid)
+        # get unique circuits in the seed GA run
         (seed_unique_edge_combo, seed_unique_circuits,
          seen) = get_unique_in_a_seed_pareto_circuits(pareto_circuits)
+        # format results and append to lists for all seeds
         seed_unique_circuits = seed_unique_circuits.flatten()
         seed_unique_edge_combo_list.append(seed_unique_edge_combo)
         seed_unique_circuits_list.append(seed_unique_circuits)
         seen_list.append(seen)
 
-    # print("unique in each seed: ", seed_unique_edge_combo_list)
     return seen_list, seed_unique_edge_combo_list, seed_unique_circuits_list
 
-def get_common_pareto_circuits(seen_list, seed_unique_edge_combo_list, seed_unique_circuits_list):
 
+def get_common_pareto_circuits(
+        seen_list: list, 
+        seed_unique_edge_combo_list: list,
+        seed_unique_circuits_list
+):
+    """Across the seeds for the GA runs, get the common
+    circuits on each pareto front."""
+
+    # find the intersection of the sets of unique
+    # pareto circuits for each seed (each circuit
+    # is a set of sets of edges)
     common_edge_combo_set = set.intersection(*seen_list)
 
     common_edge_combo_list = []
     common_circuits = []
+
+    # based on the common circuits in common_edge_combo_set,
+    # if the circuit edge list is in this set, add that list to
+    # common_edge_combo_list (basically just reformatting the 
+    # common_edge_combo_set in the list of lists form for later
+    # saving)
     for i, edge_combo in enumerate(seed_unique_edge_combo_list[0]):
         combo_set = frozenset(edge_combo)
         if combo_set in common_edge_combo_set:
@@ -80,10 +111,21 @@ def get_common_pareto_circuits(seen_list, seed_unique_edge_combo_list, seed_uniq
 
     return common_edge_combo_set, common_edge_combo_list, common_circuits
 
-def get_uncommon_pareto_circuits(seed_unique_edge_combo_list, common_edge_combo_set, seed_unique_circuits_list):
+
+def get_uncommon_pareto_circuits(
+        seed_unique_edge_combo_list: list,
+        common_edge_combo_set: set,
+        seed_unique_circuits_list: list
+):
+    """Across the seeds for the GA runs, get the uncommon
+    circuits on each pareto front (i.e., don't appear in 
+    all seeds but could appear in more than 1). This is used
+    to determine circuits unique to a seed in the following
+    function."""
 
     #with unique circuits in each seed and common circuits across all 
     # seeds, get circuits not common to all seeds (for each seed)
+    # i.e., don't appear in all seeds but could appear in more than 1
     all_uncommon_circuit_edge_combo_sets = []
     all_uncommon_circuits_lists = []
     all_uncommon_circuit_edge_combo_lists = []
@@ -102,64 +144,54 @@ def get_uncommon_pareto_circuits(seed_unique_edge_combo_list, common_edge_combo_
         all_uncommon_circuit_edge_combo_sets.append(uncommon_circuits_edge_combo_set)        
         all_uncommon_circuits_lists.append(uncommon_circuits_list)
     
-    return (all_uncommon_circuit_edge_combo_sets, all_uncommon_circuit_edge_combo_lists, 
+    return (all_uncommon_circuit_edge_combo_sets,
+            all_uncommon_circuit_edge_combo_lists, 
             all_uncommon_circuits_lists)
 
-def get_circuits_unique_to_seed(all_uncommon_circuit_edge_combo_sets, 
-                                all_uncommon_circuit_edge_combo_lists,
-                                all_uncommon_circuits_lists
+
+def get_circuits_unique_to_seed(
+        all_uncommon_circuit_edge_combo_sets: list, 
+        all_uncommon_circuit_edge_combo_lists: list,
+        all_uncommon_circuits_lists: list
 ):
+    """Across the seeds for the GA runs, get the circuits
+    that only appear in one seed pareto front."""
 
     # get circuits that only appear once across all seeds
     [l0, l1, l2, l3, l4, l5, l6, l7, l8, l9] = all_uncommon_circuit_edge_combo_sets
     circuits_freq1 = l0 ^ l1 ^ l2 ^ l3 ^ l4 ^ l5 ^ l6 ^ l7 ^ l8 ^ l9
-    
-    all_uncommon_circuits_edge_combo_lists_flat = [
-        edge_lists 
-        for seed_lists in all_uncommon_circuit_edge_combo_lists 
-        for edge_lists in seed_lists
-    ]
-    # print(all_uncommon_circuits_lists)
-    all_uncommon_circuits_lists_flat = [
-        circuit_list
-        for seed_lists in all_uncommon_circuits_lists
-        for circuit_list in seed_lists
-    ]
-    # print(all_uncommon_circuits_lists_flat)
-    # print(all_uncommon_circuits_lists)
-    edge_combos_more_than_one_seed = []
-    circuits_more_than_one_seed = []
-    for i, edge_list in enumerate(all_uncommon_circuits_edge_combo_lists_flat):
-        edge_set = frozenset(edge_list)
-        if edge_set not in circuits_freq1:
-            edge_combos_more_than_one_seed.append(edge_list)
-            circuits_more_than_one_seed.append(all_uncommon_circuits_lists_flat[i])
 
     circuits_unique_to_seed_list = []
     edge_combos_unique_to_seed_list = []
+    # loop through uncommon circuits
     for i, uncommon_circuits_edge_combos in enumerate(all_uncommon_circuit_edge_combo_lists):
         edge_combos_unique_to_seed = []
         circuits_unique_to_seed = []
         uncommon_circuits_list = all_uncommon_circuits_lists[i]
+        # for each circuit in the uncommon circuits
         for j, circuit in enumerate(uncommon_circuits_edge_combos):
             circuit_set = frozenset(circuit)
+            # if the circuit only appears in one seed, add to lists
             if circuit_set in circuits_freq1:
                 edge_combos_unique_to_seed.append(circuit)
                 circuits_unique_to_seed.append(uncommon_circuits_list[j])
         circuits_unique_to_seed_list.append(circuits_unique_to_seed)
         edge_combos_unique_to_seed_list.append(edge_combos_unique_to_seed)
     
-    return (circuits_unique_to_seed_list, edge_combos_unique_to_seed_list, 
-            edge_combos_more_than_one_seed, circuits_more_than_one_seed)
+    return circuits_unique_to_seed_list, edge_combos_unique_to_seed_list
 
 
 def get_dose_varied_common_circuits(
-        circuits_unique_to_seed_list
+        circuits_unique_to_seed_list: list
 ):
+    """Subsets the common circuits on the pareto
+    front for all GA seed runs when not considering
+    the dose of each part."""
 
     all_dose_varied_circuit_edge_combo_sets = []
     all_dose_varied_edge_combo_lists = []
     all_dose_varied_circuits_lists = []
+    # for the circuits unique to a seed
     for i, circuit_list in enumerate(circuits_unique_to_seed_list):
         dose_varied_edge_combo_list = []
         dose_varied_edge_combo_set = set()
@@ -181,6 +213,9 @@ def get_dose_varied_common_circuits(
         all_dose_varied_edge_combo_lists.append(dose_varied_edge_combo_list)
         all_dose_varied_circuits_lists.append(dose_varied_circuit_list)
 
+    # from the circuits that were unique to a seed when considering
+    # dose, when dose is removed, get common circuits across seeds
+    # when not considering dose
     (_,
      dose_varied_common_edge_combo_list,
      dose_varied_common_circuits) = get_common_pareto_circuits(
@@ -191,7 +226,14 @@ def get_dose_varied_common_circuits(
 
     return dose_varied_common_edge_combo_list, dose_varied_common_circuits
 
-def compare_pareto_circuits_across_seeds(results_path, seed_folder, selected_seed):
+
+def compare_pareto_circuits_across_seeds(
+        results_path: str, 
+        seed_folder: str,
+        selected_seed: int
+):
+    """Runs above functions to compare pareto front
+    circuits across GA runs for different seeds."""
 
     (seen_list, seed_unique_edge_combo_list, 
      seed_unique_circuits_list) = get_unique_in_each_seed_pareto_circuits(results_path, seed_folder)
@@ -205,8 +247,7 @@ def compare_pareto_circuits_across_seeds(results_path, seed_folder, selected_see
          seed_unique_edge_combo_list, common_edge_combo_set, seed_unique_circuits_list    
      )
     
-    (circuits_unique_to_seed_list, edge_combos_unique_to_seed_list, 
-    edge_combos_more_than_one_seed, circuits_more_than_one_seed) = get_circuits_unique_to_seed(
+    circuits_unique_to_seed_list, edge_combos_unique_to_seed_list = get_circuits_unique_to_seed(
         all_uncommon_circuits_sets, all_uncommon_circuit_edge_combo_lists,
         all_uncommon_circuits_lists
     )
@@ -216,6 +257,7 @@ def compare_pareto_circuits_across_seeds(results_path, seed_folder, selected_see
          circuits_unique_to_seed_list
      )
     
+    # plot the hypervolume progression for each seed for comparison
     compare_hypervolumes(results_path, seed_folder, selected_seed)
 
 
@@ -224,9 +266,15 @@ def compare_pareto_circuits_across_seeds(results_path, seed_folder, selected_see
             edge_combos_unique_to_seed_list, circuits_unique_to_seed_list,
             dose_varied_common_edge_combo_list, dose_varied_common_circuits)
 
-def compare_parteo_fronts(results_path=str, seed_folder=str, 
-                          num_obj=int, obj_labels=list
+
+def compare_parteo_fronts(
+        results_path=str,
+        seed_folder=str, 
+        num_obj=int, 
+        obj_labels=list
 ):
+    """Plots the pareto front for each seed 
+    for comparison."""
     
     pareto_obj_dfs_list = []
     for seed in range(0, 10):
@@ -234,9 +282,12 @@ def compare_parteo_fronts(results_path=str, seed_folder=str,
         full_path = results_path + seed_folder + str(seed) + "/"
         with open(full_path + "final_objectives_df.pkl", "rb") as fid:
             pareto_front = pickle.load(fid)
+        # add the pareto front objectives to the list
         pareto_obj_dfs_list.append(pareto_front)
 
     pareto_plot = "pareto_front_set.svg"
+    # plot the pareto fronts depending on the number
+    # of objectives
     if num_obj == 2:
         plot_pareto_front_set(
             results_path+pareto_plot,
@@ -250,7 +301,13 @@ def compare_parteo_fronts(results_path=str, seed_folder=str,
             obj_labels
         )
 
-def compare_hypervolumes(results_path, seed_folder, selected_seed):
+def compare_hypervolumes(
+        results_path: str,
+        seed_folder: str,
+        selected_seed: int
+):
+    """Plots the hypervolume progression 
+    for each seed for comparison."""
 
     final_hypervolumes = []
     hypervolume_lists = []
@@ -259,18 +316,26 @@ def compare_hypervolumes(results_path, seed_folder, selected_seed):
         full_path = results_path + seed_folder + str(seed) + "/"
         with open(full_path + "hypervolumes.pkl", "rb") as fid:
             hypervolumes = pickle.load(fid)
+        # add the hypervolumes (and final hypervolume) to 
+        # the corresponding lists
         final_hypervolumes.append(hypervolumes[-1])
         hypervolume_lists.append(hypervolumes)
 
     n_gens = len(hypervolume_lists[0])
     hypervolumes_plot = "all_hypervolume_progressions.svg"
+    # plot the hypervolumes 
     plot_hypervolumes_set(results_path + hypervolumes_plot, 
                           n_gens, hypervolume_lists)
     
     y_lower_lim = min(final_hypervolumes) - min(final_hypervolumes)*0.05
     hypervolumes_plot_zoomed = "all_hypervolume_progressions_zoomed.svg"
+    # plot the hypervolumes zoomed in
     plot_hypervolumes_set(results_path + hypervolumes_plot_zoomed, 
                           n_gens, hypervolume_lists, y_lower_lim)
+    
+    # plot the hypervolumes compared to the final hypervolume from the
+    # combinatorial search (or maximum hypervolume, for the signal
+    # conditioner population model).
     hypervolumes_vs_combo = "all_hvs_vs_combo_paper_v2.svg"
     max_hv = max(hypervolume_lists[2]) #signal conditioner pop model
     plot_hypervolumes_set_vs_combo(results_path+hypervolumes_vs_combo,
@@ -279,25 +344,40 @@ def compare_hypervolumes(results_path, seed_folder, selected_seed):
     
     return final_hypervolumes
 
-def compile_common_results(results_path,
-        common_edge_combo_list, common_circuits,
-        dose_varied_common_edge_combo_list, dose_varied_common_circuits
+def compile_common_results(
+        results_path: str,
+        common_edge_combo_list: list,
+        common_circuits: list,
+        dose_varied_common_edge_combo_list: list,
+        dose_varied_common_circuits: list
 ):
-    
+    """Compiles the common circuits on each pareto front
+    into a df and saves as a csv."""
+
+    # compile into a dict
     common_results_dict = {
         "edge_list": common_edge_combo_list + dose_varied_common_edge_combo_list,
         "circuit": common_circuits + dose_varied_common_circuits,
         "dose varied?": ["no"]*len(common_circuits) + ["yes"]*len(dose_varied_common_circuits)
     }
 
+    # convert to a df and save as a csv
     common_pareto_circuits = pd.DataFrame(data=common_results_dict)
     filename = "common_pareto_circuits.csv"
     common_pareto_circuits.to_csv(results_path+filename)
 
-def compile_seed_comparisons(results_path,
-        seed_unique_edge_combo_list, seed_unique_circuits_list,
-        edge_combos_unique_to_seed_list, circuits_unique_to_seed_list        
+
+def compile_seed_comparisons(
+        results_path: str,
+        seed_unique_edge_combo_list: list,
+        seed_unique_circuits_list: list,
+        edge_combos_unique_to_seed_list: list,
+        circuits_unique_to_seed_list: list       
 ):
+    """Compiles the unique circuits on each pareto front
+    into a df and saves as a csv."""
+
+    # compile into a dict
     seed_comparisons_dict = {
         "seed": np.arange(10),
         "unique in seed edge lists": seed_unique_edge_combo_list,
@@ -308,6 +388,7 @@ def compile_seed_comparisons(results_path,
         "number of unique to seed circuits": [len(i) for i in circuits_unique_to_seed_list],
     }
 
+    # convert to a df and save as a csv
     seed_comparisons = pd.DataFrame(data=seed_comparisons_dict)
     filename = "seed_comparisons.csv"
     seed_comparisons.to_csv(results_path+filename)
